@@ -8,13 +8,13 @@
 #include "Adafruit_ST7735.h"
 
 // TFT Display Pin For Arduino
-#define TFT_vcc 6
-#define TFT_led 0
-#define TFT_CS A1
-#define TFT_RST A2
-#define TFT_DC  A3
-#define TFT_SDA 11
-#define TFT_SCK 13
+// #define TFT_vcc 6
+// #define TFT_led 0
+#define TFT_CS  5
+#define TFT_RST 17
+#define TFT_DC  4
+#define TFT_SDA 13
+#define TFT_SCK 14
 
 // Color Code For Tft Display
 #define BLACK   0x0000
@@ -45,15 +45,22 @@ Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 #define LORA_SEND_TO_ADDRESS  2
 
 char my_packet [50];
-char testData[50]; //Transmits data to Gateway
+char testData[50];
 
 //Pin def
 #define pushbutton A0
+
 // DEBUG
 boolean debug_1  = true;
 boolean debug_2  = true;
 boolean debug_3  = true;
 boolean debug_4  = true;
+
+// TIMER DEBUG FLAG:
+boolean timer_debug_1 = false;
+boolean timer_debug_2 = false;
+boolean timer_debug_3 = false;
+boolean timer_debug_4 = false;
 
 // Button State
 boolean button1State = true;
@@ -64,8 +71,8 @@ boolean button4State = true;
 int value;
 
 // Defining Timing Variable
-
 int interval = 1000;
+
 long int currentButton1Time = 0;
 long int currentButton2Time = 0;
 long int currentButton3Time = 0;
@@ -153,22 +160,40 @@ void loop() {
 
 void pushButton() {
 
+  
+
   if (value > 350 && value < 410 && debug_1 == true) {
 
     Serial.println("Push button 1 is pressed");
     String("Push button 1 is pressed").toCharArray(testData, 50);
+
+    timer_debug_1 = true;
+
     debug_1 = false;
     debug_2 = true;
     debug_3 = true;
     debug_4 = true;
+
     sendData(testData);
     
     if (button1State) {
       tft.fillRect(rect1x, rect1y, recwidth, recheight, GREEN);
+
+      tft.setCursor(60, 40);
+      tft.setTextColor(WHITE);
+      tft.setTextSize(1);
+      tft.print("GEC");
+
       button1State = false;
     }
     else {
       tft.fillRect(rect1x, rect1y, recwidth, recheight, RED);
+
+      tft.setCursor(60, 40);
+      tft.setTextColor(WHITE);
+      tft.setTextSize(1);
+      tft.print("GEC");
+
       button1State = true;
     }
     currentButton1Time = millis();
@@ -177,18 +202,34 @@ void pushButton() {
 
     Serial.println("Push button 2 is pressed");
     String("Push button 2 is pressed").toCharArray(testData, 50);
+
+    timer_debug_2 = true; 
+
     debug_1 = true;
     debug_2 = false;
     debug_3 = true;
     debug_4 = true;
+
     sendData(testData);
     
     if (button2State) {
       tft.fillRect(rect1x, rect2y, recwidth, recheight, GREEN);
+
+      tft.setCursor(60, 65);
+      tft.setTextColor(BLACK);
+      tft.setTextSize(1);
+      tft.print("BAIZID");
+
       button2State = false;
     }
     else {
       tft.fillRect(rect1x, rect2y, recwidth, recheight, RED);
+
+      tft.setCursor(60, 65);
+      tft.setTextColor(BLACK);
+      tft.setTextSize(1);
+      tft.print("BAIZID");
+
       button2State = true;
     }
 
@@ -198,18 +239,31 @@ void pushButton() {
 
     Serial.println("Push button 3 is pressed");
     String("Push button 3 is pressed").toCharArray(testData, 50);
+
+    timer_debug_3 = true;
+
     debug_1 = true;
     debug_2 = true;
     debug_3 = false;
     debug_4 = true;
+
     sendData(testData);
     
     if (button3State) {
       tft.fillRect(rect1x, rect3y, recwidth, recheight, GREEN);
+
+      tft.setCursor(60, 85);
+      tft.setTextColor(BLACK);
+      tft.setTextSize(1);
+      tft.print("MURADPUR");
       button3State = false;
     }
     else {
       tft.fillRect(rect1x, rect3y, recwidth, recheight, RED);
+      tft.setCursor(60, 85);
+      tft.setTextColor(BLACK);
+      tft.setTextSize(1);
+      tft.print("MURADPUR");
       button3State = true;
     }
     currentButton3Time = millis();
@@ -218,37 +272,61 @@ void pushButton() {
 
     Serial.println("Push button 4 is pressed");
     String("Push button 4 is pressed").toCharArray(testData, 50);
+
+    timer_debug_4 = true;
+
     debug_1 = true;
     debug_2 = true;
     debug_3 = true;
     debug_4 = false;
+
     sendData(testData);
     
     if (button4State) {
       tft.fillRect(rect1x, rect4y, recwidth, recheight, GREEN);
+
+      tft.setCursor(60, 107);
+      tft.setTextColor(WHITE);
+      tft.setTextSize(1);
+      tft.print("PROBARTAK ");
+
       button4State = false;
     }
     else {
       tft.fillRect(rect1x, rect4y, recwidth, recheight, RED);
+
+      tft.setCursor(60, 107);
+      tft.setTextColor(WHITE);
+      tft.setTextSize(1);
+      tft.print("PROBARTAK ");
+
       button4State = true;
     }
     currentButton4Time = millis();
 
   }
-  if ( currentButton1Time - previousButton1Time > interval ) {
+  if ( currentButton1Time - previousButton1Time > interval && timer_debug_1 == true) {
+    Serial.println("Time over & Flag 1 is true");
     debug_1 = true;
+    timer_debug_1 = false;
     previousButton1Time = millis();
   }
-  if ( currentButton2Time - previousButton2Time > interval ) {
+  if ( currentButton2Time - previousButton2Time > interval && timer_debug_2 == true) {
+    Serial.println("Time over & Flag 2 is true");
     debug_2 = true;
+    timer_debug_2 = false;
     previousButton2Time = millis();
   }
-  if ( currentButton3Time - previousButton3Time > interval ) {
+  if ( currentButton3Time - previousButton3Time > interval && timer_debug_3 == true) {
+    Serial.println("Time over & Flag 3 is true");
     debug_3 = true;
+    timer_debug_3 = false;
     previousButton3Time = millis();
   }
-  if ( currentButton4Time - previousButton4Time > interval ) {
+  if ( currentButton4Time - previousButton4Time > interval && timer_debug_4 == true) {
+    Serial.println("Time over & Flag 4 is true");
     debug_4 = true;
+    timer_debug_4 = false;
     previousButton4Time = millis();
   }
 
