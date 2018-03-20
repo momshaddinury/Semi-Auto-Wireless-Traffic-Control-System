@@ -13,8 +13,8 @@
 #define TFT_CS  5
 #define TFT_RST 17
 #define TFT_DC  4
-#define TFT_SDA 13
-#define TFT_SCK 14
+// #define TFT_SDA 13
+// #define TFT_SCK 14
 
 // Color Code For Tft Display
 #define BLACK   0x0000
@@ -71,22 +71,20 @@ boolean button4State = true;
 int value;
 
 // Defining Timing Variable
-int interval = 1000;
+int interval = 800;
 
-long int currentButton1Time = 0;
-long int currentButton2Time = 0;
-long int currentButton3Time = 0;
-long int currentButton4Time = 0;
+long int currentTime ;
 
-long int previousButton1Time = 0;
-long int previousButton2Time = 0;
-long int previousButton3Time = 0;
-long int previousButton4Time = 0;
+
+long int previousButton1Time ;
+long int previousButton2Time ;
+long int previousButton3Time ;
+long int previousButton4Time ;
 
 
 void setup() {
   Serial.begin(115200);
-
+  SPI.begin();
   // Diaplay Initialization and Creating BLock
   tft.initR(INITR_BLACKTAB);
   tft.setRotation(3);
@@ -115,16 +113,16 @@ void setup() {
   // Full Fill REC
 
   // BLOCK 1
-  tft.fillRect(rect1x, rect1y, recwidth, recheight, RED);
+  tft.fillRect(rect1x, rect1y, recwidth, recheight, YELLOW);
   // BLOCK 2
-  tft.fillRect(rect1x, rect2y, recwidth, recheight, GREEN);
+  tft.fillRect(rect1x, rect2y, recwidth, recheight, YELLOW);
   // BLOCK 3
-  tft.fillRect(rect1x, rect3y, recwidth, recheight, GREEN);
+  tft.fillRect(rect1x, rect3y, recwidth, recheight, YELLOW);
   // BLOCK 4
-  tft.fillRect(rect1x, rect4y, recwidth, recheight, RED);
+  tft.fillRect(rect1x, rect4y, recwidth, recheight, YELLOW);
 
   tft.setCursor(60, 40);
-  tft.setTextColor(WHITE);
+  tft.setTextColor(BLACK);
   tft.setTextSize(1);
   tft.print("GEC");
 
@@ -139,7 +137,7 @@ void setup() {
   tft.print("MURADPUR");
 
   tft.setCursor(60, 107);
-  tft.setTextColor(WHITE);
+  tft.setTextColor(BLACK);
   tft.setTextSize(1);
   tft.print("PROBARTAK ");
 
@@ -159,20 +157,17 @@ void loop() {
 
 
 void pushButton() {
+   currentTime = millis();
 
-  
 
   if (value > 350 && value < 410 && debug_1 == true) {
-
-    Serial.println("Push button 1 is pressed");
+    Serial.print("Push button 1 is pressed. ");
+    Serial.println(value);
     String("Push button 1 is pressed").toCharArray(testData, 50);
 
     timer_debug_1 = true;
 
     debug_1 = false;
-    debug_2 = true;
-    debug_3 = true;
-    debug_4 = true;
 
     sendData(testData);
     
@@ -180,7 +175,7 @@ void pushButton() {
       tft.fillRect(rect1x, rect1y, recwidth, recheight, GREEN);
 
       tft.setCursor(60, 40);
-      tft.setTextColor(WHITE);
+      tft.setTextColor(BLACK);
       tft.setTextSize(1);
       tft.print("GEC");
 
@@ -196,20 +191,17 @@ void pushButton() {
 
       button1State = true;
     }
-    currentButton1Time = millis();
+    previousButton1Time = millis();
 
   } else if (value > 230 && value < 280 && debug_2 == true) {
 
-    Serial.println("Push button 2 is pressed");
+    Serial.print("Push button 2 is pressed. ");
+    Serial.println(value);
     String("Push button 2 is pressed").toCharArray(testData, 50);
 
     timer_debug_2 = true; 
-
-    debug_1 = true;
     debug_2 = false;
-    debug_3 = true;
-    debug_4 = true;
-
+  
     sendData(testData);
     
     if (button2State) {
@@ -226,27 +218,26 @@ void pushButton() {
       tft.fillRect(rect1x, rect2y, recwidth, recheight, RED);
 
       tft.setCursor(60, 65);
-      tft.setTextColor(BLACK);
+      tft.setTextColor(WHITE);
       tft.setTextSize(1);
       tft.print("BAIZID");
 
       button2State = true;
     }
 
-    currentButton2Time = millis();
+    previousButton2Time = millis();
+
 
   } else if (value > 120 && value < 180 && debug_3 == true) {
 
-    Serial.println("Push button 3 is pressed");
+    Serial.print("Push button 3 is pressed. ");
+    Serial.println(value);
     String("Push button 3 is pressed").toCharArray(testData, 50);
 
     timer_debug_3 = true;
 
-    debug_1 = true;
-    debug_2 = true;
     debug_3 = false;
-    debug_4 = true;
-
+   
     sendData(testData);
     
     if (button3State) {
@@ -261,23 +252,22 @@ void pushButton() {
     else {
       tft.fillRect(rect1x, rect3y, recwidth, recheight, RED);
       tft.setCursor(60, 85);
-      tft.setTextColor(BLACK);
+      tft.setTextColor(WHITE);
       tft.setTextSize(1);
       tft.print("MURADPUR");
       button3State = true;
     }
-    currentButton3Time = millis();
+    previousButton3Time = millis();
+
 
   } else if (value > 70 && value < 100 && debug_4 == true) {
 
-    Serial.println("Push button 4 is pressed");
+    Serial.print("Push button 4 is pressed. ");
+    Serial.println(value);
     String("Push button 4 is pressed").toCharArray(testData, 50);
 
     timer_debug_4 = true;
 
-    debug_1 = true;
-    debug_2 = true;
-    debug_3 = true;
     debug_4 = false;
 
     sendData(testData);
@@ -286,7 +276,7 @@ void pushButton() {
       tft.fillRect(rect1x, rect4y, recwidth, recheight, GREEN);
 
       tft.setCursor(60, 107);
-      tft.setTextColor(WHITE);
+      tft.setTextColor(BLACK);
       tft.setTextSize(1);
       tft.print("PROBARTAK ");
 
@@ -302,32 +292,42 @@ void pushButton() {
 
       button4State = true;
     }
-    currentButton4Time = millis();
+    previousButton4Time = millis();
+
 
   }
-  if ( currentButton1Time - previousButton1Time > interval && timer_debug_1 == true) {
+  if ( (currentTime - previousButton1Time > interval ) && timer_debug_1 == true) {
     Serial.println("Time over & Flag 1 is true");
     debug_1 = true;
     timer_debug_1 = false;
     previousButton1Time = millis();
+    Serial.print("Button 1 Flag Time : ");
+    Serial.println(previousButton1Time);
+
   }
-  if ( currentButton2Time - previousButton2Time > interval && timer_debug_2 == true) {
+  if ( ( currentTime - previousButton2Time > interval ) && timer_debug_2 == true) {
     Serial.println("Time over & Flag 2 is true");
     debug_2 = true;
     timer_debug_2 = false;
     previousButton2Time = millis();
+     Serial.print("Button 2 Flag Time : ");
+    Serial.println(previousButton2Time);
   }
-  if ( currentButton3Time - previousButton3Time > interval && timer_debug_3 == true) {
+  if ( (currentTime - previousButton3Time > interval ) && timer_debug_3 == true) {
     Serial.println("Time over & Flag 3 is true");
     debug_3 = true;
     timer_debug_3 = false;
     previousButton3Time = millis();
+    Serial.print("Button 3 Flag Time : ");
+    Serial.println(previousButton3Time);
   }
-  if ( currentButton4Time - previousButton4Time > interval && timer_debug_4 == true) {
+  if ( (currentTime - previousButton4Time > interval ) && timer_debug_4 == true) {
     Serial.println("Time over & Flag 4 is true");
     debug_4 = true;
     timer_debug_4 = false;
     previousButton4Time = millis();
+    Serial.print("Button 4 Flag Time : ");
+    Serial.println(previousButton4Time);
   }
 
 
