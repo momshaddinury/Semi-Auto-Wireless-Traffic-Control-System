@@ -15,13 +15,9 @@
 #include "Adafruit_ST7735.h"
 
 // TFT Display Pin For Arduino
-// #define TFT_vcc 6
-// #define TFT_led 0
 #define TFT_CS  5
 #define TFT_RST 17
 #define TFT_DC  4
-// #define TFT_SDA 13
-// #define TFT_SCK 14
 
 // Color Code For Tft Display
 #define BLACK   0x0000
@@ -133,21 +129,27 @@ void setup() {
   // BLOCK 4
   tft.fillRect(rect1x, rect4y, recwidth, recheight, YELLOW);
 
+  //Location in display (Max 4 location)
+  //Location name can be  changed according to location preference.
+  //Location -1: GEC
   tft.setCursor(60, 40);
   tft.setTextColor(BLACK);
   tft.setTextSize(1);
-  tft.print("GEC");
+  tft.print("GEC"); 
 
+  //Location -2 :Baizid
   tft.setCursor(60, 65);
   tft.setTextColor(BLACK);
   tft.setTextSize(1);
   tft.print("BAIZID");
 
+  //Location -3 :Muradpur
   tft.setCursor(60, 85);
   tft.setTextColor(BLACK);
   tft.setTextSize(1);
   tft.print("MURADPUR");
 
+  //Location -4 :PROBARTAK
   tft.setCursor(60, 107);
   tft.setTextColor(BLACK);
   tft.setTextSize(1);
@@ -156,6 +158,8 @@ void setup() {
 
   // Lora Initialization
   loraSetup();
+
+  //PinMode:
   pinMode(pushbutton, INPUT);
   pinMode(button1,INPUT);
   pinMode(button2,INPUT);
@@ -177,28 +181,28 @@ void pushButton() {
    currentTime = millis();
   
    int button1HighValue = 500;
-
-   
    int button2HighValue = 500;
+   int button3HighValue = 340;
+   int button4HighValue = 400;
 
    int button3LowValue = 300;
-   int button3HighValue = 340;
-
    int button4LowValue = 360;
-   int button4HighValue = 400;
+   
 
   if ( value1 < button1HighValue && debug_1 == true) {
     Serial.print("Push button 1 is pressed. ");
     Serial.println(value1);
-    String("Push button 1 is pressed").toCharArray(testData, 50);
+    //String("Push button 1 is pressed").toCharArray(testData, 50);
 
     timer_debug_1 = true;
-
     debug_1 = false;
 
-    sendData(testData);
+    //sendData(testData);
     
     if (button1State) {
+
+      String("G").toCharArray(testData, 50);
+      sendData(testData);
 
       tft.fillRect(rect1x, rect1y, recwidth, recheight, GREEN);
       tft.setCursor(60, 40);
@@ -209,6 +213,9 @@ void pushButton() {
       button1State = false;
     }
     else {
+
+      String("R").toCharArray(testData, 50);
+      sendData(testData);
 
       tft.fillRect(rect1x, rect1y, recwidth, recheight, RED);
       tft.setCursor(60, 40);
@@ -225,14 +232,17 @@ void pushButton() {
 
     Serial.print("Push button 2 is pressed. ");
     Serial.println(value2);
-    String("Push button 2 is pressed").toCharArray(testData, 50);
+    //String("Push button 2 is pressed").toCharArray(testData, 50);
 
     timer_debug_2 = true; 
     debug_2 = false;
   
-    sendData(testData);
+    //sendData(testData);
     
     if (button2State) {
+
+      String("G").toCharArray(testData, 50);
+      sendData(testData);
 
       tft.fillRect(rect1x, rect2y, recwidth, recheight, GREEN);
       tft.setCursor(60, 65);
@@ -243,6 +253,9 @@ void pushButton() {
       button2State = false;
     }
     else {
+
+      String("R").toCharArray(testData, 50);
+      sendData(testData);
 
       tft.fillRect(rect1x, rect2y, recwidth, recheight, RED);
       tft.setCursor(60, 65);
@@ -261,15 +274,18 @@ void pushButton() {
 
     Serial.print("Push button 3 is pressed. ");
     Serial.println(value3);
-    String("Push button 3 is pressed").toCharArray(testData, 50);
+    // String("Push button 3 is pressed").toCharArray(testData, 50);
 
     timer_debug_3 = true;
 
     debug_3 = false;
    
-    sendData(testData);
+    // sendData(testData);
     
     if (button3State) {
+
+      String("G").toCharArray(testData, 50);
+      sendData(testData);
 
       tft.fillRect(rect1x, rect3y, recwidth, recheight, GREEN);
       tft.setCursor(60, 85);
@@ -279,6 +295,9 @@ void pushButton() {
       button3State = false;
     }
     else {
+
+      String("R").toCharArray(testData, 50);
+      sendData(testData);
 
       tft.fillRect(rect1x, rect3y, recwidth, recheight, RED);
       tft.setCursor(60, 85);
@@ -295,15 +314,18 @@ void pushButton() {
 
     Serial.print("Push button 4 is pressed. ");
     Serial.println(value3);
-    String("Push button 4 is pressed").toCharArray(testData, 50);
+    // String("Push button 4 is pressed").toCharArray(testData, 50);
 
     timer_debug_4 = true;
 
     debug_4 = false;
 
-    sendData(testData);
+    // sendData(testData);
     
     if (button4State) {
+
+      String("G").toCharArray(testData, 50);
+      sendData(testData);
 
       tft.fillRect(rect1x, rect4y, recwidth, recheight, GREEN);
       tft.setCursor(60, 107);
@@ -314,6 +336,9 @@ void pushButton() {
       button4State = false;
     }
     else {
+
+      String("R").toCharArray(testData, 50);
+      sendData(testData);
 
       tft.fillRect(rect1x, rect4y, recwidth, recheight, RED);
       tft.setCursor(60, 107);
