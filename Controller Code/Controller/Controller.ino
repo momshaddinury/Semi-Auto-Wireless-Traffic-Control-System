@@ -14,10 +14,10 @@
 #include "SPI.h"
 #include "Adafruit_ST7735.h"
 
-// TFT Display Pin For Arduino
+//// TFT Display Pin For Arduino
 #define TFT_CS  5
 #define TFT_RST 17
-#define TFT_DC  4
+#define TFT_DC  0
 
 // Color Code For Tft Display
 #define BLACK   0x0000
@@ -169,8 +169,11 @@ void setup() {
 void loop() {
 
   value1 = analogRead(button1);
+  Serial.println(value1);
   value2 = analogRead(button2);
+  Serial.println(value2);
   value3 = analogRead(pushbutton);
+  Serial.println(value3);
 
   pushButton();  
 
