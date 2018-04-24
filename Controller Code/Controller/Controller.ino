@@ -168,12 +168,12 @@ void setup() {
 
 void loop() {
 
-  value1 = analogRead(button1);
-  Serial.println(value1);
-  value2 = analogRead(button2);
-  Serial.println(value2);
-  value3 = analogRead(pushbutton);
-  Serial.println(value3);
+//  value1 = analogRead(button1);
+//  Serial.println(value1);
+//  value2 = analogRead(button2);
+//  Serial.println(value2);
+//  value3 = analogRead(pushbutton);
+//  Serial.println(value3);
 
   pushButton();  
 
@@ -185,22 +185,22 @@ void pushButton() {
   
    int button1HighValue = 500;
    int button2HighValue = 500;
-   int button3HighValue = 340;
+   int button3HighValue = 335;
    int button4HighValue = 400;
 
    int button3LowValue = 300;
-   int button4LowValue = 360;
+   int button4LowValue = 335;
    
 
   if ( value1 < button1HighValue && debug_1 == true) {
     Serial.print("Push button 1 is pressed. ");
     Serial.println(value1);
-    //String("Push button 1 is pressed").toCharArray(testData, 50);
+    String("Push button 1 is pressed").toCharArray(testData, 50);
 
     timer_debug_1 = true;
     debug_1 = false;
 
-    //sendData(testData);
+    sendData(testData);
     
     if (button1State) {
 
@@ -235,12 +235,12 @@ void pushButton() {
 
     Serial.print("Push button 2 is pressed. ");
     Serial.println(value2);
-    //String("Push button 2 is pressed").toCharArray(testData, 50);
+    String("Push button 2 is pressed").toCharArray(testData, 50);
 
     timer_debug_2 = true; 
     debug_2 = false;
   
-    //sendData(testData);
+    sendData(testData);
     
     if (button2State) {
 
@@ -277,13 +277,13 @@ void pushButton() {
 
     Serial.print("Push button 3 is pressed. ");
     Serial.println(value3);
-    // String("Push button 3 is pressed").toCharArray(testData, 50);
+    String("Push button 3 is pressed").toCharArray(testData, 50);
 
     timer_debug_3 = true;
 
     debug_3 = false;
    
-    // sendData(testData);
+     sendData(testData);
     
     if (button3State) {
 
@@ -317,13 +317,13 @@ void pushButton() {
 
     Serial.print("Push button 4 is pressed. ");
     Serial.println(value3);
-    // String("Push button 4 is pressed").toCharArray(testData, 50);
+    String("Push button 4 is pressed").toCharArray(testData, 50);
 
     timer_debug_4 = true;
 
     debug_4 = false;
 
-    // sendData(testData);
+    sendData(testData);
     
     if (button4State) {
 
@@ -413,7 +413,7 @@ void sendData(char message[]) {
     Serial.println(F("Packet sent....."));
   }
   else {
-    Serial.println(F("Packet not sent....."));
+//    Serial.println(F("Packet not sent....."));
   }
 }
 
