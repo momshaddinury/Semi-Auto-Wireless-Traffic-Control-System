@@ -55,6 +55,7 @@ char testData[50];
 #define button1 2
 #define button2 16
 
+
 // DEBUG
 boolean debug_1  = true;
 boolean debug_2  = true;
@@ -73,7 +74,10 @@ boolean button2State = true;
 boolean button3State = true;
 boolean button4State = true;
 
-int value1,value2,value3;
+int value3,value4;
+boolean value1,value2;
+
+
 
 // Defining Timing Variable
 int interval = 800;
@@ -164,19 +168,21 @@ void setup() {
   pinMode(button1,INPUT);
   pinMode(button2,INPUT);
 
+
 }
 
 void loop() {
 
-//  value1 = analogRead(button1);
-//  Serial.println(value1);
-//  value2 = analogRead(button2);
-//  Serial.println(value2);
-//  value3 = analogRead(pushbutton);
-//  Serial.println(value3);
-
+  value1 = digitalRead(button1);
+  //Serial.println(value1);
+  value2 = digitalRead(button2);
+  //Serial.println(value2);
+  value3 = analogRead(pushbutton);
+  //Serial.println(value3);
+  //delay(1000);
   pushButton();  
-
+  digitalWrite(button1, HIGH);
+  digitalWrite(button2, HIGH);
 }
 
 
@@ -185,22 +191,21 @@ void pushButton() {
   
    int button1HighValue = 500;
    int button2HighValue = 500;
-   int button3HighValue = 335;
-   int button4HighValue = 400;
+   int button3HighValue = 1000;
+   int button3LowValue =  500;
+   int button4LowValue = 150;
+   int button4HighValue = 450;
 
-   int button3LowValue = 300;
-   int button4LowValue = 335;
-   
 
-  if ( value1 < button1HighValue && debug_1 == true) {
+  if ( value1 == false && debug_1 == true) {
     Serial.print("Push button 1 is pressed. ");
     Serial.println(value1);
-    String("Push button 1 is pressed").toCharArray(testData, 50);
+    //String("Push button 1 is pressed").toCharArray(testData, 50);
 
     timer_debug_1 = true;
     debug_1 = false;
 
-    sendData(testData);
+    //sendData(testData);
     
     if (button1State) {
 
@@ -231,16 +236,16 @@ void pushButton() {
     previousButton1Time = millis();
 
   
-  } else if ( value2 < button2HighValue && debug_2 == true) {
+  } else if ( value2 == false && debug_2 == true) {
 
     Serial.print("Push button 2 is pressed. ");
     Serial.println(value2);
-    String("Push button 2 is pressed").toCharArray(testData, 50);
+    //String("Push button 2 is pressed").toCharArray(testData, 50);
 
     timer_debug_2 = true; 
     debug_2 = false;
   
-    sendData(testData);
+    //sendData(testData);
     
     if (button2State) {
 
@@ -273,17 +278,19 @@ void pushButton() {
 
 
  
-  } else if (value3 > button3LowValue && value3 < button3HighValue && debug_3 == true) {
+  } 
 
+  else if (value3 > button3LowValue && value3 < button3HighValue && debug_3 == true) {
+    Serial.println(value3);
     Serial.print("Push button 3 is pressed. ");
     Serial.println(value3);
-    String("Push button 3 is pressed").toCharArray(testData, 50);
+    // String("Push button 3 is pressed").toCharArray(testData, 50);
 
     timer_debug_3 = true;
 
     debug_3 = false;
    
-     sendData(testData);
+    // sendData(testData);
     
     if (button3State) {
 
@@ -313,17 +320,18 @@ void pushButton() {
 
 
   
-  } else if (value3 > button4LowValue && value3 < button4HighValue && debug_4 == true) {
-
+  } 
+  else if (value3 > button4LowValue && value3 < button4HighValue && debug_4 == true) {
+    Serial.println(value3);
     Serial.print("Push button 4 is pressed. ");
     Serial.println(value3);
-    String("Push button 4 is pressed").toCharArray(testData, 50);
+    // String("Push button 4 is pressed").toCharArray(testData, 50);
 
     timer_debug_4 = true;
 
     debug_4 = false;
 
-    sendData(testData);
+    // sendData(testData);
     
     if (button4State) {
 
@@ -355,6 +363,8 @@ void pushButton() {
 
 
   }
+  
+
   if ( (currentTime - previousButton1Time > interval ) && timer_debug_1 == true) {
 
     Serial.println("Time over & Flag 1 is true");
@@ -379,6 +389,7 @@ void pushButton() {
     Serial.println(previousButton2Time);
     #endif
   }
+  
   if ( (currentTime - previousButton3Time > interval ) && timer_debug_3 == true) {
 
     Serial.println("Time over & Flag 3 is true");
@@ -391,6 +402,7 @@ void pushButton() {
     Serial.println(previousButton3Time);
     #endif
   }
+  
   if ( (currentTime - previousButton4Time > interval ) && timer_debug_4 == true) {
 
     Serial.println("Time over & Flag 4 is true");
@@ -413,7 +425,7 @@ void sendData(char message[]) {
     Serial.println(F("Packet sent....."));
   }
   else {
-//    Serial.println(F("Packet not sent....."));
+    Serial.println(F("Packet not sent....."));
   }
 }
 
@@ -487,3 +499,5 @@ void loraSetup() {
   Serial.println(F("SX1278 configured finished"));
   Serial.println();
 }
+
+
