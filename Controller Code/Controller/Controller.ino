@@ -133,7 +133,7 @@ void setup() {
   // BLOCK 4
   tft.fillRect(rect1x, rect4y, recwidth, recheight, YELLOW);
 
-  //Location in display (Max 4 location)
+  //Location Names in display (Max 4 location)
   //Location name can be  changed according to location preference.
   //Location -1: GEC
   tft.setCursor(60, 40);
@@ -192,12 +192,13 @@ void pushButton() {
    int button1HighValue = 500;
    int button2HighValue = 500;
    int button3HighValue = 1000;
-   int button3LowValue =  500;
-   int button4LowValue = 150;
    int button4HighValue = 450;
 
+   int button3LowValue =  500;
+   int button4LowValue = 150;
+   
 
-  if ( value1 == false && debug_1 == true) {
+  if (value1 == false && debug_1 == true) {
     Serial.print("Push button 1 is pressed. ");
     Serial.println(value1);
     //String("Push button 1 is pressed").toCharArray(testData, 50);
@@ -420,11 +421,15 @@ void pushButton() {
 }
 
 void sendData(char message[]) {
-  if (!sx1278.sendPacketTimeout(0, message))
+  int state;
+  state = sx1278.sendPacketTimeoutACK(2, message);
+  if (state == 0)
   {
+    Serial.println(F("State = 0 --> Command Executed w no errors!"));
     Serial.println(F("Packet sent....."));
   }
   else {
+    Serial.println(state);
     Serial.println(F("Packet not sent....."));
   }
 }
