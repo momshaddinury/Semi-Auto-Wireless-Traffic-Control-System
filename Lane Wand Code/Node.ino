@@ -1,199 +1,230 @@
-#include <ESP8266WiFi.h>
-#include <PubSubClient.h>
-#include <Adafruit_NeoPixel.h>
+/*
+  Project Name : Lora Traffic Control System
+  Developers : Towqir Ahmed Shaem , Momshad Dinury
+  Email : towqirahmedshaem@gmail.com, md.dinury@gmail.com
+  Company : Stellar Technology, Bangladesh
 
-//NeoPixel LED Strip:
-#define PIN 15
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(12, PIN, NEO_GRB + NEO_KHZ800);
+*/
 
-//Network details:(Editable per Network request)
-const char* ssid = "STELLAR";
-const char* password = "stellarBD";
-const char* mqtt_server = "www.stellarbd.com";
+#include <SX1278.h>
+#include <SPI.h>
+#include <Ticker.h>
 
-WiFiClient LC_espClient;
-PubSubClient client(LC_espClient);
-long lastMsg = 0;
-char msg[50];
-int value = 0;
+//LED:
+#define LED 4
+boolean LEDstate = true;
+Ticker flipper;
+
+//Lora SX1278:
+#define LORA_MODE             1
+#define LORA_CHANNEL          CH_6_BW_125
+#define LORA_CHANNEL_2        CH_7_BW_125
+#define LORA_ADDRESS          3
+#define LORA_SEND_TO_ADDRESS  5
+
+uint8_t ControllerAddress = 5;
+
+boolean FreChCondition = true;
+
+
+char my_packet[50];
+char testData[50];//Transmits data to Gateway
+int state;
+
+//Pindef:
+#define tb 2 //tb = trasnmit button
+boolean tirgger = false;
 
 void setup() {
 
   Serial.begin(115200);
   delay(10);
   Serial.println("Initialized..");
-  pinMode(PIN, OUTPUT);
-  setup_wifi();
-  client.setServer(mqtt_server, 1883);
-  client.setCallback(callback);
+  pinMode(0, OUTPUT);
+  digitalWrite(0, LOW);
 
-  //LED strip:
-  strip.begin();
-  strip.show();
+  pinMode(LED, OUTPUT);
+  pinMode(tb, INPUT);
+  loraSetup();
+  attachInterrupt(digitalPinToInterrupt(tb), ISR, FALLING);
 }
 
 void loop() {
 
-  if (!client.connected()) {
-    reconnect();
+  recieveData();
+
+  if(tirgger){
+      tirgger = false;
+      Process();
   }
-  client.loop();
+
+
 }
 
-void setup_wifi() {
+void Process() {
+      delay(200);
+      String("K").toCharArray(testData, 50);
+      sendData(testData);
 
-  delay(10);
+      if(state != 0) {
+        Serial.println("Trying again..");
+        sendData(testData);
+      }
+
+      if (state == 0){
+        flipper.detach();
+        digitalWrite(LED, HIGH);
+        FreChCondition = true;
+        loraFreqChChange();
+      }
+}
+
+void ISR(){
+  tirgger = true;
+}
+
+void Blinking() {
+
+  if(LEDstate){
+    digitalWrite(LED, HIGH);
+    LEDstate = false;
+  }else if(!LEDstate){
+    digitalWrite(LED, LOW);
+    LEDstate = true;
+  }
+
+}
+
+int sendData(char message[]) {
+  
+  state = sx1278.sendPacketTimeoutACK(ControllerAddress, message);
+  if (state == 0)
+  {
+    Serial.println(F("State = 0 --> Command Executed w no errors!"));
+    Serial.println(F("Packet sent....."));
+
+    return state;
+  }
+  else {
+    Serial.println(state);
+    Serial.println(F("Packet not sent....."));
+
+    return state;
+  }
+}
+
+
+void recieveData() {
+
+  int  z = sx1278.receivePacketTimeoutACK();
+  if (z == 0) {
+    delay(10);
+    Serial.println(F("Package received!"));
+
+    for (unsigned int i = 0; i < sx1278.packet_received.length; i++) {
+      my_packet[i] = (char)sx1278.packet_received.data[i];
+      yield();
+    }
+    Serial.print(F("Message:  "));
+    setLedState();
+
+    Serial.println(my_packet);
+
+    FreChCondition = false;
+    loraFreqChChange();
+  }
+}
+
+void setLedState() {
+  if (my_packet[0] == 'G') {
+    digitalWrite(LED, HIGH);
+    flipper.attach(0.5, Blinking);
+  } else if (my_packet[0] == 'R') {
+    digitalWrite(LED, LOW);
+  }
+}
+
+void loraSetup() {
+  // Power ON the module:
+  if (sx1278.ON() == 0) {
+    Serial.println(F("Setting power ON: SUCCESS "));
+  } else {
+    Serial.println(F("Setting power ON: ERROR "));
+  }
+
+  // Set transmission mode and print the result:
+  if (sx1278.setMode(LORA_MODE) == 0) {
+    Serial.println(F("Setting Mode: SUCCESS "));
+  } else {
+    Serial.println(F("Setting Mode: ERROR "));
+  }
+
+  // Set header:
+  if (sx1278.setHeaderON() == 0) {
+    Serial.println(F("Setting Header ON: SUCCESS "));
+  } else {
+    Serial.println(F("Setting Header ON: ERROR "));
+  }
+
+  // Select frequency channel:
+  if (sx1278.setChannel(LORA_CHANNEL) == 0) {
+    Serial.println(F("Setting Channel: SUCCESS "));
+  } else {
+    Serial.println(F("Setting Channel: ERROR "));
+  }
+
+  // Set CRC:
+  if (sx1278.setCRC_ON() == 0) {
+    Serial.println(F("Setting CRC ON: SUCCESS "));
+  } else {
+    Serial.println(F("Setting CRC ON: ERROR "));
+  }
+
+  // Select output power (Max, High, Intermediate or Low)
+  if (sx1278.setPower('M') == 0) {
+    Serial.println(F("Setting Power: SUCCESS "));
+  } else {
+    Serial.println(F("Setting Power: ERROR "));
+  }
+
+  // Set the node address and print the result
+  if (sx1278.setNodeAddress(LORA_ADDRESS) == 0) {
+    Serial.println(F("Setting node address: SUCCESS "));
+  } else {
+    Serial.println(F("Setting node address: ERROR "));
+  }
+
+  // Print a success
+  Serial.println(F("SX1278 configured finished"));
   Serial.println();
-  Serial.print("Connecting to ");
-  Serial.println(ssid);
 
-  WiFi.begin(ssid, password);
 
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
-
-  Serial.println("");
-  Serial.println("WiFi connected");
-  Serial.println("IP address: ");
-  Serial.println(WiFi.localIP());
 }
 
-void callback(char* topic, byte* payload, unsigned int length) {
-  Serial.print("Message arrived [");
-  Serial.print(topic);
-  Serial.print("] ");
-  for (int i = 0; i < length; i++) {
-    Serial.print((char)payload[i]);
-  }
-  Serial.println();
+void loraFreqChChange () {
 
-  ////////////////////////////////////////////////////////////
-  //  colorWipe(strip.Color(0, 0, 0, 255), 50); // White RGBW
-  //  theaterChase(strip.Color(127, 0, 0), 50); // Red
-  //  theaterChase(strip.Color(0, 0, 127), 50); // Blue
-  //  theaterChase(strip.Color(127, 127, 127), 50); // White
-  //  theaterChaseRainbow(50);
-  //  rainbowCycle(20);
-  //  rainbow(20);
-  ////////////////////////////////////////////////////////////
+  if( FreChCondition ) {
 
-  if ((char)payload[0] == '1') {
-    colorWipe(strip.Color(0, 255, 0), 50); // Green
-  } else if ((char)payload[0] == '2') {
-    colorWipe(strip.Color(255, 0, 0), 50); // Red
-  } else if ((char)payload[0] == '3') {
-    colorWipe(strip.Color(255, 100, 0), 50); // Yellow
-  }
-}
-
-void reconnect() {
-  // Loop until we're reconnected
-  while (!client.connected()) {
-    Serial.print("Attempting MQTT connection...");
-    // Attempt to connect
-    if (client.connect("LC_espClient")) {
-      Serial.println("Connected");
-      // Once connected, publish an announcement...
-      client.publish("dashboard", "Lane Controller Connection Established!");
-      // ... and resubscribe
-      client.subscribe("lanes");
+    // Select frequency channel 6:
+    if (sx1278.setChannel(LORA_CHANNEL) == 0) {
+      Serial.println(F("Setting Channel: SUCCESS "));
     } else {
-      Serial.print("failed, rc=");
-      Serial.print(client.state());
-      Serial.println(" try again in 5 seconds");
-      // Wait 5 seconds before retrying
-      delay(5000);
+      Serial.println(F("Setting Channel: ERROR "));
     }
-  }
-}
 
-//////////////////////////////////////////////////////////////////
-/////////////////////////////LEDSTRIP/////////////////////////////
-//////////////////////////////////////////////////////////////////
+  } else if (!FreChCondition ) {
 
-// Fill the dots one after the other with a color
-void colorWipe(uint32_t c, uint8_t wait) {
-  for (uint16_t i = 0; i < strip.numPixels(); i++) {
-    strip.setPixelColor(i, c);
-    strip.show();
-    delay(wait);
-  }
-}
-
-void rainbow(uint8_t wait) {
-  uint16_t i, j;
-
-  for (j = 0; j < 256; j++) {
-    for (i = 0; i < strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel((i + j) & 255));
+    // Select frequency channel 7:
+    if (sx1278.setChannel(LORA_CHANNEL_2) == 0) {
+      Serial.println(F("Setting Channel: SUCCESS "));
+    } else {
+      Serial.println(F("Setting Channel: ERROR "));
     }
-    strip.show();
-    delay(wait);
+
   }
+
 }
 
-// Slightly different, this makes the rainbow equally distributed throughout
-void rainbowCycle(uint8_t wait) {
-  uint16_t i, j;
-  for (j = 0; j < 256 * 5; j++) { // 5 cycles of all colors on wheel
-    for (i = 0; i < strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
-    }
-    strip.show();
-    delay(wait);
-  }
-}
 
-//Theatre-style crawling lights.
-void theaterChase(uint32_t c, uint8_t wait) {
-  for (int j = 0; j < 10; j++) { //do 10 cycles of chasing
-    for (int q = 0; q < 3; q++) {
-      for (uint16_t i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, c);  //turn every third pixel on
-      }
-      strip.show();
 
-      delay(wait);
-
-      for (uint16_t i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, 0);      //turn every third pixel off
-      }
-    }
-  }
-}
-
-//Theatre-style crawling lights with rainbow effect
-void theaterChaseRainbow(uint8_t wait) {
-  for (int j = 0; j < 256; j++) {   // cycle all 256 colors in the wheel
-    for (int q = 0; q < 3; q++) {
-      for (uint16_t i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, Wheel( (i + j) % 255)); //turn every third pixel on
-      }
-      strip.show();
-
-      delay(wait);
-
-      for (uint16_t i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, 0);      //turn every third pixel off
-      }
-    }
-  }
-}
-
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos) {
-  WheelPos = 255 - WheelPos;
-  if (WheelPos < 85) {
-    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
-  }
-  if (WheelPos < 170) {
-    WheelPos -= 85;
-    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
-  }
-  WheelPos -= 170;
-  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
-}
 
