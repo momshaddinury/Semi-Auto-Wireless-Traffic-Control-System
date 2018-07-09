@@ -1,40 +1,120 @@
+//Library for Ticker
+#include <Ticker.h>
 #include <SX1278.h>
-#include <SPI.h>
-#include <Adafruit_NeoPixel.h>
-
-//NeoPixel LED Strip:
-#define PIN 3
-Adafruit_NeoPixel strip = Adafruit_NeoPixel(12, PIN, NEO_GRB + NEO_KHZ800);
 
 //Lora SX1278:
 #define LORA_MODE             10
 #define LORA_CHANNEL          CH_6_BW_125
-#define LORA_ADDRESS          2
-#define LORA_SEND_TO_ADDRESS  4
+#define LORA_ADDRESS          3
+uint8_t ControllerAddress = 5;
 
+//Message var:
 char my_packet [50];
-char testData[50];//Transmits data to Gateway
+char testData[50];
+
+//Pin Def:
+int ButtonPIN = 2;
+int LED = 4;
+int GreenLED = 5;
+// int NewButton = 4;
+
+//Flag:
+boolean T_ISR_F = false;
+int T_packet_state;
+int R_packet_state;
+boolean FunctionBlockingFlag = true;
+
+//Debouncing timer
+long debouncing_time = 3000;
+volatile unsigned long last_micros;
 
 void setup() {
+  Serial.begin(9600);
 
-  Serial.begin(115200);
-  delay(10);
-  Serial.println("Initialized..");
-  pinMode(PIN, OUTPUT);
+  //Lora init:
   loraSetup();
-  //LED strip:
-  strip.begin();
-  strip.show();
+
+  //Pin config:
+  pinMode(LED, OUTPUT);
+  pinMode(0, OUTPUT);
+  pinMode(GreenLED, OUTPUT);
+  digitalWrite(GreenLED, LOW);
+  // pinMode(GreenLED, mode);
+  digitalWrite(0, LOW);
+  pinMode(ButtonPIN, INPUT);
+  //Interrupt:
+  attachInterrupt(digitalPinToInterrupt(ButtonPIN), Trigger_ISR, FALLING);
 }
 
 void loop() {
   recieveData();
+  delay(1000);
+  // Serial.println(digitalRead(ButtonPIN));
+
+  if (T_ISR_F && !FunctionBlockingFlag) {
+    String("K").toCharArray(testData, 50);
+    sendData(testData);
+    delay(1000);
+    //FailSafe:
+    sendDataFailSafe();
+  }
 }
 
-void recieveData() {
+void Trigger_ISR() {
+  if ((long)(micros() - last_micros) >= debouncing_time * 1000) {
+    T_ISR_F = true;
+    last_micros = micros();
+  } else {
+    Serial.println("Bounce");
+  }
+}
 
-  int  z = sx1278.receivePacketTimeoutACK(5000);
-  if (z == 0) {
+int sendData(char message[]) {
+  T_packet_state = sx1278.sendPacketTimeoutACK(ControllerAddress, message);
+
+  if (T_packet_state == 0)
+  {
+    //Serial.println(F("State = 0 --> Command Executed w no errors!"));
+    Serial.println(F("Confirmation Packet sent....."));
+    return FunctionBlockingFlag = true, T_ISR_F = false;;
+  }
+
+  else if (T_packet_state != 0) {
+
+    if(T_packet_state == 9) {
+      Serial.print(F("Packet not sent....."));
+      Serial.println(T_packet_state);
+      return T_packet_state;
+    } 
+    else if ( T_packet_state == 5 || T_packet_state == 4) {
+      Serial.println("Controller is trying to send data!");
+      Serial.println("Shifting to Receving mode");
+      return FunctionBlockingFlag = true;
+    }
+    
+  }
+}
+
+int sendDataFailSafe() {
+  if ( T_packet_state == 9) {
+    sendData(testData);
+    delay(1000);
+    if ( T_packet_state == 9) {
+      loraSetupFT();
+      delay(10);
+      sendData(testData);
+      delay(1000);
+    }
+  } else if (T_packet_state != 9) {
+      recieveData();
+      delay(500);
+  }
+}
+
+int recieveData() {
+  R_packet_state = sx1278.receivePacketTimeoutACK();
+
+  if (R_packet_state == 0) {
     delay(10);
     Serial.println(F("Package received!"));
 
@@ -43,23 +123,29 @@ void recieveData() {
       yield();
     }
     Serial.print(F("Message:  "));
-    setColor();
-
     Serial.println(my_packet);
+
+    Process();
+
+    return FunctionBlockingFlag = false;
   }
 }
 
-void setColor() {
+
+void Process() {
   if (my_packet[0] == 'G') {
-    colorWipe(strip.Color(0, 255, 0), 50); // Green
+    digitalWrite(LED, HIGH);
+    digitalWrite(GreenLED, LOW);
   } else if (my_packet[0] == 'R') {
-    colorWipe(strip.Color(255, 0, 0), 50); // Red
-  } else if (my_packet[0] == 'Y') {
-    colorWipe(strip.Color(255, 100, 0), 50); // Yellow
+    digitalWrite(LED, LOW);
+    digitalWrite(GreenLED, HIGH);
+  } else if (my_packet[0] == 'S') {
+    ESP.restart();
   }
 }
 
 void loraSetup() {
+  Serial.println("");
   // Power ON the module:
   if (sx1278.ON() == 0) {
     Serial.println(F("Setting power ON: SUCCESS "));
@@ -112,107 +198,46 @@ void loraSetup() {
   // Print a success
   Serial.println(F("SX1278 configured finished"));
   Serial.println();
-
-
 }
 
-
-//////////////////////////////////////////////////////////////////
-/////////////////////////////LEDSTRIP/////////////////////////////
-//////////////////////////////////////////////////////////////////
-
-////////////////////////////////////////////////////////////
-//  colorWipe(strip.Color(0, 0, 0, 255), 50); // White RGBW
-//  theaterChase(strip.Color(127, 0, 0), 50); // Red
-//  theaterChase(strip.Color(0, 0, 127), 50); // Blue
-//  theaterChase(strip.Color(127, 127, 127), 50); // White
-//  theaterChaseRainbow(50);
-//  rainbowCycle(20);
-//  rainbow(20);
-////////////////////////////////////////////////////////////
-
-
-// Fill the dots one after the other with a color
-void colorWipe(uint32_t c, uint8_t wait) {
-  for (uint16_t i = 0; i < strip.numPixels(); i++) {
-    strip.setPixelColor(i, c);
-    strip.show();
-    delay(wait);
+void loraSetupFT () {
+  // Power ON the module:
+  if (sx1278.ON() == 0) {
+  } else {
   }
-}
 
-void rainbow(uint8_t wait) {
-  uint16_t i, j;
-
-  for (j = 0; j < 256; j++) {
-    for (i = 0; i < strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel((i + j) & 255));
-    }
-    strip.show();
-    delay(wait);
+  // Set transmission mode and print the result:
+  if (sx1278.setMode(LORA_MODE) == 0) {
+  } else {
   }
-}
 
-// Slightly different, this makes the rainbow equally distributed throughout
-void rainbowCycle(uint8_t wait) {
-  uint16_t i, j;
-  for (j = 0; j < 256 * 5; j++) { // 5 cycles of all colors on wheel
-    for (i = 0; i < strip.numPixels(); i++) {
-      strip.setPixelColor(i, Wheel(((i * 256 / strip.numPixels()) + j) & 255));
-    }
-    strip.show();
-    delay(wait);
+  // Set header:
+  if (sx1278.setHeaderON() == 0) {
+  } else {
   }
-}
 
-//Theatre-style crawling lights.
-void theaterChase(uint32_t c, uint8_t wait) {
-  for (int j = 0; j < 10; j++) { //do 10 cycles of chasing
-    for (int q = 0; q < 3; q++) {
-      for (uint16_t i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, c);  //turn every third pixel on
-      }
-      strip.show();
-
-      delay(wait);
-
-      for (uint16_t i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, 0);      //turn every third pixel off
-      }
-    }
+  // Select frequency channel:
+  if (sx1278.setChannel(LORA_CHANNEL) == 0) {
+  } else {
   }
-}
 
-//Theatre-style crawling lights with rainbow effect
-void theaterChaseRainbow(uint8_t wait) {
-  for (int j = 0; j < 256; j++) {   // cycle all 256 colors in the wheel
-    for (int q = 0; q < 3; q++) {
-      for (uint16_t i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, Wheel( (i + j) % 255)); //turn every third pixel on
-      }
-      strip.show();
-
-      delay(wait);
-
-      for (uint16_t i = 0; i < strip.numPixels(); i = i + 3) {
-        strip.setPixelColor(i + q, 0);      //turn every third pixel off
-      }
-    }
+  // Set CRC:
+  if (sx1278.setCRC_ON() == 0) {
+  } else {
   }
-}
 
-// Input a value 0 to 255 to get a color value.
-// The colours are a transition r - g - b - back to r.
-uint32_t Wheel(byte WheelPos) {
-  WheelPos = 255 - WheelPos;
-  if (WheelPos < 85) {
-    return strip.Color(255 - WheelPos * 3, 0, WheelPos * 3);
+  // Select output power (Max, High, Intermediate or Low)
+  if (sx1278.setPower('M') == 0) {
+  } else {
   }
-  if (WheelPos < 170) {
-    WheelPos -= 85;
-    return strip.Color(0, WheelPos * 3, 255 - WheelPos * 3);
+
+  // Set the node address and print the result
+  if (sx1278.setNodeAddress(LORA_ADDRESS) == 0) {
+  } else {
   }
-  WheelPos -= 170;
-  return strip.Color(WheelPos * 3, 255 - WheelPos * 3, 0);
+
+  // Print a success
+  Serial.println(F("SX1278 RE-CONFIGURED FINISHED"));
+  Serial.println();
 }
 

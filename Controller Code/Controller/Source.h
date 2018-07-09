@@ -1,23 +1,20 @@
-/*
-  Project Name : Lora Traffic Control System
-  Developers : Towqir Ahmed Shaem , Momshad Dinury
-  Email : towqirahmedshaem@gmail.com, md.dinury@gmail.com
-  Company : Stellar Technology, Bangladesh
-*/
-
 //Including Library:
+#include <Arduino.h>
 #include <SX1278.h>
-#include <SPI.h>
 
 // Including Library for 1.8 TFT DispLay
 #include <Adafruit_GFX.h>
-#include "SPI.h"
-#include "Adafruit_ST7735.h"
+#include <Adafruit_ST7735.h>
+
+//Library for Ticker
+#include <Ticker.h>
 
 //// TFT Display Pin For Arduino
-#define TFT_CS  5
+#define TFT_CS  5 //10
 #define TFT_RST 17
 #define TFT_DC  0
+// #define TFT_SCLK 14
+// #define TFT_MOSI 13
 
 // Color Code For Tft Display
 #define BLACK   0x0000
@@ -29,7 +26,7 @@
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
 
-// Variable For Display
+// Variable For TFT Display
 int rect1x = 5;
 int rect1y = 35;
 int rect2y = 57;
@@ -44,51 +41,49 @@ Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 //Lora SX1278:
 #define LORA_MODE             10
 #define LORA_CHANNEL          CH_6_BW_125
-#define LORA_ADDRESS          4
-#define LORA_SEND_TO_ADDRESS  2
+#define LORA_ADDRESS          5
+uint8_t NodeAddress = 3;
 
 char my_packet [50];
 char testData[50];
 
-//Pin def
-#define pushbutton A0
-#define button1 2
-#define button2 16
+int T_packet_state;
+int R_packet_state;
 
+//Pin def;
+#define interruptButton 2
+#define digitalButton 16
+#define analogButton A0
+//Analog button value storing variable:
+int AB_value;
+//Locations:
+String Location;
+String Location_1 = "GEC";
+String Location_2 = "BAIZID";
+String Location_3 = "MURADPUR";
+String Location_4 = "PROBARTAK";
+boolean blockStateColor;
+// boolean blockStateColor2;
+Ticker Location1, Location2, Location3, Location4;
 
-// DEBUG
-boolean debug_1  = true;
-boolean debug_2  = true;
-boolean debug_3  = true;
-boolean debug_4  = true;
-
-// TIMER DEBUG FLAG:
-boolean timer_debug_1 = false;
-boolean timer_debug_2 = false;
-boolean timer_debug_3 = false;
-boolean timer_debug_4 = false;
-
+boolean locationBlock_1 = true;
+boolean locationBlock_2 = true;
+boolean locationBlock_3 = true;
+boolean locationBlock_4 = true;
 // Button State
 boolean button1State = true;
 boolean button2State = true;
 boolean button3State = true;
 boolean button4State = true;
+//Flags, Var for interrupt:
+boolean B_ISR_F_F = false;
+boolean B_F_B_F = true;
+//Sync:
+boolean resetCondition = true;
+boolean resetStop;
+//Timer:
+long interval = 2000;
+volatile unsigned long DB_priv_time;
+volatile unsigned long AB_priv_time_3;
+volatile unsigned long AB_priv_time_4;
 
-int value3,value4;
-boolean value1,value2;
-
-
-
-// Defining Timing Variable
-int interval = 800;
-
-long int currentTime ;
-
-
-long int previousButton1Time ;
-long int previousButton2Time ;
-long int previousButton3Time ;
-long int previousButton4Time ;
-
-
-//#define debug false
