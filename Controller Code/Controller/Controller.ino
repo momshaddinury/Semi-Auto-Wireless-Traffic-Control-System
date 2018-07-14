@@ -1,4 +1,92 @@
-#include <Source.h>
+//Including Library:
+#include <Arduino.h>
+#include <SX1278.h>
+
+// Including Library for 1.8 TFT DispLay
+#include <Adafruit_GFX.h>
+#include <Adafruit_ST7735.h>
+
+//Library for Ticker
+#include <Ticker.h>
+
+//// TFT Display Pin For Arduino
+//New PCB
+#define TFT_CS                            10
+#define TFT_RST                           16
+#define TFT_DC                            0
+#define TFT_SCLK                          14
+#define TFT_MOSI                          13
+
+// Color Code For Tft Display
+#define BLACK   0x0000
+#define BLUE    0x001F
+#define RED     0xF800
+#define GREEN   0x07E0
+#define CYAN    0x07FF
+#define MAGENTA 0xF81F
+#define YELLOW  0xFFE0
+#define WHITE   0xFFFF
+
+// Variable For TFT Display
+int rect1x = 5;
+int rect1y = 35;
+int rect2y = 57;
+int rect3y = 79;
+int rect4y = 101;
+int recwidth = 150;
+int recheight = 20;
+
+// Creating Object of TFT Display
+Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
+
+//Lora SX1278:
+#define LORA_MODE             10
+#define LORA_CHANNEL          CH_6_BW_125
+#define LORA_ADDRESS          5
+uint8_t NodeAddress = 3;
+
+char my_packet [50];
+char testData[50];
+
+int T_packet_state;
+int R_packet_state;
+
+//Pin def:
+#define interruptButton 2
+#define digitalButton 16
+#define analogButton A0
+//Analog button value storing variable:
+int AB_value;
+//Locations:
+String Location;
+String Location_1 = "GEC";
+String Location_2 = "BAIZID";
+String Location_3 = "MURADPUR";
+String Location_4 = "PROBARTAK";
+boolean blockStateColor;
+// boolean blockStateColor2;
+Ticker Location1, Location2, Location3, Location4;
+
+boolean locationBlock_1 = true;
+boolean locationBlock_2 = true;
+boolean locationBlock_3 = true;
+boolean locationBlock_4 = true;
+// Button State
+boolean button1State = true;
+boolean button2State = true;
+boolean button3State = true;
+boolean button4State = true;
+//Flags, Var for interrupt:
+boolean B_ISR_F_F = false;
+boolean B_F_B_F = true;
+//Sync:
+boolean resetCondition = true;
+boolean resetStop;
+//Timer:
+long interval = 2000;
+volatile unsigned long DB_priv_time;
+volatile unsigned long AB_priv_time_3;
+volatile unsigned long AB_priv_time_4;
 
 void setup() {
   Serial.begin(9600);
@@ -95,12 +183,16 @@ void InteruptPinAction() {
   }
 }
 
+//States what happens when digital button is pressed
 void digitalButtonAction() {
   if(digitalRead(digitalButton) == LOW) {
     if((long(millis()) - DB_priv_time) >= interval) {
+
       Serial.println("Push Button 2 is Pressed!");
       Location = Location_2;
+
       if(button2State) {
+
         String("G").toCharArray(testData, 50);
         sendData(testData);
         delay(1000);
@@ -134,13 +226,15 @@ void digitalButtonAction() {
     }
   }
 }
-
+//States what happens when analog button is pressed
 void analogButtonAction() {
   //For Button 3:
   if( AB_value > 400) {
     if((long(millis()) - AB_priv_time_3) >= interval) {
+
       Serial.println("Button 3 is Pressed!");
       Location = Location_3;
+
       if(button3State) {
         String("G").toCharArray(testData, 50);
         sendData(testData);
@@ -176,8 +270,10 @@ void analogButtonAction() {
     //For button 4
   } else if (AB_value > 40 && AB_value <300) {
     if((long(millis()) - AB_priv_time_4) >= interval) {
+
       Serial.println("Button 4 is Pressed");
       Location = Location_4;
+
       if(button4State) {
         String("G").toCharArray(testData, 50);
         sendData(testData);
@@ -212,7 +308,7 @@ void analogButtonAction() {
     }
   }
 }
-
+//Global send data function
 int sendData(char message[]) {
   T_packet_state = sx1278.sendPacketTimeoutACK(NodeAddress, message);
   if (T_packet_state == 0)
@@ -230,7 +326,7 @@ int sendData(char message[]) {
     return T_packet_state;
   }
 }
-
+//
 int sendDataFailSafe() {
   if ( T_packet_state != 0) {
     sendData(testData);
@@ -263,9 +359,9 @@ int recieveData() {
 }
 
 void Blink_Location_Rect() {
-  //This is for the first Location
+  //This is for the FIRST Location
   if (Location == Location_1) {
-
+    //Green Block Blink: 
     if (blockStateColor) {
 
       if (locationBlock_1) {
@@ -288,7 +384,9 @@ void Blink_Location_Rect() {
         locationBlock_1 = true;
 
       }
-    } else if (!blockStateColor) {
+    } 
+    //Red Block Blink:
+    else if (!blockStateColor) {
 
       if (locationBlock_1) {
 
@@ -312,9 +410,9 @@ void Blink_Location_Rect() {
       }
     }
   }
-  //This is for the second Location
+  //This is for the SECOND Location
   else if (Location == Location_2) {
-
+    //Green Block Blink
     if (blockStateColor) {
 
       if (locationBlock_2) {
@@ -337,7 +435,9 @@ void Blink_Location_Rect() {
         locationBlock_2 = true;
 
       }
-    } else if (!blockStateColor) {
+    } 
+    //Red Block Blink
+    else if (!blockStateColor) {
 
       if (locationBlock_2) {
 
@@ -361,9 +461,9 @@ void Blink_Location_Rect() {
       }
     }
   }
-  //This is for the third Location
+  //This is for the THIRD Location
   else if (Location == Location_3) {
-
+    //Green Block Blink
     if (blockStateColor) {
 
       if (locationBlock_3) {
@@ -386,7 +486,9 @@ void Blink_Location_Rect() {
         locationBlock_3 = true;
 
       }
-    } else if (!blockStateColor) {
+    } 
+    //Red Block Blink
+    else if (!blockStateColor) {
 
       if (locationBlock_3) {
 
@@ -410,9 +512,9 @@ void Blink_Location_Rect() {
       }
     }
   }
-  //This is for the fourth Location
+  //This is for the FOURTH Location
   else if (Location == Location_4) {
-
+    //Green Block Blink
     if (blockStateColor) {
 
       if (locationBlock_4) {
@@ -435,7 +537,9 @@ void Blink_Location_Rect() {
         locationBlock_4 = true;
 
       }
-    } else if (!blockStateColor) {
+    } 
+    //Red Block Blink
+    else if (!blockStateColor) {
 
       if (locationBlock_4) {
 
@@ -462,7 +566,7 @@ void Blink_Location_Rect() {
 }
 
 void Setting_Block_State_Color() {
-
+  //Sets the block state for FIRST Location
   if(Location == Location_1 ) {
     if (my_packet[0] == 'K') {
       if (blockStateColor) {
@@ -482,6 +586,7 @@ void Setting_Block_State_Color() {
       }
     }
   } 
+  //Sets the block state for SECOND location
   else if (Location == Location_2) {
     if (my_packet[0] == 'K') {
       if (blockStateColor) {
@@ -501,6 +606,7 @@ void Setting_Block_State_Color() {
       }
     }
   }
+  //Sets the block state for THIRD location
   else if (Location == Location_3) {
     if (my_packet[0] == 'K') {
       if (blockStateColor) {
@@ -520,6 +626,7 @@ void Setting_Block_State_Color() {
       }
     }
   }
+  //Sets the block state for FOURTH location
   else if (Location == Location_4) {
     if (my_packet[0] == 'K') {
       if (blockStateColor) {
@@ -600,51 +707,37 @@ void loraSetup() {
 void loraSetupFT () {
   // Power ON the module:
   if (sx1278.ON() == 0) {
-    // Serial.println(F("Setting power ON: SUCCESS "));
   } else {
-    // Serial.println(F("Setting power ON: ERROR "));
   }
 
   // Set transmission mode and print the result:
   if (sx1278.setMode(LORA_MODE) == 0) {
-    // Serial.println(F("Setting Mode: SUCCESS "));
   } else {
-    // Serial.println(F("Setting Mode: ERROR "));
   }
 
   // Set header:
   if (sx1278.setHeaderON() == 0) {
-    // Serial.println(F("Setting Header ON: SUCCESS "));
   } else {
-    // Serial.println(F("Setting Header ON: ERROR "));
   }
 
   // Select frequency channel:
   if (sx1278.setChannel(LORA_CHANNEL) == 0) {
-    // Serial.println(F("Setting Channel: SUCCESS "));
   } else {
-    // Serial.println(F("Setting Channel: ERROR "));
   }
 
   // Set CRC:
   if (sx1278.setCRC_ON() == 0) {
-    // Serial.println(F("Setting CRC ON: SUCCESS "));
   } else {
-    // Serial.println(F("Setting CRC ON: ERROR "));
   }
 
   // Select output power (Max, High, Intermediate or Low)
   if (sx1278.setPower('M') == 0) {
-    // Serial.println(F("Setting Power: SUCCESS "));
   } else {
-    // Serial.println(F("Setting Power: ERROR "));
   }
 
   // Set the node address and print the result
   if (sx1278.setNodeAddress(LORA_ADDRESS) == 0) {
-    // Serial.println(F("Setting node address: SUCCESS "));
   } else {
-    // Serial.println(F("Setting node address: ERROR "));
   }
 
   // Print a success
