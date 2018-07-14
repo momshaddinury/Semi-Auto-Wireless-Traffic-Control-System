@@ -11,6 +11,7 @@ uint8_t ControllerAddress = 5;
 //Message var:
 char my_packet [50];
 char testData[50];
+String receivedMsg;
 
 //Pin Def:
 int ButtonPIN = 2;
@@ -51,8 +52,26 @@ void loop() {
   delay(1000);
   // Serial.println(digitalRead(ButtonPIN));
 
-  if (T_ISR_F && !FunctionBlockingFlag) {
-    String("K").toCharArray(testData, 50);
+  if ( (receivedMsg.equals("GL1") || receivedMsg.equals("RL1")) && T_ISR_F && !FunctionBlockingFlag) {
+    String("KL1").toCharArray(testData, 50);
+    sendData(testData);
+    delay(1000);
+    //FailSafe:
+    sendDataFailSafe();
+  } else if ( (receivedMsg.equals("GL2") || receivedMsg.equals("RL2")) && T_ISR_F && !FunctionBlockingFlag) {
+    String("KL2").toCharArray(testData, 50);
+    sendData(testData);
+    delay(1000);
+    //FailSafe:
+    sendDataFailSafe();
+  } else if ( (receivedMsg.equals("GL3") || receivedMsg.equals("RL3")) && T_ISR_F && !FunctionBlockingFlag) {
+    String("KL3").toCharArray(testData, 50);
+    sendData(testData);
+    delay(1000);
+    //FailSafe:
+    sendDataFailSafe();
+  } else if ( (receivedMsg.equals("GL4") || receivedMsg.equals("RL4")) && T_ISR_F && !FunctionBlockingFlag) {
+    String("KL4").toCharArray(testData, 50);
     sendData(testData);
     delay(1000);
     //FailSafe:
@@ -124,7 +143,7 @@ int recieveData() {
     }
     Serial.print(F("Message:  "));
     Serial.println(my_packet);
-
+    receivedMsg = String(my_packet); //Converts CharArray to String 
     Process();
 
     return FunctionBlockingFlag = false;
@@ -133,13 +152,31 @@ int recieveData() {
 
 
 void Process() {
-  if (my_packet[0] == 'G') {
-    digitalWrite(LED, HIGH);
-    digitalWrite(GreenLED, LOW);
-  } else if (my_packet[0] == 'R') {
-    digitalWrite(LED, LOW);
-    digitalWrite(GreenLED, HIGH);
-  } else if (my_packet[0] == 'S') {
+  if (receivedMsg.equals("GL1")) {
+    digitalWrite(LED, HIGH); //To turn off RED LED
+    digitalWrite(GreenLED, LOW); //To turn on Green LED
+  } else if (receivedMsg.equals("RL1")) {
+    digitalWrite(LED, LOW); //Turns on RED LED
+    digitalWrite(GreenLED, HIGH); //Turns off Green LED
+  } else if (receivedMsg.equals("GL2")) {
+    digitalWrite(LED, HIGH); //To turn off RED LED
+    digitalWrite(GreenLED, LOW); //To turn on Green LED
+  } else if (receivedMsg.equals("RL2")) {
+    digitalWrite(LED, LOW); //Turns on RED LED
+    digitalWrite(GreenLED, HIGH); //Turns off Green LED
+  } else if (receivedMsg.equals("GL3")) {
+    digitalWrite(LED, HIGH); //To turn off RED LED
+    digitalWrite(GreenLED, LOW); //To turn on Green LED
+  } else if (receivedMsg.equals("RL3")) {
+    digitalWrite(LED, LOW); //Turns on RED LED
+    digitalWrite(GreenLED, HIGH); //Turns off Green LED
+  } else if (receivedMsg.equals("GL4")) {
+    digitalWrite(LED, HIGH); //To turn off RED LED
+    digitalWrite(GreenLED, LOW); //To turn on Green LED
+  } else if (receivedMsg.equals("RL4")) {
+    digitalWrite(LED, LOW); //Turns on RED LED
+    digitalWrite(GreenLED, HIGH); //Turns off Green LED
+  } else if (receivedMsg.equals("S")) {
     ESP.restart();
   }
 }

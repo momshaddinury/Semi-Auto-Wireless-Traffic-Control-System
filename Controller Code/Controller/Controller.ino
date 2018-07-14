@@ -47,6 +47,7 @@ uint8_t NodeAddress = 3;
 
 char my_packet [50];
 char testData[50];
+String receivedMsg;
 
 int T_packet_state;
 int R_packet_state;
@@ -138,7 +139,7 @@ void sync() {
 void B1_ISR_F() {
   B_ISR_F_F = true;
 }
-
+//States what happens when interruption is called
 void InteruptPinAction() {
   //For Button 1:
   if (B_ISR_F_F) {
@@ -148,7 +149,7 @@ void InteruptPinAction() {
 
     if (button1State) {
 
-      String("G").toCharArray(testData, 50);
+      String("GL1").toCharArray(testData, 50);
       sendData(testData);
       delay(1000);
       //FailSafe:
@@ -156,7 +157,7 @@ void InteruptPinAction() {
 
       if (T_packet_state == 0) {
         blockStateColor = true;
-        Location1.attach(1, Blink_Location_Rect);
+        Location1.attach(1, Blink_Location_Rect_1);
       }
       if (T_packet_state == 0) {
         button1State = false;
@@ -165,7 +166,7 @@ void InteruptPinAction() {
     }
     else if (!button1State) {
 
-      String("R").toCharArray(testData, 50);
+      String("RL1").toCharArray(testData, 50);
       sendData(testData);
       delay(1000);
       //FailSafe:
@@ -173,7 +174,7 @@ void InteruptPinAction() {
 
       if (T_packet_state == 0) {
         blockStateColor = false;
-        Location1.attach(1, Blink_Location_Rect);
+        Location1.attach(1, Blink_Location_Rect_1);
       }
       if (T_packet_state == 0) {
         button1State = true;
@@ -182,7 +183,6 @@ void InteruptPinAction() {
     }
   }
 }
-
 //States what happens when digital button is pressed
 void digitalButtonAction() {
   if(digitalRead(digitalButton) == LOW) {
@@ -193,7 +193,7 @@ void digitalButtonAction() {
 
       if(button2State) {
 
-        String("G").toCharArray(testData, 50);
+        String("GL2").toCharArray(testData, 50);
         sendData(testData);
         delay(1000);
         //FailSafe:
@@ -201,14 +201,14 @@ void digitalButtonAction() {
 
         if (T_packet_state == 0) {
           blockStateColor = true;
-          Location2.attach(1, Blink_Location_Rect);
+          Location2.attach(0.9, Blink_Location_Rect_2);
         }
         if (T_packet_state == 0) {
           button2State = false;
         }
       } else if (!button2State) {
 
-        String("R").toCharArray(testData, 50);
+        String("RL2").toCharArray(testData, 50);
         sendData(testData);
         delay(1000);
         //FailSafe:
@@ -216,7 +216,7 @@ void digitalButtonAction() {
 
         if (T_packet_state == 0) {
           blockStateColor = false;
-          Location2.attach(1, Blink_Location_Rect);
+          Location2.attach(0.9, Blink_Location_Rect_2);
         }
         if (T_packet_state == 0) {
           button2State = true;
@@ -236,7 +236,7 @@ void analogButtonAction() {
       Location = Location_3;
 
       if(button3State) {
-        String("G").toCharArray(testData, 50);
+        String("GL3").toCharArray(testData, 50);
         sendData(testData);
         delay(1000);
         //FailSafe:
@@ -244,14 +244,14 @@ void analogButtonAction() {
 
         if (T_packet_state == 0) {
           blockStateColor = true;
-          Location3.attach(1, Blink_Location_Rect);
+          Location3.attach(0.8, Blink_Location_Rect_3);
         }
         if (T_packet_state == 0) {
           button3State = false;
         }
       } else if (!button3State) {
 
-        String("R").toCharArray(testData, 50);
+        String("RL3").toCharArray(testData, 50);
         sendData(testData);
         delay(1000);
         //FailSafe:
@@ -259,7 +259,7 @@ void analogButtonAction() {
 
         if (T_packet_state == 0) {
           blockStateColor = false;
-          Location3.attach(1, Blink_Location_Rect);
+          Location3.attach(0.8, Blink_Location_Rect_3);
         }
         if (T_packet_state == 0) {
           button3State = true;
@@ -275,7 +275,7 @@ void analogButtonAction() {
       Location = Location_4;
 
       if(button4State) {
-        String("G").toCharArray(testData, 50);
+        String("GL4").toCharArray(testData, 50);
         sendData(testData);
         delay(1000);
         //FailSafe:
@@ -283,14 +283,14 @@ void analogButtonAction() {
 
         if (T_packet_state == 0) {
           blockStateColor = true;
-          Location4.attach(1, Blink_Location_Rect);
+          Location4.attach(0.7, Blink_Location_Rect_4);
         }
         if (T_packet_state == 0) {
           button4State = false;
         }
       } else if (!button4State) {
 
-        String("R").toCharArray(testData, 50);
+        String("RL4").toCharArray(testData, 50);
         sendData(testData);
         delay(1000);
         //FailSafe:
@@ -298,7 +298,7 @@ void analogButtonAction() {
 
         if (T_packet_state == 0) {
           blockStateColor = false;
-          Location4.attach(1, Blink_Location_Rect);
+          Location4.attach(0.7, Blink_Location_Rect_4);
         }
         if (T_packet_state == 0) {
           button4State = true;
@@ -326,7 +326,7 @@ int sendData(char message[]) {
     return T_packet_state;
   }
 }
-//
+//States what happens when SendDaata() function fails
 int sendDataFailSafe() {
   if ( T_packet_state != 0) {
     sendData(testData);
@@ -339,7 +339,7 @@ int sendDataFailSafe() {
     }
   }
 }
-
+//Global receive data funtion
 int recieveData() {
   R_packet_state = sx1278.receivePacketTimeoutACK();
   if (R_packet_state == 0) {
@@ -353,66 +353,66 @@ int recieveData() {
     Serial.print(F("Message:  "));
     Serial.println(my_packet);
 
+    receivedMsg = String(my_packet);
+
     Setting_Block_State_Color();
     return R_packet_state;
   }
 }
+ //This is for blinking the FIRST Location
+void Blink_Location_Rect_1() {
+  //Green Block Blink: 
+  if (blockStateColor) {
 
-void Blink_Location_Rect() {
-  //This is for the FIRST Location
-  if (Location == Location_1) {
-    //Green Block Blink: 
-    if (blockStateColor) {
+    if (locationBlock_1) {
 
-      if (locationBlock_1) {
+      tft.fillRect(rect1x, rect1y, recwidth, recheight, GREEN);
+      tft.setCursor(60, 40);
+      tft.setTextColor(BLACK);
+      tft.setTextSize(1);
+      tft.print("GEC");
 
-        tft.fillRect(rect1x, rect1y, recwidth, recheight, GREEN);
-        tft.setCursor(60, 40);
-        tft.setTextColor(BLACK);
-        tft.setTextSize(1);
-        tft.print("GEC");
+      locationBlock_1 = false;
 
-        locationBlock_1 = false;
+    } else if (!locationBlock_1) {
+      tft.fillRect(rect1x, rect1y, recwidth, recheight, BLACK);
+      tft.setCursor(60, 40);
+      tft.setTextColor(WHITE);
+      tft.setTextSize(1);
+      tft.print("GEC");
 
-      } else if (!locationBlock_1) {
-        tft.fillRect(rect1x, rect1y, recwidth, recheight, BLACK);
-        tft.setCursor(60, 40);
-        tft.setTextColor(WHITE);
-        tft.setTextSize(1);
-        tft.print("GEC");
+      locationBlock_1 = true;
 
-        locationBlock_1 = true;
+    }
+  } 
+  //Red Block Blink:
+  else if (!blockStateColor) {
 
-      }
-    } 
-    //Red Block Blink:
-    else if (!blockStateColor) {
+    if (locationBlock_1) {
 
-      if (locationBlock_1) {
+      tft.fillRect(rect1x, rect1y, recwidth, recheight, RED);
+      tft.setCursor(60, 40);
+      tft.setTextColor(BLACK);
+      tft.setTextSize(1);
+      tft.print("GEC");
 
-        tft.fillRect(rect1x, rect1y, recwidth, recheight, RED);
-        tft.setCursor(60, 40);
-        tft.setTextColor(BLACK);
-        tft.setTextSize(1);
-        tft.print("GEC");
+      locationBlock_1 = false;
 
-        locationBlock_1 = false;
+    } else if (!locationBlock_1) {
 
-      } else if (!locationBlock_1) {
+      tft.fillRect(rect1x, rect1y, recwidth, recheight, BLACK);
+      tft.setCursor(60, 40);
+      tft.setTextColor(WHITE);
+      tft.setTextSize(1);
+      tft.print("GEC");
 
-        tft.fillRect(rect1x, rect1y, recwidth, recheight, BLACK);
-        tft.setCursor(60, 40);
-        tft.setTextColor(WHITE);
-        tft.setTextSize(1);
-        tft.print("GEC");
-
-        locationBlock_1 = true;
-      }
+      locationBlock_1 = true;
     }
   }
-  //This is for the SECOND Location
-  else if (Location == Location_2) {
-    //Green Block Blink
+}
+//This is for blinking the SECOND Location
+void Blink_Location_Rect_2() {
+  //Green Block Blink
     if (blockStateColor) {
 
       if (locationBlock_2) {
@@ -460,10 +460,10 @@ void Blink_Location_Rect() {
         locationBlock_2 = true;
       }
     }
-  }
-  //This is for the THIRD Location
-  else if (Location == Location_3) {
-    //Green Block Blink
+}
+//This is for blinking the THIRD Location
+void Blink_Location_Rect_3() {
+  //Green Block Blink
     if (blockStateColor) {
 
       if (locationBlock_3) {
@@ -511,10 +511,10 @@ void Blink_Location_Rect() {
         locationBlock_3 = true;
       }
     }
-  }
-  //This is for the FOURTH Location
-  else if (Location == Location_4) {
-    //Green Block Blink
+}
+//This is for blinking the FOURTH Location
+void Blink_Location_Rect_4() {
+  //Green Block Blink
     if (blockStateColor) {
 
       if (locationBlock_4) {
@@ -562,13 +562,12 @@ void Blink_Location_Rect() {
         locationBlock_4 = true;
       }
     }
-  }
 }
 
 void Setting_Block_State_Color() {
   //Sets the block state for FIRST Location
   if(Location == Location_1 ) {
-    if (my_packet[0] == 'K') {
+    if (receivedMsg.equals("KL1")) {
       if (blockStateColor) {
         Location1.detach();
         tft.fillRect(rect1x, rect1y, recwidth, recheight, GREEN);
@@ -588,7 +587,7 @@ void Setting_Block_State_Color() {
   } 
   //Sets the block state for SECOND location
   else if (Location == Location_2) {
-    if (my_packet[0] == 'K') {
+    if (receivedMsg.equals("KL2")) {
       if (blockStateColor) {
         Location2.detach();
         tft.fillRect(rect1x, rect2y, recwidth, recheight, GREEN);
@@ -608,7 +607,7 @@ void Setting_Block_State_Color() {
   }
   //Sets the block state for THIRD location
   else if (Location == Location_3) {
-    if (my_packet[0] == 'K') {
+    if (receivedMsg.equals("KL3")) {
       if (blockStateColor) {
         Location3.detach();
         tft.fillRect(rect1x, rect3y, recwidth, recheight, GREEN);
@@ -628,7 +627,7 @@ void Setting_Block_State_Color() {
   }
   //Sets the block state for FOURTH location
   else if (Location == Location_4) {
-    if (my_packet[0] == 'K') {
+    if (receivedMsg.equals("KL4")) {
       if (blockStateColor) {
         Location4.detach();
         tft.fillRect(rect1x, rect4y, recwidth, recheight, GREEN);
