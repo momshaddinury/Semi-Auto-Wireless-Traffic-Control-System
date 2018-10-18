@@ -1,0 +1,198 @@
+Testing Distance
+Higest Distance - 350m
+
+Setting power ON: SUCCESS 
+Setting Mode: SUCCESS 
+Setting Header ON: SUCCESS 
+Setting Channel: SUCCESS 
+Setting CRC ON: SUCCESS 
+Setting Power: SUCCESS 
+Setting node address: SUCCESS 
+SX1278 configured finished
+
+Node Address : 0
+State = 0 --> Command Executed w no errors!
+Packet sent...
+
+##1	
+Button 1 was pressed once!
+Node Address : 3
+State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 3.830
+
+##2	
+Button 1 was pressed twice!
+Node Address : 3
+State:0 Retries: 1	State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 14.121
+
+##3	
+Button 1 was pressed once!
+Node Address : 3
+State:0 Retries: 1	State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 14.119
+
+##4	
+Button 1 was pressed twice!
+Node Address : 3
+State:0 Retries: 1	State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 14.121
+
+##5	
+Button 1 was pressed once!
+Node Address : 3
+State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 3.829
+
+##6	
+Button 1 was pressed twice!
+Node Address : 3
+State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 3.829
+
+##7	
+Button 1 was pressed once!
+Node Address : 3
+State:5 Retries: 1	State:5 Retries: 2	State:5 Retries: 3	State:5 Retries: 4	State:5 Retries: 5	Node Address : 3
+State:0 Retries: 1	State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 39.482
+
+##8	
+Button 1 was pressed twice!
+Node Address : 3
+State:9 Retries: 1	State:0 Retries: 2	State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 24.414
+
+##9	
+Button 1 was pressed once!
+Node Address : 3
+State:0 Retries: 1	State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 34.707
+
+##10	
+Button 1 was pressed twice!
+Node Address : 3
+State:5 Retries: 1	State:5 Retries: 2	State:9 Retries: 3	State:0 Retries: 4	State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 25.580
+
+##11	
+Button 1 was pressed once!
+Node Address : 3
+State:9 Retries: 1	State:0 Retries: 2	State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 24.414
+
+##12	
+Button 1 was pressed twice!
+Node Address : 3
+State:9 Retries: 1	State:6 Retries: 2	State:5 Retries: 3	State:5 Retries: 4	State:5 Retries: 5	Node Address : 3
+State:5 Retries: 1	State:5 Retries: 2	State:9 Retries: 3	State:5 Retries: 4	State:5 Retries: 5	Node Address : 3
+State:5 Retries: 1	State:5 Retries: 2	State:9 Retries: 3	State:9 Retries: 4	State:9 Retries: 5	Error Code: 9
+Packet not sent....
+
+##13	
+Button 1 was pressed twice!
+Node Address : 3
+State:9 Retries: 1	State:0 Retries: 2	State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 24.414
+
+##14	
+Button 1 was pressed once!
+Node Address : 3
+State:9 Retries: 1	State:0 Retries: 2	State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 34.707
+
+##15	
+Button 1 was pressed twice!
+Node Address : 3
+State:0 Retries: 1	State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 14.124
+
+##16	
+Button 1 was pressed once!
+Node Address : 3
+State:9 Retries: 1	State:9 Retries: 2	State:9 Retries: 3	State:9 Retries: 4	State:0 Retries: 5	State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 46.939
+Package received!
+Message:  KL1
+Required time: 57.232
+
+##17	
+Button 1 was pressed twice!
+Node Address : 3
+State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 3.831
+
+##18	
+Button 1 was pressed once!
+Node Address : 3
+State:5 Retries: 1	State:5 Retries: 2	State:9 Retries: 3	State:0 Retries: 4	State = 0 --> Command Executed w no errors!
+Packet sent...
+Package received!
+Message:  KL1
+Required time: 15.875
+
+##19	
+Button 1 was pressed twice!
+Node Address : 3
+State:9 Retries: 1	State:9 Retries: 2	State:9 Retries: 3	State:9 Retries: 4	State:9 Retries: 5	Error Code: 9
+Packet not sent....
+
+##20	
+Button 1 was pressed twice!
+Node Address : 3
+State:9 Retries: 1	State:9 Retries: 2	State:9 Retries: 3	State:9 Retries: 4	State:9 Retries: 5	Error Code: 9
+Packet not sent....
+
+##21	
+Button 1 was pressed twice!
+Node Address : 3
+State:9 Retries: 1	State:9 Retries: 2	State:9 Retries: 3	State:9 Retries: 4	State:9 Retries: 5	Error Code: 9
+Packet not sent....
