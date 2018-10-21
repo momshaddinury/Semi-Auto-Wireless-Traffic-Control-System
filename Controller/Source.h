@@ -1,16 +1,11 @@
 #ifndef Source_h
 #define Source_h
 
-#if ARDUINO >= 100
-	#include <Arduino.h>
-#else
-	#include <WProgram.h>
-#endif
 /******************************************************************************
  * Includes
  ******************************************************************************/
-//Including Library:
-// #include <Arduino.h>
+Including Library:
+ #include <Arduino.h>
 // Including Library for 1.8 TFT DispLay:
 #include <Adafruit_GFX.h>
 #include <Adafruit_ST7735.h>
