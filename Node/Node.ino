@@ -158,8 +158,8 @@ void sendData(char message[]) {
     T_ISR_F = false;
     FunctionBlockingFlag = true;
   }
-  else if (T_packet_state == 5 || T_packet_state == 4) {
-    Serial.print("Conflict --> TRUE");
+  else if (T_Packet_State == 5 || T_packet_state == 6 || T_packet_state == 7) {
+    Serial.print("Conflict --> TRUE\t");
     Serial.println("Enable: Rx");
     // delay(1000);
     FunctionBlockingFlag = true;
