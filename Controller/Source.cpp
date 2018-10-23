@@ -711,7 +711,7 @@ void Setting_Block_State_Color() {
     printDouble(((DB_1_Process_End_Time- DB_1_Process_Start_Time)/1000.0),1000);
 
     digitalWrite(0, LOW);
-  }
+    }
   //Sets the block state for SECOND location
   if (receivedMsg.equals("KL2")) {
     if (blockStateColor) {
@@ -750,7 +750,7 @@ void Setting_Block_State_Color() {
     DB_2_Process_End_Time = millis();
     Serial.print("2 - Required time: ");
     printDouble(((DB_2_Process_End_Time- DB_2_Process_Start_Time)/1000.0),1000);
-  }
+    }
   //Sets the block state for THIRD location
   if (receivedMsg.equals("KL3")) {
     if (blockStateColor) {
@@ -789,7 +789,7 @@ void Setting_Block_State_Color() {
     DB_3_Process_End_Time = millis();
     Serial.print("3 - Required time: ");
     printDouble(((DB_3_Process_End_Time- DB_3_Process_Start_Time)/1000.0),1000);
-  }
+    }
   //Sets the block state for FOURTH location
   if (receivedMsg.equals("KL4")) {
     if (blockStateColor) {
@@ -807,7 +807,7 @@ void Setting_Block_State_Color() {
       tft.setTextSize(1);
       tft.print("PROBARTAK");
     }
-  }
+    }
   }
 
 //Sets Important Lora Modes and returns 'true' if it was successful or 'false' if it wasn't

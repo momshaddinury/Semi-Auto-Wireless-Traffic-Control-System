@@ -2,9 +2,9 @@
 #define Source_h
 
 /******************************************************************************
- * Includes
+ * Includes                                                                   *
  ******************************************************************************/
-Including Library:
+//Including Library:
  #include <Arduino.h>
 // Including Library for 1.8 TFT DispLay:
 #include <Adafruit_GFX.h>
@@ -14,8 +14,8 @@ Including Library:
 //Library for Ticker
 #include <Ticker.h>
 
-/******************************************************************************
- * Definitions & Declarations
+/*****************************************************************************
+ * Definitions & Declarations                                                *
  *****************************************************************************/
 
 //// TFT Display Pin For Arduino
