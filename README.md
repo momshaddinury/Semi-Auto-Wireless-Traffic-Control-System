@@ -1,4 +1,4 @@
-﻿#Project Name - Lora based Taffic Control System
+#Project Name - Lora based Taffic Control System
 
 ##Project Members:
 -Momshad Dinury
