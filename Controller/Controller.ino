@@ -132,6 +132,11 @@ unsigned long DB_3_Process_End_Time;
 unsigned long DB_1_Signal_Runtime;
 unsigned long currentMil;
 
+//Experimental variables
+int colorRG = 1;
+const int R = 1;
+const int G = 2;
+
 //Serial Print and Debug:
 // #define DEBUG
 
@@ -312,13 +317,13 @@ void InterruptAction()
     DB_1_Process_Start_Time = millis();
     Location = Location_1;
 
-    location1Sec.attach(1, showTime);
+    // location1Sec.attach(1, showTime);
     location1Sec.detach();
 
     if (button1State)
     {
 
-      DB_1_Signal_Runtime = millis();
+      //DB_1_Signal_Runtime = millis();
       //location1Sec.attach(1, showTime);
 
       signalTimeCount = 0;
@@ -379,8 +384,8 @@ void InterruptAction()
     else if (!button1State)
     {
 
-      DB_1_Signal_Runtime = millis();
-      signalTimeCount = 0;
+      //DB_1_Signal_Runtime = millis();
+      //signalTimeCount = 0;
       //      location1Sec.attach(1, showTime);
 
 #ifdef DEBUG
@@ -964,10 +969,19 @@ void Blink_Location_Rect_4()
 void showTime()
 {
   currentMil = millis();
-  tft.setCursor(40, 10);
+  switch (colorRG)
+  {
+  case R:
+    tft.fillRect(rect1x + recwidth - 20, rect1y, 20, recheight, RED);
+    break;
+  case G:
+    tft.fillRect(rect1x + recwidth - 20, rect1y, 20, recheight, GREEN);
+    break;
+  }
+  tft.setCursor(10, 30);
   tft.setTextSize(1);
   int time = (currentMil - DB_1_Signal_Runtime) / 1000;
-  String printt = String(time);
+  String printt = String(time) + "S";
   tft.print(printt);
 }
 
@@ -981,8 +995,9 @@ void Setting_Block_State_Color()
     if (blockStateColor)
     {
       Location1.detach();
-
-      location1Sec.attach(1, showTime);
+      colorRG = G;
+      DB_1_Signal_Runtime = millis();
+      location1Sec.attach(2, showTime);
 
 #ifndef TESTDEBUG
       tft.fillRect(rect1x, rect1y, recwidth, recheight, GREEN);
@@ -1006,8 +1021,9 @@ void Setting_Block_State_Color()
     {
 
       Location1.detach();
-
-      location1Sec.attach(1, showTime);
+      colorRG = R;
+      DB_1_Signal_Runtime = millis();
+      location1Sec.attach(2, showTime);
 
 #ifndef TESTDEBUG
       tft.fillRect(rect1x, rect1y, recwidth, recheight, RED);
