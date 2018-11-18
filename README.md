@@ -1,6 +1,7 @@
-﻿Project Name - Lora based Taffic Control System
+#Project Name - Lora based Taffic Control System
 
-Project Members:
-    -Towqir Ahmed Shaem
-    -Momshad Dinury
+##Project Members:
+-Momshad Dinury
+-Abdullah Zowad Khan
+-Towqir Ahmed Shaem
     
