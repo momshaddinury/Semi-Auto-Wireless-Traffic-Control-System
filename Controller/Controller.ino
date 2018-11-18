@@ -129,20 +129,21 @@ unsigned long DB_3_Process_Start_Time;
 unsigned long DB_3_Process_End_Time;
 
 //Signal Time Var:
-unsigned long DB_1_Signal_Runtime;
+unsigned long DB_1_Signal_Runtime, DB_2_Signal_Runtime, DB_3_Signal_Runtime, DB_4_Signal_Runtime;
 unsigned long currentMil;
 
 //Experimental variables
-int colorRG = 1;
+int colorRG1 = 1, colorRG2 = 1, colorRG3 = 1, colorRG4 = 1;
 const int R = 1;
 const int G = 2;
+const int X = 0;
 
 //Serial Print and Debug:
-// #define DEBUG
+#define DEBUG
 
 //TESTCASE:
 //#define TEST
-#define TESTDEBUG
+//#define TESTDEBUG
 float t_time;
 // bool testDebug = true;
 int yaxis = 20;
@@ -169,6 +170,19 @@ void setup()
   pinMode(digitalButton_2, INPUT);
   pinMode(digitalButton_3, INPUT);
   pinMode(analogButton, INPUT);
+
+  //Initialization of timers
+  DB_1_Signal_Runtime = millis();
+  DB_2_Signal_Runtime = millis();
+  DB_3_Signal_Runtime = millis();
+  DB_4_Signal_Runtime = millis();
+
+  colorRG1 = X;
+  colorRG2 = X;
+  colorRG3 = X;
+  colorRG4 = X;
+
+  location1Sec.attach(2, showTime);
 
   //Interrupt:
   attachInterrupt(digitalPinToInterrupt(digitalButton_1), ISR_DB_1, FALLING);
@@ -318,7 +332,7 @@ void InterruptAction()
     Location = Location_1;
 
     // location1Sec.attach(1, showTime);
-    location1Sec.detach();
+    colorRG1 = X;
 
     if (button1State)
     {
@@ -450,15 +464,20 @@ void InterruptAction()
     DB_2_Process_Start_Time = millis();
     Location = Location_2;
 
+    colorRG2 = X;
+
     if (button2State)
     {
 #ifdef DEBUG
       Serial.println("\nButton 2 was pressed once!");
 #endif
 
+      colorRG2 = G;
+      DB_2_Signal_Runtime = millis();
+
       String("GL2").toCharArray(testData, 50);
       address = 4;
-      sendData(address, testData);
+      //sendData(address, testData);
 
       // -----------------------------------------------
       tft.fillRect(rect1x, 117, recwidth, 20, YELLOW);
@@ -471,7 +490,7 @@ void InterruptAction()
       if (T_packet_state == 0)
       {
         blockStateColor = true;
-        Location2.attach(0.9, Blink_Location_Rect_2);
+        //Location2.attach(0.9, Blink_Location_Rect_2);
 
         // -----------------------------------------------
         tft.fillRect(rect1x, 117, recwidth, 20, GREEN);
@@ -504,9 +523,12 @@ void InterruptAction()
       Serial.println("\nButton 2 was pressed twice!");
 #endif
 
+      colorRG2 = R;
+      DB_2_Signal_Runtime = millis();
+
       String("RL2").toCharArray(testData, 50);
       address = 4;
-      sendData(address, testData);
+      //sendData(address, testData);
 
       // -----------------------------------------------
       tft.fillRect(rect1x, 117, recwidth, 20, YELLOW);
@@ -519,7 +541,7 @@ void InterruptAction()
       if (T_packet_state == 0)
       {
         blockStateColor = false;
-        Location2.attach(0.9, Blink_Location_Rect_2);
+        //Location2.attach(0.9, Blink_Location_Rect_2);
 
         // -----------------------------------------------
         tft.fillRect(rect1x, 117, recwidth, 20, GREEN);
@@ -551,6 +573,8 @@ void InterruptAction()
   {
     DB_3_Process_Start_Time = millis();
     Location = Location_3;
+
+    colorRG3 = X;
 
     if (button3State)
     {
@@ -657,6 +681,8 @@ void AnalogAction()
     if ((long(millis()) - AB_priv_time) >= interval)
     {
       Location = Location_4;
+
+      colorRG4 = X;
 
       if (button4State)
       {
@@ -969,20 +995,84 @@ void Blink_Location_Rect_4()
 void showTime()
 {
   currentMil = millis();
-  switch (colorRG)
+  tft.setTextSize(1);
+  int time1 = (currentMil - DB_1_Signal_Runtime) / 1000;
+  int time2 = (currentMil - DB_2_Signal_Runtime) / 1000;
+  int time3 = (currentMil - DB_3_Signal_Runtime) / 1000;
+  int time4 = (currentMil - DB_4_Signal_Runtime) / 1000;
+
+  String printt1 = String(time1) + "S";
+  String printt2 = String(time2) + "S";
+  String printt3 = String(time3) + "S";
+  String printt4 = String(time4) + "S";
+
+  switch (colorRG1)
   {
   case R:
-    tft.fillRect(rect1x + recwidth - 20, rect1y, 20, recheight, RED);
+    tft.fillRect(rect1x + recwidth - 30, rect1y, 30, recheight, RED);
+    tft.setCursor(rect1x + recwidth - 25, 30);
+    tft.setTextColor(WHITE);
+    tft.print(printt1);
     break;
   case G:
-    tft.fillRect(rect1x + recwidth - 20, rect1y, 20, recheight, GREEN);
+    tft.fillRect(rect1x + recwidth - 30, rect1y, 30, recheight, GREEN);
+    tft.setCursor(rect1x + recwidth - 25, 30);
+    tft.setTextColor(BLACK);
+    tft.print(printt1);
+    break;
+  case X:
     break;
   }
-  tft.setCursor(10, 30);
-  tft.setTextSize(1);
-  int time = (currentMil - DB_1_Signal_Runtime) / 1000;
-  String printt = String(time) + "S";
-  tft.print(printt);
+
+  switch (colorRG2)
+  {
+  case R:
+    tft.fillRect(rect1x + recwidth - 30, rect2y, 30, recheight, RED);
+    tft.setCursor(rect1x + recwidth - 25, 55);
+    tft.setTextColor(WHITE);
+    tft.print(printt2);
+    break;
+  case G:
+    tft.fillRect(rect1x + recwidth - 30, rect2y, 30, recheight, GREEN);
+    tft.setCursor(rect1x + recwidth - 25, 55);
+    tft.setTextColor(BLACK);
+    tft.print(printt2);
+    break;
+  case X:
+    break;
+  }
+
+  switch (colorRG3)
+  {
+  case R:
+    tft.fillRect(rect1x + recwidth - 30, rect3y, 30, recheight, RED);
+    tft.setCursor(rect1x + recwidth - 25, 75);
+    tft.print(printt3);
+    break;
+  case G:
+    tft.fillRect(rect1x + recwidth - 30, rect3y, 30, recheight, GREEN);
+    tft.setCursor(rect1x + recwidth - 25, 75);
+    tft.print(printt3);
+    break;
+  case X:
+    break;
+  }
+
+  switch (colorRG4)
+  {
+  case R:
+    tft.fillRect(rect1x + recwidth - 30, rect4y, 30, recheight, RED);
+    tft.setCursor(rect1x + recwidth - 25, 97);
+    tft.print(printt4);
+    break;
+  case G:
+    tft.fillRect(rect1x + recwidth - 30, rect4y, 30, recheight, GREEN);
+    tft.setCursor(rect1x + recwidth - 25, 97);
+    tft.print(printt4);
+    break;
+  case X:
+    break;
+  }
 }
 
 //FINAL LOCATION BLOCK STATE
@@ -995,7 +1085,7 @@ void Setting_Block_State_Color()
     if (blockStateColor)
     {
       Location1.detach();
-      colorRG = G;
+      colorRG1 = G;
       DB_1_Signal_Runtime = millis();
       location1Sec.attach(2, showTime);
 
@@ -1021,7 +1111,7 @@ void Setting_Block_State_Color()
     {
 
       Location1.detach();
-      colorRG = R;
+      colorRG1 = R;
       DB_1_Signal_Runtime = millis();
       location1Sec.attach(2, showTime);
 
@@ -1056,6 +1146,11 @@ void Setting_Block_State_Color()
     if (blockStateColor)
     {
       Location2.detach();
+
+      colorRG2 = G;
+      DB_2_Signal_Runtime = millis();
+      location1Sec.attach(2, showTime);
+
       tft.fillRect(rect1x, rect2y, recwidth, recheight, GREEN);
       tft.setCursor(40, 55);
       tft.setTextColor(BLACK);
@@ -1074,6 +1169,11 @@ void Setting_Block_State_Color()
     else if (!blockStateColor)
     {
       Location2.detach();
+
+      colorRG2 = R;
+      DB_2_Signal_Runtime = millis();
+      location1Sec.attach(2, showTime);
+
       tft.fillRect(rect1x, rect2y, recwidth, recheight, RED);
       tft.setCursor(40, 55);
       tft.setTextColor(WHITE);
@@ -1099,6 +1199,11 @@ void Setting_Block_State_Color()
     if (blockStateColor)
     {
       Location3.detach();
+
+      colorRG3 = G;
+      DB_3_Signal_Runtime = millis();
+      location1Sec.attach(2, showTime);
+
       tft.fillRect(rect1x, rect3y, recwidth, recheight, GREEN);
       tft.setCursor(40, 75);
       tft.setTextColor(BLACK);
@@ -1117,6 +1222,11 @@ void Setting_Block_State_Color()
     else if (!blockStateColor)
     {
       Location3.detach();
+
+      colorRG3 = R;
+      DB_3_Signal_Runtime = millis();
+      location1Sec.attach(2, showTime);
+
       tft.fillRect(rect1x, rect3y, recwidth, recheight, RED);
       tft.setCursor(40, 75);
       tft.setTextColor(WHITE);
@@ -1142,6 +1252,11 @@ void Setting_Block_State_Color()
     if (blockStateColor)
     {
       Location4.detach();
+
+      colorRG4 = G;
+      DB_4_Signal_Runtime = millis();
+      location1Sec.attach(2, showTime);
+
       tft.fillRect(rect1x, rect4y, recwidth, recheight, GREEN);
       tft.setCursor(40, 97);
       tft.setTextColor(WHITE);
@@ -1151,6 +1266,11 @@ void Setting_Block_State_Color()
     else if (!blockStateColor)
     {
       Location4.detach();
+
+      colorRG4 = R;
+      DB_4_Signal_Runtime = millis();
+      location1Sec.attach(2, showTime);
+
       tft.fillRect(rect1x, rect4y, recwidth, recheight, RED);
       tft.setCursor(40, 97);
       tft.setTextColor(WHITE);
