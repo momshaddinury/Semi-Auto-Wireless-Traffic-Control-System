@@ -23,6 +23,7 @@
 #include <SX1278.h>
 //Library for Ticker
 #include <Ticker.h>
+#include <U8g2lib.h>
 
 /*****************************************************************************
    Definitions & Declarations
@@ -54,6 +55,9 @@ int rect4y = 91;
 int recwidth = 122;
 int recheight = 20;
 
+U8G2_PCD8544_84X48_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/2, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
+U8G2_PCD8544_84X48_F_4W_HW_SPI u8g1(U8G2_R0, /* cs=*/4, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
+
 // Creating Object of TFT Display
 Adafruit_ST7735 tft = Adafruit_ST7735(TFT_CS, TFT_DC, TFT_RST);
 
@@ -72,9 +76,13 @@ int T_packet_state;
 int R_packet_state;
 
 //Pin def of Switch:
-#define digitalButton_1 2
-#define digitalButton_2 4
-#define digitalButton_3 5
+#define digitalButton_1 25
+#define digitalButton_2 26
+// #define digitalButton_3 5
+//Experimental
+#define digitalButton_3 32
+#define digitalButton_4 33
+
 #define analogButton A0
 
 //Analog button value storing variable:
@@ -166,10 +174,10 @@ void setup()
   pinMode(0, OUTPUT);
   digitalWrite(0, LOW);
   //PinMode:
-  pinMode(digitalButton_1, INPUT);
-  pinMode(digitalButton_2, INPUT);
-  pinMode(digitalButton_3, INPUT);
-  pinMode(analogButton, INPUT);
+  pinMode(digitalButton_1, INPUT_PULLUP);
+  pinMode(digitalButton_2, INPUT_PULLUP);
+  pinMode(digitalButton_3, INPUT_PULLUP);
+  pinMode(digitalButton_4, INPUT_PULLUP);
 
   //Initialization of timers
   DB_1_Signal_Runtime = millis();
@@ -185,9 +193,15 @@ void setup()
   location1Sec.attach(2, showTime);
 
   //Interrupt:
-  attachInterrupt(digitalPinToInterrupt(digitalButton_1), ISR_DB_1, FALLING);
-  attachInterrupt(digitalPinToInterrupt(digitalButton_2), ISR_DB_2, FALLING);
-  //attachInterrupt(digitalPinToInterrupt(digitalButton_3), ISR_DB_3, FALLING);
+  // attachInterrupt(digitalPinToInterrupt(digitalButton_1), ISR_DB_1, FALLING);
+  // attachInterrupt(digitalPinToInterrupt(digitalButton_2), ISR_DB_2, FALLING);
+  // attachInterrupt(digitalPinToInterrupt(digitalButton_3), ISR_DB_1, FALLING);
+
+  //Interrupt Experimental
+  attachInterrupt(digitalPinToInterrupt(digitalButton_1), ISR_DB_1_G_32, FALLING);
+  attachInterrupt(digitalPinToInterrupt(digitalButton_2), ISR_DB_1_R_32, FALLING);
+  attachInterrupt(digitalPinToInterrupt(digitalButton_3), ISR_DB_2_G_32, FALLING);
+  attachInterrupt(digitalPinToInterrupt(digitalButton_4), ISR_DB_2_R_32, FALLING);
 }
 
 //MAIN LOOP
@@ -197,8 +211,8 @@ void loop()
   sync();
 
   //To use pin 2 as switch:
-  digitalWrite(digitalButton_1, HIGH);
-  digitalWrite(0, LOW);
+  //digitalWrite(digitalButton_1, HIGH);
+  //digitalWrite(0, LOW);
 
   //Check Config:
   //check_config();
@@ -207,7 +221,7 @@ void loop()
   InterruptAction();
 
   //This function checks for data to receive
-  recieveData();
+  //recieveData();
 
   //Analog functions:
   //AnalogAction();
@@ -223,11 +237,11 @@ void sync()
   {
 
     // ----------------------------------
-    tft.fillRect(rect1x, 117, recwidth, 20, RED);
-    tft.setCursor(20, 122);
-    tft.setTextColor(BLACK);
-    tft.setTextSize(1);
-    tft.print("Sync in progress");
+    // tft.fillRect(rect1x, 117, recwidth, 20, RED);
+    // tft.setCursor(20, 122);
+    // tft.setTextColor(BLACK);
+    // tft.setTextSize(1);
+    // tft.print("Sync in progress");
     // ----------------------------------
 
     String("S").toCharArray(testData, 50);
@@ -238,11 +252,11 @@ void sync()
     {
       resetCondition = false;
       // ----------------------------------
-      tft.fillRect(rect1x, 117, recwidth, 20, GREEN);
-      tft.setCursor(22, 122);
-      tft.setTextColor(BLACK);
-      tft.setTextSize(1);
-      tft.print("Sync completed!");
+      // tft.fillRect(rect1x, 117, recwidth, 20, GREEN);
+      // tft.setCursor(22, 122);
+      // tft.setTextColor(BLACK);
+      // tft.setTextSize(1);
+      // tft.print("Sync completed!");
       statusRectToggler.attach(2, statusSecTiggerFunction);
       // ----------------------------------
     }
@@ -251,8 +265,65 @@ void sync()
 
 void statusSecTiggerFunction()
 {
-  tft.fillRect(rect1x, 117, recwidth, 40, YELLOW);
+  //tft.fillRect(rect1x, 117, recwidth, 40, YELLOW);
   statusRectToggler.detach();
+}
+
+//Experimental esp32 ISRs
+void ISR_DB_1_G_32()
+{
+  if ((long(millis()) - DB_priv_time_1) >= interval)
+  {
+    DB_ISR_F_1 = true;
+    DB_priv_time_1 = millis();
+    Serial.print("\n##");
+    Serial.print(count += 1);
+    Serial.print("\t");
+    button1State = true;
+    // DB_priv_time_1 = millis();
+  }
+}
+
+void ISR_DB_1_R_32()
+{
+  if ((long(millis()) - DB_priv_time_1) >= interval)
+  {
+    DB_ISR_F_1 = true;
+    DB_priv_time_1 = millis();
+    Serial.print("\n##");
+    Serial.print(count += 1);
+    Serial.print("\t");
+    button1State = false;
+    // DB_priv_time_1 = millis();
+  }
+}
+
+void ISR_DB_2_G_32()
+{
+  if ((long(millis()) - DB_priv_time_2) >= interval)
+  {
+    DB_ISR_F_2 = true;
+    DB_priv_time_2 = millis();
+    Serial.print("\n##");
+    Serial.print(count += 1);
+    Serial.print("\t");
+    button2State = true;
+    // DB_priv_time_2 = millis();
+  }
+}
+
+void ISR_DB_2_R_32()
+{
+  if ((long(millis()) - DB_priv_time_2) >= interval)
+  {
+    DB_ISR_F_2 = true;
+    DB_priv_time_2 = millis();
+    Serial.print("\n##");
+    Serial.print(count += 1);
+    Serial.print("\t");
+    button2State = false;
+    // DB_priv_time_2 = millis();
+  }
 }
 
 //ISRs for DIGITAL Button 1,2,3:
@@ -357,24 +428,24 @@ void InterruptAction()
       sendData(address, testData);
 
       // -----------------------------------------------
-      tft.fillRect(rect1x, 117, recwidth, 20, YELLOW);
-      tft.setCursor(14, 122);
-      tft.setTextColor(BLACK);
-      tft.setTextSize(1);
-      tft.print("Transmitting Data");
+      // tft.fillRect(rect1x, 117, recwidth, 20, YELLOW);
+      // tft.setCursor(14, 122);
+      // tft.setTextColor(BLACK);
+      // tft.setTextSize(1);
+      // tft.print("Transmitting Data");
       // -----------------------------------------------
 
       if (T_packet_state == 0)
       {
         blockStateColor = true;
-        Location1.attach(1, Blink_Location_Rect_1);
+        //Location1.attach(1, Blink_Location_Rect_1);
 
         // -----------------------------------------------
-        tft.fillRect(rect1x, 117, recwidth, 20, GREEN);
-        tft.setCursor(6, 122);
-        tft.setTextColor(BLACK);
-        tft.setTextSize(1);
-        tft.print("Transmission:Success");
+        // tft.fillRect(rect1x, 117, recwidth, 20, GREEN);
+        // tft.setCursor(6, 122);
+        // tft.setTextColor(BLACK);
+        // tft.setTextSize(1);
+        // tft.print("Transmission:Success");
         // -----------------------------------------------
 
         button1State = false;
@@ -382,11 +453,11 @@ void InterruptAction()
       else
       {
         // -----------------------------------------------
-        tft.fillRect(rect1x, 117, recwidth, 20, RED);
-        tft.setCursor(6, 122);
-        tft.setTextColor(WHITE);
-        tft.setTextSize(1);
-        tft.print("Transmission:Failed");
+        // tft.fillRect(rect1x, 117, recwidth, 20, RED);
+        // tft.setCursor(6, 122);
+        // tft.setTextColor(WHITE);
+        // tft.setTextSize(1);
+        // tft.print("Transmission:Failed");
         // -----------------------------------------------
 
         button1State = true;
@@ -417,24 +488,24 @@ void InterruptAction()
       sendData(address, testData);
 
       // -----------------------------------------------
-      tft.fillRect(rect1x, 117, recwidth, 20, YELLOW);
-      tft.setCursor(14, 122);
-      tft.setTextColor(BLACK);
-      tft.setTextSize(1);
-      tft.print("Transmitting Data");
+      // tft.fillRect(rect1x, 117, recwidth, 20, YELLOW);
+      // tft.setCursor(14, 122);
+      // tft.setTextColor(BLACK);
+      // tft.setTextSize(1);
+      // tft.print("Transmitting Data");
       // -----------------------------------------------
 
       if (T_packet_state == 0)
       {
         blockStateColor = false;
-        Location1.attach(1, Blink_Location_Rect_1);
+        //Location1.attach(1, Blink_Location_Rect_1);
 
         // -----------------------------------------------
-        tft.fillRect(rect1x, 117, recwidth, 20, GREEN);
-        tft.setCursor(6, 122);
-        tft.setTextColor(BLACK);
-        tft.setTextSize(1);
-        tft.print("Transmission:Success");
+        // tft.fillRect(rect1x, 117, recwidth, 20, GREEN);
+        // tft.setCursor(6, 122);
+        // tft.setTextColor(BLACK);
+        // tft.setTextSize(1);
+        // tft.print("Transmission:Success");
         // -----------------------------------------------
 
         button1State = true;
@@ -443,11 +514,11 @@ void InterruptAction()
       {
 
         // -----------------------------------------------
-        tft.fillRect(rect1x, 117, recwidth, 20, RED);
-        tft.setCursor(6, 122);
-        tft.setTextColor(WHITE);
-        tft.setTextSize(1);
-        tft.print("Transmission:Failed");
+        // tft.fillRect(rect1x, 117, recwidth, 20, RED);
+        // tft.setCursor(6, 122);
+        // tft.setTextColor(WHITE);
+        // tft.setTextSize(1);
+        // tft.print("Transmission:Failed");
         // -----------------------------------------------
 
         button1State = false;
@@ -477,14 +548,14 @@ void InterruptAction()
 
       String("GL2").toCharArray(testData, 50);
       address = 4;
-      //sendData(address, testData);
+      sendData(address, testData);
 
       // -----------------------------------------------
-      tft.fillRect(rect1x, 117, recwidth, 20, YELLOW);
-      tft.setCursor(14, 122);
-      tft.setTextColor(BLACK);
-      tft.setTextSize(1);
-      tft.print("Transmitting Data");
+      // tft.fillRect(rect1x, 117, recwidth, 20, YELLOW);
+      // tft.setCursor(14, 122);
+      // tft.setTextColor(BLACK);
+      // tft.setTextSize(1);
+      // tft.print("Transmitting Data");
       // -----------------------------------------------
 
       if (T_packet_state == 0)
@@ -493,11 +564,11 @@ void InterruptAction()
         //Location2.attach(0.9, Blink_Location_Rect_2);
 
         // -----------------------------------------------
-        tft.fillRect(rect1x, 117, recwidth, 20, GREEN);
-        tft.setCursor(6, 122);
-        tft.setTextColor(BLACK);
-        tft.setTextSize(1);
-        tft.print("Transmission:Success");
+        // tft.fillRect(rect1x, 117, recwidth, 20, GREEN);
+        // tft.setCursor(6, 122);
+        // tft.setTextColor(BLACK);
+        // tft.setTextSize(1);
+        // tft.print("Transmission:Success");
         // -----------------------------------------------
 
         button2State = false;
@@ -505,11 +576,11 @@ void InterruptAction()
       else
       {
         // -----------------------------------------------
-        tft.fillRect(rect1x, 117, recwidth, 20, RED);
-        tft.setCursor(6, 122);
-        tft.setTextColor(WHITE);
-        tft.setTextSize(1);
-        tft.print("Transmission:Failed");
+        // tft.fillRect(rect1x, 117, recwidth, 20, RED);
+        // tft.setCursor(6, 122);
+        // tft.setTextColor(WHITE);
+        // tft.setTextSize(1);
+        // tft.print("Transmission:Failed");
         // -----------------------------------------------
 
         button2State = true;
@@ -528,14 +599,14 @@ void InterruptAction()
 
       String("RL2").toCharArray(testData, 50);
       address = 4;
-      //sendData(address, testData);
+      sendData(address, testData);
 
       // -----------------------------------------------
-      tft.fillRect(rect1x, 117, recwidth, 20, YELLOW);
-      tft.setCursor(14, 122);
-      tft.setTextColor(BLACK);
-      tft.setTextSize(1);
-      tft.print("Transmitting Data");
+      // tft.fillRect(rect1x, 117, recwidth, 20, YELLOW);
+      // tft.setCursor(14, 122);
+      // tft.setTextColor(BLACK);
+      // tft.setTextSize(1);
+      // tft.print("Transmitting Data");
       // -----------------------------------------------
 
       if (T_packet_state == 0)
@@ -544,11 +615,11 @@ void InterruptAction()
         //Location2.attach(0.9, Blink_Location_Rect_2);
 
         // -----------------------------------------------
-        tft.fillRect(rect1x, 117, recwidth, 20, GREEN);
-        tft.setCursor(6, 122);
-        tft.setTextColor(BLACK);
-        tft.setTextSize(1);
-        tft.print("Transmission:Success");
+        // tft.fillRect(rect1x, 117, recwidth, 20, GREEN);
+        // tft.setCursor(6, 122);
+        // tft.setTextColor(BLACK);
+        // tft.setTextSize(1);
+        // tft.print("Transmission:Success");
         // -----------------------------------------------
 
         button2State = true;
@@ -556,11 +627,11 @@ void InterruptAction()
       else
       {
         // -----------------------------------------------
-        tft.fillRect(rect1x, 117, recwidth, 20, RED);
-        tft.setCursor(6, 122);
-        tft.setTextColor(WHITE);
-        tft.setTextSize(1);
-        tft.print("Transmission:Failed");
+        // tft.fillRect(rect1x, 117, recwidth, 20, RED);
+        // tft.setCursor(6, 122);
+        // tft.setTextColor(WHITE);
+        // tft.setTextSize(1);
+        // tft.print("Transmission:Failed");
         // -----------------------------------------------
 
         button2State = false;
@@ -1009,16 +1080,27 @@ void showTime()
   switch (colorRG1)
   {
   case R:
-    tft.fillRect(rect1x + recwidth - 30, rect1y, 30, recheight, RED);
-    tft.setCursor(rect1x + recwidth - 25, 30);
-    tft.setTextColor(WHITE);
-    tft.print(printt1);
+    //tft.fillRect(rect1x + recwidth - 30, rect1y, 30, recheight, RED);
+    //tft.setCursor(rect1x + recwidth - 25, 30);
+    //tft.setTextColor(WHITE);
+    //tft.print(printt1);
+
+    u8g1.clearBuffer();                 // clear the internal memory
+    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt1 = "Red " + printt1;
+    u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
+    u8g1.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
+    u8g1.sendBuffer();
+    //state1 = !state1;
+
     break;
   case G:
-    tft.fillRect(rect1x + recwidth - 30, rect1y, 30, recheight, GREEN);
-    tft.setCursor(rect1x + recwidth - 25, 30);
-    tft.setTextColor(BLACK);
-    tft.print(printt1);
+    u8g1.clearBuffer();                 // clear the internal memory
+    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt1 = "Green " + printt1;
+    u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
+    u8g1.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
+    u8g1.sendBuffer();
     break;
   case X:
     break;
@@ -1027,16 +1109,26 @@ void showTime()
   switch (colorRG2)
   {
   case R:
-    tft.fillRect(rect1x + recwidth - 30, rect2y, 30, recheight, RED);
-    tft.setCursor(rect1x + recwidth - 25, 55);
-    tft.setTextColor(WHITE);
-    tft.print(printt2);
+    // tft.fillRect(rect1x + recwidth - 30, rect2y, 30, recheight, RED);
+    // tft.setCursor(rect1x + recwidth - 25, 55);
+    // tft.setTextColor(WHITE);
+    // tft.print(printt2);
+    u8g1.clearBuffer();                 // clear the internal memory
+    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt2 = "Red " + printt2;
+    u8g1.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
+    u8g1.sendBuffer();
     break;
   case G:
-    tft.fillRect(rect1x + recwidth - 30, rect2y, 30, recheight, GREEN);
-    tft.setCursor(rect1x + recwidth - 25, 55);
-    tft.setTextColor(BLACK);
-    tft.print(printt2);
+    // tft.fillRect(rect1x + recwidth - 30, rect2y, 30, recheight, GREEN);
+    // tft.setCursor(rect1x + recwidth - 25, 55);
+    // tft.setTextColor(BLACK);
+    // tft.print(printt2);
+    u8g1.clearBuffer();                 // clear the internal memory
+    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt2 = "Green " + printt2;
+    u8g1.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
+    u8g1.sendBuffer();
     break;
   case X:
     break;
@@ -1098,11 +1190,11 @@ void Setting_Block_State_Color()
 #endif
 
       // -----------------------------------------------
-      tft.fillRect(rect1x, 137, recwidth, 20, GREEN);
-      tft.setCursor(20, 142);
-      tft.setTextColor(BLACK);
-      tft.setTextSize(1);
-      tft.print("Packet Arrived!");
+      // tft.fillRect(rect1x, 137, recwidth, 20, GREEN);
+      // tft.setCursor(20, 142);
+      // tft.setTextColor(BLACK);
+      // tft.setTextSize(1);
+      // tft.print("Packet Arrived!");
 
       statusRectToggler.attach(2, statusSecTiggerFunction);
       // -----------------------------------------------
@@ -1124,11 +1216,11 @@ void Setting_Block_State_Color()
 #endif
 
       // -----------------------------------------------
-      tft.fillRect(rect1x, 137, recwidth, 20, RED);
-      tft.setCursor(20, 142);
-      tft.setTextColor(WHITE);
-      tft.setTextSize(1);
-      tft.print("Packet Arrived!");
+      // tft.fillRect(rect1x, 137, recwidth, 20, RED);
+      // tft.setCursor(20, 142);
+      // tft.setTextColor(WHITE);
+      // tft.setTextSize(1);
+      // tft.print("Packet Arrived!");
 
       statusRectToggler.attach(2, statusSecTiggerFunction);
       // -----------------------------------------------
@@ -1151,17 +1243,17 @@ void Setting_Block_State_Color()
       DB_2_Signal_Runtime = millis();
       location1Sec.attach(2, showTime);
 
-      tft.fillRect(rect1x, rect2y, recwidth, recheight, GREEN);
-      tft.setCursor(40, 55);
-      tft.setTextColor(BLACK);
-      tft.setTextSize(1);
-      tft.print("BAIZID");
-      // -----------------------------------------------
-      tft.fillRect(rect1x, 137, recwidth, 20, GREEN);
-      tft.setCursor(20, 142);
-      tft.setTextColor(BLACK);
-      tft.setTextSize(1);
-      tft.print("Packet Arrived!");
+      // tft.fillRect(rect1x, rect2y, recwidth, recheight, GREEN);
+      // tft.setCursor(40, 55);
+      // tft.setTextColor(BLACK);
+      // tft.setTextSize(1);
+      // tft.print("BAIZID");
+      // // -----------------------------------------------
+      // tft.fillRect(rect1x, 137, recwidth, 20, GREEN);
+      // tft.setCursor(20, 142);
+      // tft.setTextColor(BLACK);
+      // tft.setTextSize(1);
+      // tft.print("Packet Arrived!");
 
       statusRectToggler.attach(2, statusSecTiggerFunction);
       // -----------------------------------------------
@@ -1174,17 +1266,17 @@ void Setting_Block_State_Color()
       DB_2_Signal_Runtime = millis();
       location1Sec.attach(2, showTime);
 
-      tft.fillRect(rect1x, rect2y, recwidth, recheight, RED);
-      tft.setCursor(40, 55);
-      tft.setTextColor(WHITE);
-      tft.setTextSize(1);
-      tft.print("BAIZID");
-      // -----------------------------------------------
-      tft.fillRect(rect1x, 137, recwidth, 20, RED);
-      tft.setCursor(20, 142);
-      tft.setTextColor(WHITE);
-      tft.setTextSize(1);
-      tft.print("Packet Arrived!");
+      // tft.fillRect(rect1x, rect2y, recwidth, recheight, RED);
+      // tft.setCursor(40, 55);
+      // tft.setTextColor(WHITE);
+      // tft.setTextSize(1);
+      // tft.print("BAIZID");
+      // // -----------------------------------------------
+      // tft.fillRect(rect1x, 137, recwidth, 20, RED);
+      // tft.setCursor(20, 142);
+      // tft.setTextColor(WHITE);
+      // tft.setTextSize(1);
+      // tft.print("Packet Arrived!");
 
       statusRectToggler.attach(2, statusSecTiggerFunction);
       // -----------------------------------------------
@@ -1393,70 +1485,22 @@ void loraSetup()
 //Creates the UI layout
 void displaySetup()
 {
+  u8g2.begin();
 
-  // Diaplay Initialization and Creating BLock
-  tft.initR(INITR_BLACKTAB);
-  tft.setRotation(2);
+  u8g1.begin();
+  loraSetup();
 
-  tft.fillScreen(ST7735_CYAN);
-  tft.setTextSize(0);
-  tft.setTextColor(BLACK);
-  tft.setCursor(23, 10);
-  tft.println("TRAFFIC CONTROL");
+  u8g1.clearBuffer();                  // clear the internal memory
+  u8g1.setFont(u8g2_font_ncenB08_tr);  // choose a suitable font
+  u8g1.drawStr(0, 10, "LOCATION GEC"); // write something to the internal memory
+  u8g1.sendBuffer();                   // transfer internal memory to the display
+  delay(1000);
 
-  // Black Rect
-  // For Location 1:
-  tft.drawRect(rect1x - 1, rect1y - 1, recwidth + 2, recheight, BLACK);
-  tft.drawRect(rect1x, rect1y, recwidth, recheight, BLACK);
-  // For Location 2:
-  tft.drawRect(rect1x - 1, rect2y - 1, recwidth + 2, recheight, BLACK);
-  tft.drawRect(rect1x, rect2y, recwidth, recheight, BLACK);
-  // For Location 3:
-  tft.drawRect(rect1x - 1, rect3y - 1, recwidth + 2, recheight, BLACK);
-  tft.drawRect(rect1x, rect3y, recwidth, recheight, BLACK);
-  // For Location 4:
-  tft.drawRect(rect1x - 1, rect4y - 1, recwidth + 2, recheight, BLACK);
-  tft.drawRect(rect1x, rect4y, recwidth, recheight, BLACK);
-  // Status Block:
-  tft.drawRect(rect1x - 1, 117 - 1, recwidth + 2, 40, BLACK);
-  tft.drawRect(rect1x, 117, recwidth, 40, BLACK);
-  tft.fillRect(rect1x, 117, recwidth, 40, YELLOW); //To fill the block
-
-  // Full Fill RECT
-  // Location 1
-  tft.fillRect(rect1x, rect1y, recwidth, recheight, YELLOW);
-  // Location 2
-  tft.fillRect(rect1x, rect2y, recwidth, recheight, YELLOW);
-  // Location 3
-  tft.fillRect(rect1x, rect3y, recwidth, recheight, YELLOW);
-  // Location 4
-  tft.fillRect(rect1x, rect4y, recwidth, recheight, YELLOW);
-
-  // Location Names in display (Max 4 location)
-  // Location name can be  changed according to location preference.
-  // Location -1: GEC
-  tft.setCursor(40, 30);
-  tft.setTextColor(BLACK);
-  tft.setTextSize(1);
-  tft.print("GEC");
-
-  // Location -2 :Baizid
-  tft.setCursor(40, 55);
-  tft.setTextColor(BLACK);
-  tft.setTextSize(1);
-  tft.print("BAIZID");
-
-  // Location -3 :Muradpur
-  tft.setCursor(40, 75);
-  tft.setTextColor(BLACK);
-  tft.setTextSize(1);
-  tft.print("MURADPUR");
-
-  // Location -4 :PROBARTAK
-  tft.setCursor(40, 97);
-  tft.setTextColor(BLACK);
-  tft.setTextSize(1);
-  tft.print("PROBARTAK");
+  u8g2.clearBuffer();                     // clear the internal memory
+  u8g2.setFont(u8g2_font_ncenB08_tr);     // choose a suitable font
+  u8g2.drawStr(0, 10, "LOCATION BAIZID"); // write something to the internal memory
+  u8g2.sendBuffer();                      // transfer internal memory to the display
+  delay(1000);
 }
 //Checks SF,BW,CR
 void check_config()
