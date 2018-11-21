@@ -20,7 +20,7 @@
 * Communication - RF (LoRa Module)
 
 ### Controller Algorithm Overview
-![Controller Algorithm](https://gitlab.com/Momshad/Lora-Traffic-Control-System/blob/Controller-Adjustments-Timers-Displays/Data%20Collection/Algorithm/Traffic%20Control.jpg)
+![Controller Algorithm](Data Collection/Algorithm/Traffic Control.jpg)
 
 ### Node Algorithm Overview
-![Node Algorithm](https://gitlab.com/Momshad/Lora-Traffic-Control-System/blob/Controller-Adjustments-Timers-Displays/Data%20Collection/Algorithm/Traffic%20Control%20Node.jpg)    
+![Node Algorithm](Data Collection/Algorithm/Traffic Control Node.jpg)    
