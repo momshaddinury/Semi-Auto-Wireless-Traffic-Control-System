@@ -132,7 +132,7 @@ unsigned long DB_3_Process_End_Time;
 unsigned long DB_1_Signal_Runtime, DB_2_Signal_Runtime, DB_3_Signal_Runtime, DB_4_Signal_Runtime;
 unsigned long currentMil;
 
-//Experimental variables
+//Experimental variables, Color Flags
 int colorRG1 = 1, colorRG2 = 1, colorRG3 = 1, colorRG4 = 1;
 const int R = 1;
 const int G = 2;
@@ -187,7 +187,7 @@ void setup()
   //Interrupt:
   attachInterrupt(digitalPinToInterrupt(digitalButton_1), ISR_DB_1, FALLING);
   attachInterrupt(digitalPinToInterrupt(digitalButton_2), ISR_DB_2, FALLING);
-  attachInterrupt(digitalPinToInterrupt(digitalButton_3), ISR_DB_3, FALLING);
+  //attachInterrupt(digitalPinToInterrupt(digitalButton_3), ISR_DB_3, FALLING);
 }
 
 //MAIN LOOP
@@ -210,7 +210,7 @@ void loop()
   recieveData();
 
   //Analog functions:
-  AnalogAction();
+  //AnalogAction();
 
   //This function checks for data to receive
   recieveData();
