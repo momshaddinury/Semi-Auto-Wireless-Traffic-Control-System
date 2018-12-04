@@ -76,8 +76,8 @@ int T_packet_state;
 int R_packet_state;
 
 //Pin def of Switch:
-#define digitalButton_1 25
-#define digitalButton_2 26
+#define digitalButton_1 21
+#define digitalButton_2 22
 // #define digitalButton_3 5
 //Experimental
 #define digitalButton_3 32
