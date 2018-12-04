@@ -190,7 +190,7 @@ void setup()
   colorRG3 = X;
   colorRG4 = X;
 
-  location1Sec.attach(2, showTime);
+  location1Sec.attach(5, showTime);
 
   //Interrupt:
   // attachInterrupt(digitalPinToInterrupt(digitalButton_1), ISR_DB_1, FALLING);
@@ -272,7 +272,6 @@ void statusSecTiggerFunction()
 //Experimental esp32 ISRs
 void ISR_DB_1_G_32()
 {
-  
 
   if ((long(millis()) - DB_priv_time_1) >= interval)
   {
@@ -1181,7 +1180,7 @@ void Setting_Block_State_Color()
       Location1.detach();
       colorRG1 = G;
       DB_1_Signal_Runtime = millis();
-      location1Sec.attach(2, showTime);
+      location1Sec.attach(5, showTime);
 
 #ifndef TESTDEBUG
       tft.fillRect(rect1x, rect1y, recwidth, recheight, GREEN);
@@ -1207,7 +1206,7 @@ void Setting_Block_State_Color()
       Location1.detach();
       colorRG1 = R;
       DB_1_Signal_Runtime = millis();
-      location1Sec.attach(2, showTime);
+      location1Sec.attach(5, showTime);
 
 #ifndef TESTDEBUG
       tft.fillRect(rect1x, rect1y, recwidth, recheight, RED);
@@ -1243,7 +1242,7 @@ void Setting_Block_State_Color()
 
       colorRG2 = G;
       DB_2_Signal_Runtime = millis();
-      location1Sec.attach(2, showTime);
+      location1Sec.attach(5, showTime);
 
       // tft.fillRect(rect1x, rect2y, recwidth, recheight, GREEN);
       // tft.setCursor(40, 55);
@@ -1266,7 +1265,7 @@ void Setting_Block_State_Color()
 
       colorRG2 = R;
       DB_2_Signal_Runtime = millis();
-      location1Sec.attach(2, showTime);
+      location1Sec.attach(5, showTime);
 
       // tft.fillRect(rect1x, rect2y, recwidth, recheight, RED);
       // tft.setCursor(40, 55);
@@ -1296,7 +1295,7 @@ void Setting_Block_State_Color()
 
       colorRG3 = G;
       DB_3_Signal_Runtime = millis();
-      location1Sec.attach(2, showTime);
+      location1Sec.attach(5, showTime);
 
       tft.fillRect(rect1x, rect3y, recwidth, recheight, GREEN);
       tft.setCursor(40, 75);
@@ -1319,7 +1318,7 @@ void Setting_Block_State_Color()
 
       colorRG3 = R;
       DB_3_Signal_Runtime = millis();
-      location1Sec.attach(2, showTime);
+      location1Sec.attach(5, showTime);
 
       tft.fillRect(rect1x, rect3y, recwidth, recheight, RED);
       tft.setCursor(40, 75);
@@ -1349,7 +1348,7 @@ void Setting_Block_State_Color()
 
       colorRG4 = G;
       DB_4_Signal_Runtime = millis();
-      location1Sec.attach(2, showTime);
+      location1Sec.attach(5, showTime);
 
       tft.fillRect(rect1x, rect4y, recwidth, recheight, GREEN);
       tft.setCursor(40, 97);
@@ -1363,7 +1362,7 @@ void Setting_Block_State_Color()
 
       colorRG4 = R;
       DB_4_Signal_Runtime = millis();
-      location1Sec.attach(2, showTime);
+      location1Sec.attach(5, showTime);
 
       tft.fillRect(rect1x, rect4y, recwidth, recheight, RED);
       tft.setCursor(40, 97);
