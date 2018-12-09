@@ -83,6 +83,8 @@ int R_packet_state;
 #define digitalButton_3 32
 #define digitalButton_4 33
 
+bool autoTestingFlagTemp = true;
+
 #define analogButton A0
 
 //Analog button value storing variable:
@@ -219,6 +221,14 @@ void loop()
 
   //This functions is for InterruptAction:
   InterruptAction();
+
+  if (autoTestingFlagTemp)
+  {
+    String("GL1").toCharArray(testData, 50);
+    address = 3;
+    sendData(address, testData);
+    autoTestingFlagTemp = false;
+  }
 
   //This function checks for data to receive
   //recieveData();
@@ -828,6 +838,12 @@ void sendData(uint8_t NodeAddress, char message[])
     Serial.println(F("Packet sent..."));
 #endif
   }
+  else if (T_packet_state == 1)
+  {
+#ifdef DEBUG
+    loraSetup();
+#endif
+  }
   else if (T_packet_state == 5 || T_packet_state == 6 || T_packet_state == 7)
   {
     Serial.println("Conflict!");
@@ -851,6 +867,9 @@ void recieveData()
 #ifdef DEBUG
     Serial.println(F("Package received!"));
 #endif
+
+    autoTestingFlagTemp = true;
+
     for (unsigned int i = 0; i < sx1278.packet_received.length; i++)
     {
       my_packet[i] = (char)sx1278.packet_received.data[i];
