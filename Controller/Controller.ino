@@ -83,8 +83,6 @@ int R_packet_state;
 #define digitalButton_3 32
 #define digitalButton_4 33
 
-bool autoTestingFlagTemp = true;
-
 #define analogButton A0
 
 //Analog button value storing variable:
@@ -147,6 +145,9 @@ int colorRG1 = 1, colorRG2 = 1, colorRG3 = 1, colorRG4 = 1;
 const int R = 1;
 const int G = 2;
 const int X = 0;
+
+long int autoTime1 = 0;
+long int autoTime2 = 0;
 
 //Serial Print and Debug:
 #define DEBUG
@@ -220,15 +221,14 @@ void loop()
   //check_config();
 
   //This functions is for InterruptAction:
-  InterruptAction();
-
-  if (autoTestingFlagTemp)
-  {
-    String("GL1").toCharArray(testData, 50);
-    address = 3;
-    sendData(address, testData);
-    autoTestingFlagTemp = false;
+  autoTime1 = millis();
+  if((autoTime1 - autoTime2) > 10000){
+    ISR_DB_1_G_32();
+    autoTime2 = autoTime1;
   }
+  
+  
+  InterruptAction();
 
   //This function checks for data to receive
   //recieveData();
@@ -238,6 +238,7 @@ void loop()
 
   //This function checks for data to receive
   recieveData();
+  
 }
 
 //RESETs connected Nodes
@@ -831,6 +832,19 @@ void sendData(uint8_t NodeAddress, char message[])
   delay(1000);
 
   T_packet_state = sx1278.sendPacketTimeoutACKRetries(NodeAddress, message);
+  if (T_packet_state == 1)
+  {
+#ifdef DEBUG
+    Serial.println(F("State = 1 --> Modified By Shaem"));
+#endif
+    SPI.end();
+    delay(10000);
+
+    loraSetup();
+    displaySetup();
+  }
+
+
   if (T_packet_state == 0)
   {
 #ifdef DEBUG
@@ -838,17 +852,12 @@ void sendData(uint8_t NodeAddress, char message[])
     Serial.println(F("Packet sent..."));
 #endif
   }
-  else if (T_packet_state == 1)
-  {
-#ifdef DEBUG
-    loraSetup();
-#endif
-  }
   else if (T_packet_state == 5 || T_packet_state == 6 || T_packet_state == 7)
   {
     Serial.println("Conflict!");
     sendData(address, testData);
   }
+  
   else
   {
 #ifdef DEBUG
@@ -867,9 +876,6 @@ void recieveData()
 #ifdef DEBUG
     Serial.println(F("Package received!"));
 #endif
-
-    autoTestingFlagTemp = true;
-
     for (unsigned int i = 0; i < sx1278.packet_received.length; i++)
     {
       my_packet[i] = (char)sx1278.packet_received.data[i];
@@ -1099,91 +1105,91 @@ void showTime()
 
   switch (colorRG1)
   {
-  case R:
-    //tft.fillRect(rect1x + recwidth - 30, rect1y, 30, recheight, RED);
-    //tft.setCursor(rect1x + recwidth - 25, 30);
-    //tft.setTextColor(WHITE);
-    //tft.print(printt1);
+    case R:
+      //tft.fillRect(rect1x + recwidth - 30, rect1y, 30, recheight, RED);
+      //tft.setCursor(rect1x + recwidth - 25, 30);
+      //tft.setTextColor(WHITE);
+      //tft.print(printt1);
 
-    u8g1.clearBuffer();                 // clear the internal memory
-    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-    printt1 = "Red " + printt1;
-    u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
-    u8g1.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
-    u8g1.sendBuffer();
-    //state1 = !state1;
+      u8g1.clearBuffer();                 // clear the internal memory
+      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      printt1 = "Red " + printt1;
+      u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
+      u8g1.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
+      u8g1.sendBuffer();
+      //state1 = !state1;
 
-    break;
-  case G:
-    u8g1.clearBuffer();                 // clear the internal memory
-    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-    printt1 = "Green " + printt1;
-    u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
-    u8g1.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
-    u8g1.sendBuffer();
-    break;
-  case X:
-    break;
+      break;
+    case G:
+      u8g1.clearBuffer();                 // clear the internal memory
+      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      printt1 = "Green " + printt1;
+      u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
+      u8g1.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
+      u8g1.sendBuffer();
+      break;
+    case X:
+      break;
   }
 
   switch (colorRG2)
   {
-  case R:
-    // tft.fillRect(rect1x + recwidth - 30, rect2y, 30, recheight, RED);
-    // tft.setCursor(rect1x + recwidth - 25, 55);
-    // tft.setTextColor(WHITE);
-    // tft.print(printt2);
-    u8g1.clearBuffer();                 // clear the internal memory
-    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-    printt2 = "Red " + printt2;
-    u8g1.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
-    u8g1.sendBuffer();
-    break;
-  case G:
-    // tft.fillRect(rect1x + recwidth - 30, rect2y, 30, recheight, GREEN);
-    // tft.setCursor(rect1x + recwidth - 25, 55);
-    // tft.setTextColor(BLACK);
-    // tft.print(printt2);
-    u8g1.clearBuffer();                 // clear the internal memory
-    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-    printt2 = "Green " + printt2;
-    u8g1.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
-    u8g1.sendBuffer();
-    break;
-  case X:
-    break;
+    case R:
+      // tft.fillRect(rect1x + recwidth - 30, rect2y, 30, recheight, RED);
+      // tft.setCursor(rect1x + recwidth - 25, 55);
+      // tft.setTextColor(WHITE);
+      // tft.print(printt2);
+      u8g1.clearBuffer();                 // clear the internal memory
+      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      printt2 = "Red " + printt2;
+      u8g1.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
+      u8g1.sendBuffer();
+      break;
+    case G:
+      // tft.fillRect(rect1x + recwidth - 30, rect2y, 30, recheight, GREEN);
+      // tft.setCursor(rect1x + recwidth - 25, 55);
+      // tft.setTextColor(BLACK);
+      // tft.print(printt2);
+      u8g1.clearBuffer();                 // clear the internal memory
+      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      printt2 = "Green " + printt2;
+      u8g1.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
+      u8g1.sendBuffer();
+      break;
+    case X:
+      break;
   }
 
   switch (colorRG3)
   {
-  case R:
-    tft.fillRect(rect1x + recwidth - 30, rect3y, 30, recheight, RED);
-    tft.setCursor(rect1x + recwidth - 25, 75);
-    tft.print(printt3);
-    break;
-  case G:
-    tft.fillRect(rect1x + recwidth - 30, rect3y, 30, recheight, GREEN);
-    tft.setCursor(rect1x + recwidth - 25, 75);
-    tft.print(printt3);
-    break;
-  case X:
-    break;
+    case R:
+      tft.fillRect(rect1x + recwidth - 30, rect3y, 30, recheight, RED);
+      tft.setCursor(rect1x + recwidth - 25, 75);
+      tft.print(printt3);
+      break;
+    case G:
+      tft.fillRect(rect1x + recwidth - 30, rect3y, 30, recheight, GREEN);
+      tft.setCursor(rect1x + recwidth - 25, 75);
+      tft.print(printt3);
+      break;
+    case X:
+      break;
   }
 
   switch (colorRG4)
   {
-  case R:
-    tft.fillRect(rect1x + recwidth - 30, rect4y, 30, recheight, RED);
-    tft.setCursor(rect1x + recwidth - 25, 97);
-    tft.print(printt4);
-    break;
-  case G:
-    tft.fillRect(rect1x + recwidth - 30, rect4y, 30, recheight, GREEN);
-    tft.setCursor(rect1x + recwidth - 25, 97);
-    tft.print(printt4);
-    break;
-  case X:
-    break;
+    case R:
+      tft.fillRect(rect1x + recwidth - 30, rect4y, 30, recheight, RED);
+      tft.setCursor(rect1x + recwidth - 25, 97);
+      tft.print(printt4);
+      break;
+    case G:
+      tft.fillRect(rect1x + recwidth - 30, rect4y, 30, recheight, GREEN);
+      tft.setCursor(rect1x + recwidth - 25, 97);
+      tft.print(printt4);
+      break;
+    case X:
+      break;
   }
 }
 
