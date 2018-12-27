@@ -84,28 +84,28 @@ void loop() {
 
 void childTask() {                          //Sends ACK after changing LED
   #ifdef Child_1
-  if ( (receivedMsg.equals("GL1") || receivedMsg.equals("RL1")) && T_ISR_F && !FunctionBlockingFlag) {
+  if ( (receivedMsg.equals("GL1") || receivedMsg.equals("RL1")) /*&& T_ISR_F*/ && !FunctionBlockingFlag) {
     String("KL1").toCharArray(testData, 50);
     sendData(testData);
   }
   #endif
 
   #ifdef Child_2
-  if ( (receivedMsg.equals("GL2") || receivedMsg.equals("RL2")) && T_ISR_F && !FunctionBlockingFlag) {
+  if ( (receivedMsg.equals("GL2") || receivedMsg.equals("RL2")) /*&& T_ISR_F*/ && !FunctionBlockingFlag) {
     String("KL2").toCharArray(testData, 50);
     sendData(testData);
   }
   #endif
 
   #ifdef Child_3
-  if ( (receivedMsg.equals("GL3") || receivedMsg.equals("RL3")) && T_ISR_F && !FunctionBlockingFlag) {
+  if ( (receivedMsg.equals("GL3") || receivedMsg.equals("RL3")) /*&& T_ISR_F*/ && !FunctionBlockingFlag) {
     String("KL3").toCharArray(testData, 50);
     sendData(testData);
   }
   #endif
 
   #ifdef Child_4
-  if ( (receivedMsg.equals("GL4") || receivedMsg.equals("RL4")) && T_ISR_F && !FunctionBlockingFlag) {
+  if ( (receivedMsg.equals("GL4") || receivedMsg.equals("RL4")) /*&& T_ISR_F*/ && !FunctionBlockingFlag) {
     String("KL4").toCharArray(testData, 50);
     sendData(testData);
   }

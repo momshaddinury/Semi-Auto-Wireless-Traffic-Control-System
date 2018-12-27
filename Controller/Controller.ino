@@ -12,6 +12,8 @@
            Abdullah Zawad Khan
 */
 // ---------------------------------------------------------------------
+
+
 /******************************************************************************
    Includes
  ******************************************************************************/
@@ -27,8 +29,10 @@
    Definitions & Declarations
  *****************************************************************************/
 
-U8G2_PCD8544_84X48_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/2, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
 U8G2_PCD8544_84X48_F_4W_HW_SPI u8g1(U8G2_R0, /* cs=*/4, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
+U8G2_PCD8544_84X48_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/2, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
+U8G2_PCD8544_84X48_F_4W_HW_SPI u8g3(U8G2_R0, /* cs=*/15, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
+U8G2_PCD8544_84X48_F_4W_HW_SPI u8g4(U8G2_R0, /* cs=*/17, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
 
 //Lora SX1278:
 #define LORA_MODE 		4
@@ -49,6 +53,10 @@ int 		R_packet_state;
 #define digitalButton_2 22
 #define digitalButton_3 32
 #define digitalButton_4 33
+#define digitalButton_5 25
+#define digitalButton_6 26
+#define digitalButton_7 18
+#define digitalButton_8 19
 // #define digitalButton_3 5
 //Experimental
 
@@ -72,11 +80,12 @@ long interval = 3000;
 volatile unsigned long DB_priv_time_1;
 volatile unsigned long DB_priv_time_2;
 volatile unsigned long DB_priv_time_3;
-volatile unsigned long AB_priv_time;
+volatile unsigned long DB_priv_time_4;
 //Interrupt Flag @ISRs Function:
 volatile boolean DB_ISR_F_1 = false;
 volatile boolean DB_ISR_F_2 = false;
 volatile boolean DB_ISR_F_3 = false;
+volatile boolean DB_ISR_F_4 = false;
 // Button State var @ISRs function:
 boolean button1State = true;
 boolean button2State = true;
@@ -89,6 +98,8 @@ unsigned long DB_2_Process_Start_Time;
 unsigned long DB_2_Process_End_Time;
 unsigned long DB_3_Process_Start_Time;
 unsigned long DB_3_Process_End_Time;
+unsigned long DB_4_Process_Start_Time;
+unsigned long DB_4_Process_End_Time;
 
 //Automatic Transmission Flags and Var:
 // #define automation 
@@ -109,32 +120,6 @@ float t_time;
 boolean blockStateColor;
 int count = 0;
 
-
-///*********************************************************************************************///
-//Locations on display:
-// String Location;
-// String Location_1 = "GEC";
-// String Location_2 = "BAIZID";
-// String Location_3 = "MURADPUR";
-// String Location_4 = "PROBARTAK";
-
-//boolean blockStateColor2;
-
-//Ticker:
-// Ticker Location1, Location2, Location3, Location4, statusRectToggler;
-
-// boolean locationBlock_1 = true;
-// boolean locationBlock_2 = true;
-// boolean locationBlock_3 = true;
-// boolean locationBlock_4 = true;
-
-// bool testDebug = true;
-// int yaxis = 20;
-// int yaxis_2 = 20;
-// int print_count = 1;
-
-// boolean automation_toggle = true;
-
 //MAIN SETUP FUNCTION
 void setup()
 {
@@ -149,29 +134,39 @@ void setup()
   loraSetup();
 
   //PinMode:
+  //Location 1 Button:
   pinMode(digitalButton_1, INPUT_PULLUP);
   pinMode(digitalButton_2, INPUT_PULLUP);
-  // pinMode(digitalButton_3, INPUT_PULLUP);
-  // pinMode(digitalButton_4, INPUT_PULLUP);
+  //Location 2 Button:
+  pinMode(digitalButton_3, INPUT_PULLUP);
+  pinMode(digitalButton_4, INPUT_PULLUP);
+  //Location 3 Button:
+  pinMode(digitalButton_5, INPUT_PULLUP);
+  pinMode(digitalButton_6, INPUT_PULLUP);
+  //Location 4 Button:
+  pinMode(digitalButton_7, INPUT_PULLUP);
+  pinMode(digitalButton_8, INPUT_PULLUP);
 
   //Initialization of timers
-  DB_1_Signal_Runtime = millis();
-  // DB_2_Signal_Runtime = millis();
-  // DB_3_Signal_Runtime = millis();
-  // DB_4_Signal_Runtime = millis();
+  DB_1_Signal_Runtime = millis(); //L 1
+  DB_2_Signal_Runtime = millis(); //L 2
+  DB_3_Signal_Runtime = millis();
+  DB_4_Signal_Runtime = millis();
 
-  colorRG1 = X;
-  // colorRG2 = X;
-  // colorRG3 = X;
-  // colorRG4 = X;
-
-  // location1Sec.attach(5, showTime);
+  colorRG1 = X;	//L 1
+  colorRG2 = X;	//L 2
+  colorRG3 = X;
+  colorRG4 = X;
 
   //Interrupt Experimental
   attachInterrupt(digitalPinToInterrupt(digitalButton_1), ISR_DB_1_G_32, FALLING);
   attachInterrupt(digitalPinToInterrupt(digitalButton_2), ISR_DB_1_R_32, FALLING);
-  // attachInterrupt(digitalPinToInterrupt(digitalButton_3), ISR_DB_2_G_32, FALLING);
-  // attachInterrupt(digitalPinToInterrupt(digitalButton_4), ISR_DB_2_R_32, FALLING);
+  attachInterrupt(digitalPinToInterrupt(digitalButton_3), ISR_DB_2_G_32, FALLING);
+  attachInterrupt(digitalPinToInterrupt(digitalButton_4), ISR_DB_2_R_32, FALLING);
+  attachInterrupt(digitalPinToInterrupt(digitalButton_5), ISR_DB_3_G_32, FALLING);
+  attachInterrupt(digitalPinToInterrupt(digitalButton_6), ISR_DB_3_R_32, FALLING);
+  attachInterrupt(digitalPinToInterrupt(digitalButton_7), ISR_DB_4_G_32, FALLING);
+  attachInterrupt(digitalPinToInterrupt(digitalButton_8), ISR_DB_4_R_32, FALLING);
 }
 
 //MAIN LOOP
@@ -206,7 +201,6 @@ void sync()
 //Experimental esp32 ISRs
 void ISR_DB_1_G_32()
 {
-
   if ((long(millis()) - DB_priv_time_1) >= interval)
   {
     DB_ISR_F_1 = true;
@@ -233,34 +227,89 @@ void ISR_DB_1_R_32()
   }
 }
 
-// void ISR_DB_2_G_32()
-// {
-//   if ((long(millis()) - DB_priv_time_2) >= interval)
-//   {
-//     DB_ISR_F_2 = true;
-//     DB_priv_time_2 = millis();
-//     Serial.print("\n##");
-//     Serial.print(count += 1);
-//     Serial.print("\t");
-//     button2State = true;
-//     // DB_priv_time_2 = millis();
-//   }
-// }
+void ISR_DB_2_G_32()
+{
+  if ((long(millis()) - DB_priv_time_2) >= interval)
+  {
+    DB_ISR_F_2 = true;
+    DB_priv_time_2 = millis();
+    Serial.print("\n##");
+    Serial.print(count += 1);
+    Serial.print("\t");
+    button2State = true;
+    // DB_priv_time_2 = millis();
+  }
+}
 
-// void ISR_DB_2_R_32()
-// {
-//   if ((long(millis()) - DB_priv_time_2) >= interval)
-//   {
-//     DB_ISR_F_2 = true;
-//     DB_priv_time_2 = millis();
-//     Serial.print("\n##");
-//     Serial.print(count += 1);
-//     Serial.print("\t");
-//     button2State = false;
-//     // DB_priv_time_2 = millis();
-//   }
-// }
-//
+void ISR_DB_2_R_32()
+{
+  if ((long(millis()) - DB_priv_time_2) >= interval)
+  {
+    DB_ISR_F_2 = true;
+    DB_priv_time_2 = millis();
+    Serial.print("\n##");
+    Serial.print(count += 1);
+    Serial.print("\t");
+    button2State = false;
+    // DB_priv_time_2 = millis();
+  }
+}
+
+void ISR_DB_3_G_32()
+{
+  if ((long(millis()) - DB_priv_time_3) >= interval)
+  {
+    DB_ISR_F_3 = true;
+    DB_priv_time_3 = millis();
+    Serial.print("\n##");
+    Serial.print(count += 1);
+    Serial.print("\t");
+    button3State = true;
+    // DB_priv_time_2 = millis();
+  }
+}
+
+void ISR_DB_3_R_32()
+{
+  if ((long(millis()) - DB_priv_time_3) >= interval)
+  {
+    DB_ISR_F_3 = true;
+    DB_priv_time_3 = millis();
+    Serial.print("\n##");
+    Serial.print(count += 1);
+    Serial.print("\t");
+    button3State = false;
+    // DB_priv_time_2 = millis();
+  }
+}
+
+void ISR_DB_4_G_32()
+{
+  if ((long(millis()) - DB_priv_time_4) >= interval)
+  {
+    DB_ISR_F_4 = true;
+    DB_priv_time_4 = millis();
+    Serial.print("\n##");
+    Serial.print(count += 1);
+    Serial.print("\t");
+    button4State = true;
+    // DB_priv_time_2 = millis();
+  }
+}
+
+void ISR_DB_4_R_32()
+{
+  if ((long(millis()) - DB_priv_time_4) >= interval)
+  {
+    DB_ISR_F_4 = true;
+    DB_priv_time_4 = millis();
+    Serial.print("\n##");
+    Serial.print(count += 1);
+    Serial.print("\t");
+    button4State = false;
+    // DB_priv_time_2 = millis();
+  }
+}
 
 //States what happens when InterruptAction Function is called:
 void InterruptAction()
@@ -269,9 +318,7 @@ void InterruptAction()
   if (DB_ISR_F_1)
   {
     DB_1_Process_Start_Time = millis();
-    // Location = Location_1;
 
-    // location1Sec.attach(1, showTime);
     colorRG1 = X;
 
     if (button1State)
@@ -297,12 +344,10 @@ void InterruptAction()
       if (T_packet_state == 0)
       {
         blockStateColor = true;
-
         button1State = false;
       }
       else
       {
-
         button1State = true;
       }
 	  #ifndef TEST
@@ -329,12 +374,9 @@ void InterruptAction()
       address = 3;
       sendData(address, testData);
 
-
       if (T_packet_state == 0)
       {
         blockStateColor = false;
-        //Location1.attach(1, Blink_Location_Rect_1);
-
         button1State = true;
       }
       else
@@ -347,123 +389,159 @@ void InterruptAction()
 	  #endif
     }
   }
-  //
-	  //DB 2:
-	  // else if (DB_ISR_F_2)
-	  // {
-	  //   DB_2_Process_Start_Time = millis();
-	  //   Location = Location_2;
 
-	  //   colorRG2 = X;
+  //DB 2:
+  else if (DB_ISR_F_2)
+  {
+    DB_2_Process_Start_Time = millis();
 
-	  //   if (button2State)
-	  //   {
-			// #ifdef DEBUG
-	  //     	Serial.println("\nButton 2 was pressed once!");
-			// #endif
+    colorRG2 = X;
 
-	  //     colorRG2 = G;
-	  //     DB_2_Signal_Runtime = millis();
+    if (button2State)
+    {
+	  #ifdef DEBUG
+	  Serial.println("\nButton 2 was pressed once!");
+	  #endif
 
-	  //     String("GL2").toCharArray(testData, 50);
-	  //     address = 4;
-	  //     sendData(address, testData);
+      String("GL2").toCharArray(testData, 50);
+      address = 4;
+      sendData(address, testData);
 
-	  //     if (T_packet_state == 0)
-	  //     {
-	  //       blockStateColor = true;
-	  //       //Location2.attach(0.9, Blink_Location_Rect_2);
+      if (T_packet_state == 0)
+      {
+        blockStateColor = true;
+        button2State = false;
+      }
+      else
+      {
+        button2State = true;
+      }
 
-	  //       button2State = false;
-	  //     }
-	  //     else
-	  //     {
-	  //       button2State = true;
-	  //     }
+      DB_ISR_F_2 = false;
+    }
+    else if (!button2State)
+    {
+	  #ifdef DEBUG
+      Serial.println("\nButton 2 was pressed twice!");
+	  #endif
 
-	  //     DB_ISR_F_2 = false;
-	  //   }
-	  //   else if (!button2State)
-	  //   {
-			// #ifdef DEBUG
-	  //     Serial.println("\nButton 2 was pressed twice!");
-			// #endif
+      String("RL2").toCharArray(testData, 50);
+      address = 4;
+      sendData(address, testData);
 
-	  //     colorRG2 = R;
-	  //     DB_2_Signal_Runtime = millis();
+      if (T_packet_state == 0)
+      {
+        blockStateColor = false;
+        button2State = true;
+      }
+      else
+      {
+        button2State = false;
+      }
+      DB_ISR_F_2 = false;
+    }
+  }
+  // DB 3:
+  else if (DB_ISR_F_3)
+  {
+    DB_3_Process_Start_Time = millis();
 
-	  //     String("RL2").toCharArray(testData, 50);
-	  //     address = 4;
-	  //     sendData(address, testData);
+    colorRG3 = X;
 
-	  //     if (T_packet_state == 0)
-	  //     {
-	  //       blockStateColor = false;
-	  //       //Location2.attach(0.9, Blink_Location_Rect_2);
-	  //       button2State = true;
-	  //     }
-	  //     else
-	  //     {
-	  //       button2State = false;
-	  //     }
-	  //     DB_ISR_F_2 = false;
-	  //   }
-	  // }
-	  // DB 3:
-	  // else if (DB_ISR_F_3)
-	  // {
-	  //   DB_3_Process_Start_Time = millis();
-	  //   Location = Location_3;
+    if (button3State)
+    {
+	  #ifdef DEBUG
+      Serial.println("\nButton 3 was pressed once!");
+	  #endif
 
-	  //   colorRG3 = X;
+      String("GL3").toCharArray(testData, 50);
+      address = 6;
+      sendData(address, testData);
 
-	  //   if (button3State)
-	  //   {
-			// #ifdef DEBUG
-	  //     Serial.println("\nButton 3 was pressed once!");
-			// #endif
+      if (T_packet_state == 0)
+      {
+        blockStateColor = true;
+        button3State = false;
+      }
+      else
+      {
+        button3State = true;
+      }
+      DB_ISR_F_3 = false;
+    }
+    else if (!button3State)
+    {
+	  #ifdef DEBUG
+      Serial.println("\nButton 3 was pressed twice!");
+	  #endif
 
-	  //     String("GL3").toCharArray(testData, 50);
-	  //     address = 6;
-	  //     sendData(address, testData);
+      String("RL3").toCharArray(testData, 50);
+      address = 6;
+      sendData(address, testData);
 
-	  //     if (T_packet_state == 0)
-	  //     {
-	  //       blockStateColor = true;
-	  //       Location3.attach(0.7, Blink_Location_Rect_3);
+      if (T_packet_state == 0)
+      {
+        blockStateColor = false;
+        button3State = true;
+      }
+      else
+      {
+        button3State = false;
+      }
+      DB_ISR_F_3 = false;
+    }
+  }
+  //DB 4:
+  else if (DB_ISR_F_4)
+  {
+    DB_4_Process_Start_Time = millis();
 
-	  //       button3State = false;
-	  //     }
-	  //     else
-	  //     {
-	  //       button3State = true;
-	  //     }
-	  //     DB_ISR_F_3 = false;
-	  //   }
-	  //   else if (!button3State)
-	  //   {
-			// #ifdef DEBUG
-	  //     Serial.println("\nButton 3 was pressed twice!");
-			// #endif
+    colorRG4 = X;
 
-	  //     String("RL3").toCharArray(testData, 50);
-	  //     address = 6;
-	  //     sendData(address, testData);
+    if (button4State)
+    {
+	  #ifdef DEBUG
+	  Serial.println("\nButton 4 was pressed once!");
+	  #endif
 
-	  //     if (T_packet_state == 0)
-	  //     {
-	  //       blockStateColor = false;
-	  //       Location3.attach(0.7, Blink_Location_Rect_3);
+      String("GL4").toCharArray(testData, 50);
+      address = 7;
+      sendData(address, testData);
 
-	  //       button3State = true;
-	  //     }
-	  //     else
-	  //     {
-	  //       button3State = false;
-	  //     }
-	  //     DB_ISR_F_3 = false;
-	  //   }
-	  // }
+      if (T_packet_state == 0)
+      {
+        blockStateColor = true;
+        button4State = false;
+      }
+      else
+      {
+        button4State = true;
+      }
+
+      DB_ISR_F_4 = false;
+    }
+    else if (!button4State)
+    {
+	  #ifdef DEBUG
+      Serial.println("\nButton 4 was pressed twice!");
+	  #endif
+
+      String("RL4").toCharArray(testData, 50);
+      address = 7;
+      sendData(address, testData);
+
+      if (T_packet_state == 0)
+      {
+        blockStateColor = false;
+        button4State = true;
+      }
+      else
+      {
+        button4State = false;
+      }
+      DB_ISR_F_4 = false;
+    }
+  }
 }
 
 
@@ -494,24 +572,6 @@ void sendData(uint8_t NodeAddress, char message[])
   delay(1000);
 
   T_packet_state = sx1278.sendPacketTimeoutACKRetries(NodeAddress, message);
-
-  if (T_packet_state == 1)
-  {
-	#ifdef DEBUG
-    Serial.println(F("State = 1 --> Modified By Shaem"));
-	#endif
-	//   u8g1.clearBuffer();                 // clear the internal memory
-      // u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      // String printt1 = "State 1 ";
-    //   u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
-    //   u8g1.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
-    //   u8g1.sendBuffer();
-    // SPI.end();
-    delay(5000);
-
-    loraSetup();
-    // displaySetup();
-  }
 
   if (T_packet_state == 0)
   {
@@ -563,16 +623,15 @@ void recieveData()
 void showTime()
 {
   currentMil = millis();
-  // tft.setTextSize(1);
   int time1 = (currentMil - DB_1_Signal_Runtime) / 1000;
-  // int time2 = (currentMil - DB_2_Signal_Runtime) / 1000;
-  // int time3 = (currentMil - DB_3_Signal_Runtime) / 1000;
-  // int time4 = (currentMil - DB_4_Signal_Runtime) / 1000;
+  int time2 = (currentMil - DB_2_Signal_Runtime) / 1000;
+  int time3 = (currentMil - DB_3_Signal_Runtime) / 1000;
+  int time4 = (currentMil - DB_4_Signal_Runtime) / 1000;
 
   String printt1 = String(time1) + "S";
-  // String printt2 = String(time2) + "S";
-  // String printt3 = String(time3) + "S";
-  // String printt4 = String(time4) + "S";
+  String printt2 = String(time2) + "S";
+  String printt3 = String(time3) + "S";
+  String printt4 = String(time4) + "S";
 
   switch (colorRG1)
   {
@@ -599,46 +658,72 @@ void showTime()
       break;
   }
 
-  // switch (colorRG2)
-  // {
-  //   case R:
+  switch (colorRG2)
+  {
+    case R:
       
-  //     u8g1.clearBuffer();                 // clear the internal memory
-  //     u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  //     printt2 = "Red " + printt2;
-  //     u8g1.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
-  //     u8g1.sendBuffer();
-  //     break;
-  //   case G:
-  //     u8g1.clearBuffer();                 // clear the internal memory
-  //     u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  //     printt2 = "Green " + printt2;
-  //     u8g1.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
-  //     u8g1.sendBuffer();
-  //     break;
-  //   case X:
-  //     break;
-  // }
+      u8g2.clearBuffer();                 // clear the internal memory
+      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      printt2 = "Red " + printt2;
+      u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
+      u8g2.drawStr(0, 10, "LOCATION BAI");
+      u8g2.sendBuffer();
+      break;
+    case G:
+      u8g2.clearBuffer();                 // clear the internal memory
+      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      printt2 = "Green " + printt2;
+      u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
+      u8g2.drawStr(0, 10, "LOCATION BAI");
+      u8g2.sendBuffer();
+      break;
+    case X:
+      break;
+  }
 
-  // switch (colorRG3)
-  // {
-  //   case R:
-  //     break;
-  //   case G:
-  //     break;
-  //   case X:
-  //     break;
-  // }
+  switch (colorRG3)
+  {
+    case R:
+      u8g3.clearBuffer();                 // clear the internal memory
+      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      printt3 = "Red " + printt3;
+      u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
+      u8g3.drawStr(0, 10, "LOCATION OXY");
+      u8g3.sendBuffer();
+      break;
+    case G:
+      u8g3.clearBuffer();                 // clear the internal memory
+      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      printt3 = "Green " + printt3;
+      u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
+      u8g3.drawStr(0, 10, "LOCATION OXY");
+      u8g3.sendBuffer();
+      break;
+    case X:
+      break;
+  }
 
-  // switch (colorRG4)
-  // {
-  //   case R:
-  //     break;
-  //   case G:
-  //     break;
-  //   case X:
-  //     break;
-  // }
+  switch (colorRG4)
+  {
+    case R:
+      u8g4.clearBuffer();                 // clear the internal memory
+      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      printt4 = "Red " + printt4;
+      u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
+      u8g4.drawStr(0, 10, "LOCATION MUR");
+      u8g4.sendBuffer();
+      break;
+    case G:
+      u8g4.clearBuffer();                 // clear the internal memory
+      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      printt4 = "Green " + printt4;
+      u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
+      u8g4.drawStr(0, 10, "LOCATION MUR");
+      u8g4.sendBuffer();
+      break;
+    case X:
+      break;
+  }
 }
 
 //FINAL LOCATION BLOCK STATE
@@ -650,107 +735,82 @@ void Setting_Block_State_Color()
 
     if (blockStateColor)
     {
-      // Location1.detach();
       colorRG1 = G;
       DB_1_Signal_Runtime = millis();
-      // location1Sec.attach(2, showTime); ************
+      // location1Sec.attach(2, showTime);
     }
     else if (!blockStateColor)
     {
-
-      // Location1.detach();
       colorRG1 = R;
       DB_1_Signal_Runtime = millis();
-      // location1Sec.attach(2, showTime); ***********
+      // location1Sec.attach(2, showTime);
     }
     DB_1_Process_End_Time = millis();
     t_time = ((DB_1_Process_End_Time - DB_1_Process_Start_Time) / 1000.0);
-    Serial.print("Required time: ");
+    Serial.print("Required time (L1): ");
     Serial.println(t_time, 3);
-    // testlog();
-    // digitalWrite(0, LOW);
   }
-  /*
-	  //Sets the block state for SECOND location
-	  // if (receivedMsg.equals("KL2"))
-	  // {
-	  //   if (blockStateColor)
-	  //   {
-	  //     Location2.detach();
 
-	  //     colorRG2 = G;
-	  //     DB_2_Signal_Runtime = millis();
-	  //     location1Sec.attach(5, showTime);
+  //Sets the block state for SECOND location
+  if (receivedMsg.equals("KL2"))
+  {
+    if (blockStateColor)
+    {
+      colorRG2 = G;
+      DB_2_Signal_Runtime = millis();
+      // location1Sec.attach(5, showTime);
+    }
+    else if (!blockStateColor)
+    {
+      colorRG2 = R;
+      DB_2_Signal_Runtime = millis();
+      // location1Sec.attach(5, showTime);
+    }
+    DB_2_Process_End_Time = millis();
+    Serial.print("Required time (L2): ");
+    Serial.println(((DB_2_Process_End_Time - DB_2_Process_Start_Time) / 1000.0), 3);
+  }
 
-	  //     statusRectToggler.attach(2, statusSecTiggerFunction);
-	  //     // -----------------------------------------------
-	  //   }
-	  //   else if (!blockStateColor)
-	  //   {
-	  //     Location2.detach();
+  // Sets the block state for THIRD location
+  if (receivedMsg.equals("KL3"))
+  {
+    if (blockStateColor)
+    {
+      colorRG3 = G;
+      DB_3_Signal_Runtime = millis();
+      // location1Sec.attach(5, showTime);
+    }
+    else if (!blockStateColor)
+    {
+      colorRG3 = R;
+      DB_3_Signal_Runtime = millis();
+      // location1Sec.attach(5, showTime);
+    }
+    DB_3_Process_End_Time = millis();
+    Serial.print("Required time (L3): ");
+    Serial.println(((DB_3_Process_End_Time - DB_3_Process_Start_Time) / 1000.0), 3);
+  }
 
-	  //     colorRG2 = R;
-	  //     DB_2_Signal_Runtime = millis();
-	  //     location1Sec.attach(5, showTime);
-
-	  //     statusRectToggler.attach(2, statusSecTiggerFunction);
-	  //     // -----------------------------------------------
-	  //   }
-	  //   DB_2_Process_End_Time = millis();
-	  //   Serial.print("2 - Required time: ");
-	  //   Serial.println(((DB_2_Process_End_Time - DB_2_Process_Start_Time) / 1000.0), 3);
-	  // }
-	  //Sets the block state for THIRD location
-	  // if (receivedMsg.equals("KL3"))
-	  // {
-	  //   if (blockStateColor)
-	  //   {
-	  //     Location3.detach();
-
-	  //     colorRG3 = G;
-	  //     DB_3_Signal_Runtime = millis();
-	  //     location1Sec.attach(5, showTime);
-
-	  //     statusRectToggler.attach(2, statusSecTiggerFunction);
-	  //     // -----------------------------------------------
-	  //   }
-	  //   else if (!blockStateColor)
-	  //   {
-	  //     Location3.detach();
-
-	  //     colorRG3 = R;
-	  //     DB_3_Signal_Runtime = millis();
-	  //     location1Sec.attach(5, showTime);
-
-	  //     statusRectToggler.attach(2, statusSecTiggerFunction);
-	  //     // -----------------------------------------------
-	  //   }
-	  //   DB_3_Process_End_Time = millis();
-	  //   Serial.print("3 - Required time: ");
-	  //   Serial.println(((DB_3_Process_End_Time - DB_3_Process_Start_Time) / 1000.0), 3);
-	  // }
-	  //Sets the block state for FOURTH location
-	  // if (receivedMsg.equals("KL4"))
-	  // {
-	  //   if (blockStateColor)
-	  //   {
-	  //     Location4.detach();
-
-	  //     colorRG4 = G;
-	  //     DB_4_Signal_Runtime = millis();
-	  //     location1Sec.attach(5, showTime);
-
-	  //   }
-	  //   else if (!blockStateColor)
-	  //   {
-	  //     Location4.detach();
-
-	  //     colorRG4 = R;
-	  //     DB_4_Signal_Runtime = millis();
-	  //     location1Sec.attach(5, showTime);
-	  //   }
-	  // } 
-  */
+  //Sets the block state for FOURTH location
+  if (receivedMsg.equals("KL4"))
+  {
+    if (blockStateColor)
+    {
+      colorRG4 = G;
+      DB_4_Signal_Runtime = millis();
+      // location1Sec.attach(5, showTime);
+    }
+    else if (!blockStateColor)
+    {
+      colorRG4 = R;
+      DB_4_Signal_Runtime = millis();
+      // location1Sec.attach(5, showTime);
+    }
+    DB_4_Process_End_Time = millis();
+    Serial.print("Required time (L4): ");
+    Serial.println(((DB_4_Process_End_Time - DB_4_Process_Start_Time) / 1000.0), 3);
+  } 
+ 
 }
 
 //Sets Important Lora Modes and returns 'true' if it was successful or 'false' if it wasn't
@@ -866,21 +926,33 @@ void loraSetup()
 //Creates the UI layout
 void displaySetup()
 {
-  u8g2.begin();
-
   u8g1.begin();
-  loraSetup();
+  u8g2.begin();
+  u8g3.begin();
+  u8g4.begin();
 
-  u8g1.clearBuffer();                  // clear the internal memory
-  u8g1.setFont(u8g2_font_ncenB08_tr);  // choose a suitable font
-  u8g1.drawStr(0, 10, "LOCATION GEC"); // write something to the internal memory
-  u8g1.sendBuffer();                   // transfer internal memory to the display
+  u8g1.clearBuffer();                  	  // clear the internal memory
+  u8g1.setFont(u8g2_font_ncenB08_tr);  	  // choose a suitable font
+  u8g1.drawStr(0, 10, "LOCATION GEC"); 	  // write something to the internal memory
+  u8g1.sendBuffer();                   	  // transfer internal memory to the display
   delay(1000);
 
   u8g2.clearBuffer();                     // clear the internal memory
   u8g2.setFont(u8g2_font_ncenB08_tr);     // choose a suitable font
   u8g2.drawStr(0, 10, "LOCATION BAIZID"); // write something to the internal memory
   u8g2.sendBuffer();                      // transfer internal memory to the display
+  delay(1000);
+
+  u8g3.clearBuffer();                     // clear the internal memory
+  u8g3.setFont(u8g2_font_ncenB08_tr);     // choose a suitable font
+  u8g3.drawStr(0, 10, "LOCATION OXY"); 	  // write something to the internal memory
+  u8g3.sendBuffer();                      // transfer internal memory to the display
+  delay(1000);
+
+  u8g4.clearBuffer();                     // clear the internal memory
+  u8g4.setFont(u8g2_font_ncenB08_tr);     // choose a suitable font
+  u8g4.drawStr(0, 10, "LOCATION MUR"); 	  // write something to the internal memory
+  u8g4.sendBuffer();                      // transfer internal memory to the display
   delay(1000);
 }
 
