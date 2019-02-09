@@ -175,69 +175,19 @@ void loop()
 {
   //After the device is booted it automatically re-boots other device:
   sync();
-  // autoTransmission();
-  //
-  //  InterruptAction();
-  //  //This function checks for data to receive
-  //  recieveData();
-  //  //Show time on display:
-  //  showTime();
+  //autoTransmission();
 
-
-
-  ISR_DB_1_G_32();
   InterruptAction();
   //This function checks for data to receive
   recieveData();
   //Show time on display:
   showTime();
-  delay(2000);
-
-  ISR_DB_2_G_32();
-  InterruptAction();
-  //This function checks for data to receive
-  recieveData();
-  //Show time on display:
-  showTime();
-  delay(2000);
-
-
-  ISR_DB_3_R_32();
-  InterruptAction();
-  //This function checks for data to receive
-  recieveData();
-  //Show time on display:
-  showTime();
-  delay(2000);
-  
-  ISR_DB_1_R_32();
-  InterruptAction();
-  //This function checks for data to receive
-  recieveData();
-  //Show time on display:
-  showTime();
-  delay(2000);
-  
-  ISR_DB_2_R_32();
-  InterruptAction();
-  //This function checks for data to receive
-  recieveData();
-  //Show time on display:
-  showTime();
-  delay(2000);
-
-
-  ISR_DB_3_G_32();
-  InterruptAction();
-  //This function checks for data to receive
-  recieveData();
-  //Show time on display:
-  showTime();
-  delay(2000);
 
 
 
-  
+
+
+
 
 }
 
