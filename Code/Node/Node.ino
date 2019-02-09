@@ -3,10 +3,10 @@
 #include <SX1278.h>
 
 //Child Parameter:
-// #define Child_1
-#define Child_2
-// #define Child_3
-// #define Child_4
+//#define Child_1
+//#define Child_2
+ //#define Child_3
+#define Child_4
 
 //
   //Lora SX1278:
@@ -192,7 +192,7 @@ void Trigger_ISR() {                        //ISR Trigger Function
 */
 
 void sendData(char message[]) {             //Global Send Data Function
-  delay(1000);
+  //delay(1000);
   T_packet_state = sx1278.sendPacketTimeoutACKRetries(ControllerAddress, message);
   Serial.print("Send Packet State:");
   Serial.println(T_packet_state);

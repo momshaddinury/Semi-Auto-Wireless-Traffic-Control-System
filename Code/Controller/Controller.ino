@@ -34,6 +34,7 @@ U8G2_PCD8544_84X48_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/2, /* dc=*/23, /* reset=*/1
 U8G2_PCD8544_84X48_F_4W_HW_SPI u8g3(U8G2_R0, /* cs=*/15, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
 U8G2_PCD8544_84X48_F_4W_HW_SPI u8g4(U8G2_R0, /* cs=*/17, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
 
+
 //Lora SX1278:
 #define LORA_MODE 		4
 #define LORA_CHANNEL 	CH_6_BW_125
@@ -102,7 +103,7 @@ unsigned long DB_4_Process_Start_Time;
 unsigned long DB_4_Process_End_Time;
 
 //Automatic Transmission Flags and Var:
-// #define automation 
+// #define automation
 long int autoTime1 = 0;
 long int autoTime2 = 0;
 
@@ -175,11 +176,69 @@ void loop()
   //After the device is booted it automatically re-boots other device:
   sync();
   // autoTransmission();
+  //
+  //  InterruptAction();
+  //  //This function checks for data to receive
+  //  recieveData();
+  //  //Show time on display:
+  //  showTime();
+
+
+
+  ISR_DB_1_G_32();
   InterruptAction();
   //This function checks for data to receive
   recieveData();
   //Show time on display:
   showTime();
+  delay(2000);
+
+  ISR_DB_2_G_32();
+  InterruptAction();
+  //This function checks for data to receive
+  recieveData();
+  //Show time on display:
+  showTime();
+  delay(2000);
+
+
+  ISR_DB_3_R_32();
+  InterruptAction();
+  //This function checks for data to receive
+  recieveData();
+  //Show time on display:
+  showTime();
+  delay(2000);
+  
+  ISR_DB_1_R_32();
+  InterruptAction();
+  //This function checks for data to receive
+  recieveData();
+  //Show time on display:
+  showTime();
+  delay(2000);
+  
+  ISR_DB_2_R_32();
+  InterruptAction();
+  //This function checks for data to receive
+  recieveData();
+  //Show time on display:
+  showTime();
+  delay(2000);
+
+
+  ISR_DB_3_G_32();
+  InterruptAction();
+  //This function checks for data to receive
+  recieveData();
+  //Show time on display:
+  showTime();
+  delay(2000);
+
+
+
+  
+
 }
 
 //RESETs connected Nodes
@@ -327,15 +386,15 @@ void InterruptAction()
       //location1Sec.attach(1, showTime);
       // signalTimeCount = 0;
 
-	  #ifdef DEBUG
+#ifdef DEBUG
       Serial.println("\nButton 1 was pressed once!");
-	  #endif
+#endif
 
-	  #ifdef TEST
+#ifdef TEST
       Serial.print("##");
       Serial.print(count += 1);
       Serial.print("\t");
-	  #endif
+#endif
 
       String("GL1").toCharArray(testData, 50);
       address = 3;
@@ -350,9 +409,9 @@ void InterruptAction()
       {
         button1State = true;
       }
-	  #ifndef TEST
+#ifndef TEST
       DB_ISR_F_1 = false;
-	  #endif
+#endif
     }
     else if (!button1State)
     {
@@ -360,15 +419,15 @@ void InterruptAction()
       //signalTimeCount = 0;
       //location1Sec.attach(1, showTime);
 
-	  #ifdef DEBUG
+#ifdef DEBUG
       Serial.println("\nButton 1 was pressed twice!");
-	  #endif
+#endif
 
-	  #ifdef TEST
+#ifdef TEST
       Serial.print("##");
       Serial.print(count += 1);
       Serial.print("\t");
-	  #endif
+#endif
 
       String("RL1").toCharArray(testData, 50);
       address = 3;
@@ -384,9 +443,9 @@ void InterruptAction()
         button1State = false;
       }
 
-	  #ifndef TEST
+#ifndef TEST
       DB_ISR_F_1 = false;
-	  #endif
+#endif
     }
   }
 
@@ -399,9 +458,9 @@ void InterruptAction()
 
     if (button2State)
     {
-	  #ifdef DEBUG
-	  Serial.println("\nButton 2 was pressed once!");
-	  #endif
+#ifdef DEBUG
+      Serial.println("\nButton 2 was pressed once!");
+#endif
 
       String("GL2").toCharArray(testData, 50);
       address = 4;
@@ -421,9 +480,9 @@ void InterruptAction()
     }
     else if (!button2State)
     {
-	  #ifdef DEBUG
+#ifdef DEBUG
       Serial.println("\nButton 2 was pressed twice!");
-	  #endif
+#endif
 
       String("RL2").toCharArray(testData, 50);
       address = 4;
@@ -450,9 +509,9 @@ void InterruptAction()
 
     if (button3State)
     {
-	  #ifdef DEBUG
+#ifdef DEBUG
       Serial.println("\nButton 3 was pressed once!");
-	  #endif
+#endif
 
       String("GL3").toCharArray(testData, 50);
       address = 6;
@@ -471,9 +530,9 @@ void InterruptAction()
     }
     else if (!button3State)
     {
-	  #ifdef DEBUG
+#ifdef DEBUG
       Serial.println("\nButton 3 was pressed twice!");
-	  #endif
+#endif
 
       String("RL3").toCharArray(testData, 50);
       address = 6;
@@ -500,9 +559,9 @@ void InterruptAction()
 
     if (button4State)
     {
-	  #ifdef DEBUG
-	  Serial.println("\nButton 4 was pressed once!");
-	  #endif
+#ifdef DEBUG
+      Serial.println("\nButton 4 was pressed once!");
+#endif
 
       String("GL4").toCharArray(testData, 50);
       address = 7;
@@ -522,9 +581,9 @@ void InterruptAction()
     }
     else if (!button4State)
     {
-	  #ifdef DEBUG
+#ifdef DEBUG
       Serial.println("\nButton 4 was pressed twice!");
-	  #endif
+#endif
 
       String("RL4").toCharArray(testData, 50);
       address = 7;
@@ -564,21 +623,21 @@ void InterruptAction()
 //Global send data function
 void sendData(uint8_t NodeAddress, char message[])
 {
-	#ifdef DEBUG
-	Serial.print("Node Address : ");
-	Serial.println(address);
-	#endif
+#ifdef DEBUG
+  Serial.print("Node Address : ");
+  Serial.println(address);
+#endif
 
-  delay(1000);
+  //delay(1000);
 
   T_packet_state = sx1278.sendPacketTimeoutACKRetries(NodeAddress, message);
 
   if (T_packet_state == 0)
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("State = 0 --> Command Executed w no errors!"));
     Serial.println(F("Packet sent..."));
-	#endif
+#endif
   }
   else if (T_packet_state == 5 || T_packet_state == 6 || T_packet_state == 7)
   {
@@ -589,11 +648,11 @@ void sendData(uint8_t NodeAddress, char message[])
   }
   else
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.print(F("Error Code: "));
     Serial.println(T_packet_state);
     Serial.println(F("Packet not sent...."));
-	#endif
+#endif
   }
 }
 //Global receive data function
@@ -602,18 +661,18 @@ void recieveData()
   R_packet_state = sx1278.receivePacketTimeoutACK();
   if (R_packet_state == 0)
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Package received!"));
-	#endif
+#endif
     for (unsigned int i = 0; i < sx1278.packet_received.length; i++)
     {
       my_packet[i] = (char)sx1278.packet_received.data[i];
       yield();
     }
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.print(F("Message:  "));
     Serial.println(my_packet);
-	#endif
+#endif
     receivedMsg = String(my_packet);
     Setting_Block_State_Color();
   }
@@ -661,7 +720,7 @@ void showTime()
   switch (colorRG2)
   {
     case R:
-      
+
       u8g2.clearBuffer();                 // clear the internal memory
       u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt2 = "Red " + printt2;
@@ -809,119 +868,119 @@ void Setting_Block_State_Color()
     DB_4_Process_End_Time = millis();
     Serial.print("Required time (L4): ");
     Serial.println(((DB_4_Process_End_Time - DB_4_Process_Start_Time) / 1000.0), 3);
-  } 
- 
+  }
+
 }
 
 //Sets Important Lora Modes and returns 'true' if it was successful or 'false' if it wasn't
 void loraSetup()
 {
-	#ifdef DEBUG
-  	Serial.println("");
-	#endif
+#ifdef DEBUG
+  Serial.println("");
+#endif
   // Power ON the module:
   if (sx1278.ON() == 0)
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting power ON: SUCCESS "));
-	#endif
+#endif
   }
   else
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting power ON: ERROR "));
-	#endif
+#endif
   }
 
   // Set transmission mode and print the result:
   if (sx1278.setMode(LORA_MODE) == 0)
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting Mode: SUCCESS "));
-	#endif
+#endif
   }
   else
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting Mode: ERROR "));
-	#endif
+#endif
   }
 
   // Set header:
   if (sx1278.setHeaderON() == 0)
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting Header ON: SUCCESS "));
-	#endif
+#endif
   }
   else
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting Header ON: ERROR "));
-	#endif
+#endif
   }
 
   // Select frequency channel:
   if (sx1278.setChannel(LORA_CHANNEL) == 0)
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting Channel: SUCCESS "));
-	#endif
+#endif
   }
   else
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting Channel: ERROR "));
-	#endif
+#endif
   }
 
   // Set CRC:
   if (sx1278.setCRC_ON() == 0)
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting CRC ON: SUCCESS "));
-	#endif
+#endif
   }
   else
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting CRC ON: ERROR "));
-	#endif
+#endif
   }
 
   // Select output power (Max, High, Intermediate or Low)
   if (sx1278.setPower('M') == 0)
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting Power: SUCCESS "));
-	#endif
+#endif
   }
   else
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting Power: ERROR "));
-	#endif
+#endif
   }
 
   // Set the node address and print the result
   if (sx1278.setNodeAddress(LORA_ADDRESS) == 0)
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting node address: SUCCESS "));
-	#endif
+#endif
   }
   else
   {
-	#ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Setting node address: ERROR "));
-	#endif
+#endif
   }
 
   // Print a success
-	#ifdef DEBUG
+#ifdef DEBUG
   Serial.println(F("SX1278 configured finished"));
   Serial.println();
-	#endif
+#endif
 }
 //Creates the UI layout
 void displaySetup()
