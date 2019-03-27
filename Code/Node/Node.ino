@@ -3,10 +3,10 @@
 #include <SX1278.h>
 
 //Child Parameter:
-//#define Child_1
+#define Child_1
 //#define Child_2
  //#define Child_3
-#define Child_4
+//#define Child_4
 
 //
   //Lora SX1278:

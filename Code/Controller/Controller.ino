@@ -29,8 +29,8 @@
    Definitions & Declarations
  *****************************************************************************/
 
-U8G2_PCD8544_84X48_F_4W_HW_SPI u8g1(U8G2_R0, /* cs=*/4, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
-U8G2_PCD8544_84X48_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/2, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
+U8G2_PCD8544_84X48_F_4W_HW_SPI u8g1(U8G2_R0, /* cs=*/2, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
+U8G2_PCD8544_84X48_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/4, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
 U8G2_PCD8544_84X48_F_4W_HW_SPI u8g3(U8G2_R0, /* cs=*/15, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
 U8G2_PCD8544_84X48_F_4W_HW_SPI u8g4(U8G2_R0, /* cs=*/17, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
 
@@ -50,14 +50,16 @@ int 		T_packet_state;
 int 		R_packet_state;
 
 //Pin def of Switch:
-#define digitalButton_1 21
-#define digitalButton_2 22
+
+#define digitalButton_1 25
+#define digitalButton_2 26
 #define digitalButton_3 32
 #define digitalButton_4 33
-#define digitalButton_5 25
-#define digitalButton_6 26
-#define digitalButton_7 18
-#define digitalButton_8 19
+#define digitalButton_5 18
+#define digitalButton_6 19
+#define digitalButton_7 21
+#define digitalButton_8 22
+
 // #define digitalButton_3 5
 //Experimental
 
@@ -127,7 +129,7 @@ void setup()
   // #ifdef DEBUG
   Serial.begin(9600);
   // #endif
-  
+
 
   //Display Setup:
   displaySetup();
@@ -150,7 +152,7 @@ void setup()
   pinMode(digitalButton_8, INPUT_PULLUP);
 
   pinMode(27, OUTPUT);
-  digitalWrite(27,LOW);
+  digitalWrite(27, LOW);
 
   //Initialization of timers
   DB_1_Signal_Runtime = millis(); //L 1
@@ -179,53 +181,14 @@ void loop()
 {
   //After the device is booted it automatically re-boots other device:
   sync();
-  //  //autoTransmission();
-  //
-  //  InterruptAction();
-  //  //This function checks for data to receive
-  //  recieveData();
-  //  //Show time on display:
-  //  showTime();
-
-
-
-  ISR_DB_1_G_32();
+  //autoTransmission();
   InterruptAction();
+  
   //This function checks for data to receive
   recieveData();
+  
   //Show time on display:
   showTime();
-  delay(2000);
-
-  ISR_DB_2_G_32();
-  InterruptAction();
-  //This function checks for data to receive
-  recieveData();
-  //Show time on display:
-  showTime();
-  delay(2000);
-
-
-
-  ISR_DB_1_R_32();
-  InterruptAction();
-  //This function checks for data to receive
-  recieveData();
-  //Show time on display:
-  showTime();
-  delay(2000);
-
-  ISR_DB_2_R_32();
-  InterruptAction();
-  //This function checks for data to receive
-  recieveData();
-  //Show time on display:
-  showTime();
-  delay(2000);
-
-
-
-
 }
 
 //RESETs connected Nodes
@@ -683,22 +646,22 @@ void showTime()
   {
     case R:
 
-      u8g3.clearBuffer();                 // clear the internal memory
-      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g1.clearBuffer();                 // clear the internal memory
+      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt1 = "Red " + printt1;
-      u8g3.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
-      u8g3.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
-      u8g3.sendBuffer();
+      u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
+      u8g1.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
+      u8g1.sendBuffer();
       //state1 = !state1;
 
       break;
     case G:
-      u8g3.clearBuffer();                 // clear the internal memory
-      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g1.clearBuffer();                 // clear the internal memory
+      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt1 = "Green " + printt1;
-      u8g3.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
-      u8g3.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
-      u8g3.sendBuffer();
+      u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
+      u8g1.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
+      u8g1.sendBuffer();
       break;
     case X:
       break;
@@ -708,20 +671,20 @@ void showTime()
   {
     case R:
 
-      u8g4.clearBuffer();                 // clear the internal memory
-      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g2.clearBuffer();                 // clear the internal memory
+      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt2 = "Red " + printt2;
-      u8g4.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
-      u8g4.drawStr(0, 10, "LOCATION BAI");
-      u8g4.sendBuffer();
+      u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
+      u8g2.drawStr(0, 10, "LOCATION BAI");
+      u8g2.sendBuffer();
       break;
     case G:
-      u8g4.clearBuffer();                 // clear the internal memory
-      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g2.clearBuffer();                 // clear the internal memory
+      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt2 = "Green " + printt2;
-      u8g4.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
-      u8g4.drawStr(0, 10, "LOCATION BAI");
-      u8g4.sendBuffer();
+      u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
+      u8g2.drawStr(0, 10, "LOCATION BAI");
+      u8g2.sendBuffer();
       break;
     case X:
       break;
@@ -730,20 +693,20 @@ void showTime()
   switch (colorRG3)
   {
     case R:
-      u8g1.clearBuffer();                 // clear the internal memory
-      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g3.clearBuffer();                 // clear the internal memory
+      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt3 = "Red " + printt3;
-      u8g1.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
-      u8g1.drawStr(0, 10, "LOCATION OXY");
-      u8g1.sendBuffer();
+      u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
+      u8g3.drawStr(0, 10, "LOCATION OXY");
+      u8g3.sendBuffer();
       break;
     case G:
-      u8g1.clearBuffer();                 // clear the internal memory
-      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g3.clearBuffer();                 // clear the internal memory
+      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt3 = "Green " + printt3;
-      u8g1.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
-      u8g1.drawStr(0, 10, "LOCATION OXY");
-      u8g1.sendBuffer();
+      u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
+      u8g3.drawStr(0, 10, "LOCATION OXY");
+      u8g3.sendBuffer();
       break;
     case X:
       break;
@@ -752,20 +715,20 @@ void showTime()
   switch (colorRG4)
   {
     case R:
-      u8g2.clearBuffer();                 // clear the internal memory
-      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g4.clearBuffer();                 // clear the internal memory
+      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt4 = "Red " + printt4;
-      u8g2.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
-      u8g2.drawStr(0, 10, "LOCATION MUR");
-      u8g2.sendBuffer();
+      u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
+      u8g4.drawStr(0, 10, "LOCATION MUR");
+      u8g4.sendBuffer();
       break;
     case G:
-      u8g2.clearBuffer();                 // clear the internal memory
-      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g4.clearBuffer();                 // clear the internal memory
+      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt4 = "Green " + printt4;
-      u8g2.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
-      u8g2.drawStr(0, 10, "LOCATION MUR");
-      u8g2.sendBuffer();
+      u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
+      u8g4.drawStr(0, 10, "LOCATION MUR");
+      u8g4.sendBuffer();
       break;
     case X:
       break;
