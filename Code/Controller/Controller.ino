@@ -634,6 +634,7 @@ void sendData(uint8_t NodeAddress, char message[])
     }
     showTime();
   }
+  isTransmissionInProgress = false;
 }
 //Global receive data function
 void recieveData()
