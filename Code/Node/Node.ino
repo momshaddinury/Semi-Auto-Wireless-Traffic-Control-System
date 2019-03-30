@@ -76,6 +76,8 @@ void setup() {
 #endif
   //turnOff Led:
   ledOff();
+  lastActivatedTime = millis();
+  presentActivatedTime = millis();
 }
 
 void loop() {
