@@ -13,7 +13,6 @@
 */
 // ---------------------------------------------------------------------
 
-
 /******************************************************************************
    Includes
  ******************************************************************************/
@@ -29,25 +28,24 @@
    Definitions & Declarations
  *****************************************************************************/
 
-U8G2_PCD8544_84X48_F_4W_HW_SPI u8g1(U8G2_R0, /* cs=*/2, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
-U8G2_PCD8544_84X48_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/4, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
+U8G2_PCD8544_84X48_F_4W_HW_SPI u8g1(U8G2_R0, /* cs=*/2, /* dc=*/23, /* reset=*/100);  // Nokia 5110 Display
+U8G2_PCD8544_84X48_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/4, /* dc=*/23, /* reset=*/100);  // Nokia 5110 Display
 U8G2_PCD8544_84X48_F_4W_HW_SPI u8g3(U8G2_R0, /* cs=*/15, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
 U8G2_PCD8544_84X48_F_4W_HW_SPI u8g4(U8G2_R0, /* cs=*/17, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
 
-
 //Lora SX1278:
-#define LORA_MODE 		4
-#define LORA_CHANNEL 	CH_6_BW_125
-#define LORA_ADDRESS 	5
-uint8_t NodeAddress; 	//Child Address
-int 	address;
+#define LORA_MODE 4
+#define LORA_CHANNEL CH_6_BW_125
+#define LORA_ADDRESS 5
+uint8_t NodeAddress; //Child Address
+int address;
 
 //Packets var:
-char 		my_packet[50];
-char 		testData[50];
-String 		receivedMsg;
-int 		T_packet_state;
-int 		R_packet_state;
+char my_packet[50];
+char testData[50];
+String receivedMsg;
+int T_packet_state;
+int R_packet_state;
 
 //Pin def of Switch:
 
@@ -123,13 +121,14 @@ float t_time;
 boolean blockStateColor;
 int count = 0;
 
+boolean isTransmissionInProgress = false;
+
 //MAIN SETUP FUNCTION
 void setup()
 {
   // #ifdef DEBUG
   Serial.begin(9600);
   // #endif
-
 
   //Display Setup:
   displaySetup();
@@ -160,8 +159,8 @@ void setup()
   DB_3_Signal_Runtime = millis();
   DB_4_Signal_Runtime = millis();
 
-  colorRG1 = X;	//L 1
-  colorRG2 = X;	//L 2
+  colorRG1 = X; //L 1
+  colorRG2 = X; //L 2
   colorRG3 = X;
   colorRG4 = X;
 
@@ -183,10 +182,10 @@ void loop()
   sync();
   //autoTransmission();
   InterruptAction();
-  
+
   //This function checks for data to receive
   recieveData();
-  
+
   //Show time on display:
   showTime();
 }
@@ -210,6 +209,8 @@ void sync()
 //Experimental esp32 ISRs
 void ISR_DB_1_G_32()
 {
+  if (button1State)
+    return;
   if ((long(millis()) - DB_priv_time_1) >= interval)
   {
     DB_ISR_F_1 = true;
@@ -224,6 +225,8 @@ void ISR_DB_1_G_32()
 
 void ISR_DB_1_R_32()
 {
+  if (!button1State)
+    return;
   if ((long(millis()) - DB_priv_time_1) >= interval)
   {
     DB_ISR_F_1 = true;
@@ -238,6 +241,8 @@ void ISR_DB_1_R_32()
 
 void ISR_DB_2_G_32()
 {
+  if (button2State)
+    return;
   if ((long(millis()) - DB_priv_time_2) >= interval)
   {
     DB_ISR_F_2 = true;
@@ -252,6 +257,8 @@ void ISR_DB_2_G_32()
 
 void ISR_DB_2_R_32()
 {
+  if (!button2State)
+    return;
   if ((long(millis()) - DB_priv_time_2) >= interval)
   {
     DB_ISR_F_2 = true;
@@ -266,6 +273,8 @@ void ISR_DB_2_R_32()
 
 void ISR_DB_3_G_32()
 {
+  if (button3State)
+    return;
   if ((long(millis()) - DB_priv_time_3) >= interval)
   {
     DB_ISR_F_3 = true;
@@ -280,6 +289,8 @@ void ISR_DB_3_G_32()
 
 void ISR_DB_3_R_32()
 {
+  if (!button3State)
+    return;
   if ((long(millis()) - DB_priv_time_3) >= interval)
   {
     DB_ISR_F_3 = true;
@@ -294,6 +305,8 @@ void ISR_DB_3_R_32()
 
 void ISR_DB_4_G_32()
 {
+  if (button4State)
+    return;
   if ((long(millis()) - DB_priv_time_4) >= interval)
   {
     DB_ISR_F_4 = true;
@@ -308,6 +321,8 @@ void ISR_DB_4_G_32()
 
 void ISR_DB_4_R_32()
 {
+  if (!button4State)
+    return;
   if ((long(millis()) - DB_priv_time_4) >= interval)
   {
     DB_ISR_F_4 = true;
@@ -553,8 +568,6 @@ void InterruptAction()
   }
 }
 
-
-
 /*
   Function: Configures the module to transmit information and receive an ACK.
   Returns: Integer that determines if there has been any error [T_packet_state]
@@ -578,31 +591,48 @@ void sendData(uint8_t NodeAddress, char message[])
   Serial.println(address);
 #endif
 
-  //delay(1000);
-
-  T_packet_state = sx1278.sendPacketTimeoutACKRetries(NodeAddress, message);
-
-  if (T_packet_state == 0)
-  {
-#ifdef DEBUG
-    Serial.println(F("State = 0 --> Command Executed w no errors!"));
-    Serial.println(F("Packet sent..."));
-#endif
-  }
-  else if (T_packet_state == 5 || T_packet_state == 6 || T_packet_state == 7)
-  {
-    Serial.println("Conflict!");
-    Serial.print("Error code-");
-    Serial.println(T_packet_state);
-    sendData(address, testData);
-  }
+  if (!isTransmissionInProgress)
+    isTransmissionInProgress = true;
   else
+    return;
+  //delay(1000);
+  u8g1.drawStr(15, 30, "Connecting...");
+  u8g2.drawStr(15, 30, "Connecting...");
+  u8g3.drawStr(15, 30, "Connecting...");
+  u8g4.drawStr(15, 30, "Connecting...");
+  for (int retry = 1; retry <= 5; retry++)
   {
 #ifdef DEBUG
-    Serial.print(F("Error Code: "));
-    Serial.println(T_packet_state);
-    Serial.println(F("Packet not sent...."));
+    Serial.print("Attempt: ");
+    Serial.println(retry);
 #endif
+    T_packet_state = sx1278.sendPacketTimeoutACK(NodeAddress, message);
+
+    if (T_packet_state == 0)
+    {
+#ifdef DEBUG
+      Serial.println(F("State = 0 --> Command Executed w no errors!"));
+      Serial.println(F("Packet sent..."));
+#endif
+      isTransmissionInProgress = false;
+      break;
+    }
+    else if (T_packet_state == 5 || T_packet_state == 6 || T_packet_state == 7)
+    {
+      Serial.println("Conflict!");
+      Serial.print("Error code-");
+      Serial.println(T_packet_state);
+      sendData(address, testData);
+    }
+    else
+    {
+#ifdef DEBUG
+      Serial.print(F("Error Code: "));
+      Serial.println(T_packet_state);
+      Serial.println(F("Packet not sent...."));
+#endif
+    }
+    showTime();
   }
 }
 //Global receive data function
@@ -644,94 +674,106 @@ void showTime()
 
   switch (colorRG1)
   {
-    case R:
+  case R:
 
-      u8g1.clearBuffer();                 // clear the internal memory
-      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt1 = "Red " + printt1;
-      u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
-      u8g1.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
-      u8g1.sendBuffer();
-      //state1 = !state1;
+    u8g1.clearBuffer();                 // clear the internal memory
+    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt1 = "Red " + printt1;
+    u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
+    u8g1.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
+    u8g1.sendBuffer();
+    //state1 = !state1;
 
-      break;
-    case G:
-      u8g1.clearBuffer();                 // clear the internal memory
-      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt1 = "Green " + printt1;
-      u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
-      u8g1.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
-      u8g1.sendBuffer();
-      break;
-    case X:
-      break;
+    break;
+  case G:
+    u8g1.clearBuffer();                 // clear the internal memory
+    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt1 = "Green " + printt1;
+    u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
+    u8g1.drawStr(0, 10, "LOCATION GEC");   // write something to the internal memory
+    u8g1.sendBuffer();
+    break;
+  case X:
+    break;
   }
 
   switch (colorRG2)
   {
-    case R:
+  case R:
 
-      u8g2.clearBuffer();                 // clear the internal memory
-      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt2 = "Red " + printt2;
-      u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
-      u8g2.drawStr(0, 10, "LOCATION BAI");
-      u8g2.sendBuffer();
-      break;
-    case G:
-      u8g2.clearBuffer();                 // clear the internal memory
-      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt2 = "Green " + printt2;
-      u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
-      u8g2.drawStr(0, 10, "LOCATION BAI");
-      u8g2.sendBuffer();
-      break;
-    case X:
-      break;
+    u8g2.clearBuffer();                 // clear the internal memory
+    u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt2 = "Red " + printt2;
+    u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
+    u8g2.drawStr(0, 10, "LOCATION BAI");
+    u8g2.sendBuffer();
+    break;
+  case G:
+    u8g2.clearBuffer();                 // clear the internal memory
+    u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt2 = "Green " + printt2;
+    u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
+    u8g2.drawStr(0, 10, "LOCATION BAI");
+    u8g2.sendBuffer();
+    break;
+  case X:
+    break;
   }
 
   switch (colorRG3)
   {
-    case R:
-      u8g3.clearBuffer();                 // clear the internal memory
-      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt3 = "Red " + printt3;
-      u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
-      u8g3.drawStr(0, 10, "LOCATION OXY");
-      u8g3.sendBuffer();
-      break;
-    case G:
-      u8g3.clearBuffer();                 // clear the internal memory
-      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt3 = "Green " + printt3;
-      u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
-      u8g3.drawStr(0, 10, "LOCATION OXY");
-      u8g3.sendBuffer();
-      break;
-    case X:
-      break;
+  case R:
+    u8g3.clearBuffer();                 // clear the internal memory
+    u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt3 = "Red " + printt3;
+    u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
+    u8g3.drawStr(0, 10, "LOCATION OXY");
+    u8g3.sendBuffer();
+    break;
+  case G:
+    u8g3.clearBuffer();                 // clear the internal memory
+    u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt3 = "Green " + printt3;
+    u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
+    u8g3.drawStr(0, 10, "LOCATION OXY");
+    u8g3.sendBuffer();
+    break;
+  case X:
+    break;
   }
 
   switch (colorRG4)
   {
-    case R:
-      u8g4.clearBuffer();                 // clear the internal memory
-      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt4 = "Red " + printt4;
-      u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
-      u8g4.drawStr(0, 10, "LOCATION MUR");
-      u8g4.sendBuffer();
-      break;
-    case G:
-      u8g4.clearBuffer();                 // clear the internal memory
-      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt4 = "Green " + printt4;
-      u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
-      u8g4.drawStr(0, 10, "LOCATION MUR");
-      u8g4.sendBuffer();
-      break;
-    case X:
-      break;
+  case R:
+    u8g4.clearBuffer();                 // clear the internal memory
+    u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt4 = "Red " + printt4;
+    u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
+    u8g4.drawStr(0, 10, "LOCATION MUR");
+    u8g4.sendBuffer();
+    break;
+  case G:
+    u8g4.clearBuffer();                 // clear the internal memory
+    u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt4 = "Green " + printt4;
+    u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
+    u8g4.drawStr(0, 10, "LOCATION MUR");
+    u8g4.sendBuffer();
+    break;
+  case X:
+    break;
+  }
+
+  if (isTransmissionInProgress)
+  {
+    u8g1.drawStr(15, 30, "Connecting...");
+    u8g1.sendBuffer();
+    u8g2.drawStr(15, 30, "Connecting...");
+    u8g2.sendBuffer();
+    u8g3.drawStr(15, 30, "Connecting...");
+    u8g3.sendBuffer();
+    u8g4.drawStr(15, 30, "Connecting...");
+    u8g4.sendBuffer();
   }
 }
 
@@ -819,7 +861,6 @@ void Setting_Block_State_Color()
     Serial.print("Required time (L4): ");
     Serial.println(((DB_4_Process_End_Time - DB_4_Process_Start_Time) / 1000.0), 3);
   }
-
 }
 
 //Sets Important Lora Modes and returns 'true' if it was successful or 'false' if it wasn't
@@ -940,10 +981,10 @@ void displaySetup()
   u8g3.begin();
   u8g4.begin();
 
-  u8g1.clearBuffer();                  	  // clear the internal memory
-  u8g1.setFont(u8g2_font_ncenB08_tr);  	  // choose a suitable font
-  u8g1.drawStr(0, 10, "LOCATION GEC"); 	  // write something to the internal memory
-  u8g1.sendBuffer();                   	  // transfer internal memory to the display
+  u8g1.clearBuffer();                  // clear the internal memory
+  u8g1.setFont(u8g2_font_ncenB08_tr);  // choose a suitable font
+  u8g1.drawStr(0, 10, "LOCATION GEC"); // write something to the internal memory
+  u8g1.sendBuffer();                   // transfer internal memory to the display
   delay(1000);
 
   u8g2.clearBuffer();                     // clear the internal memory
@@ -952,16 +993,16 @@ void displaySetup()
   u8g2.sendBuffer();                      // transfer internal memory to the display
   delay(1000);
 
-  u8g3.clearBuffer();                     // clear the internal memory
-  u8g3.setFont(u8g2_font_ncenB08_tr);     // choose a suitable font
-  u8g3.drawStr(0, 10, "LOCATION OXY"); 	  // write something to the internal memory
-  u8g3.sendBuffer();                      // transfer internal memory to the display
+  u8g3.clearBuffer();                  // clear the internal memory
+  u8g3.setFont(u8g2_font_ncenB08_tr);  // choose a suitable font
+  u8g3.drawStr(0, 10, "LOCATION OXY"); // write something to the internal memory
+  u8g3.sendBuffer();                   // transfer internal memory to the display
   delay(1000);
 
-  u8g4.clearBuffer();                     // clear the internal memory
-  u8g4.setFont(u8g2_font_ncenB08_tr);     // choose a suitable font
-  u8g4.drawStr(0, 10, "LOCATION MUR"); 	  // write something to the internal memory
-  u8g4.sendBuffer();                      // transfer internal memory to the display
+  u8g4.clearBuffer();                  // clear the internal memory
+  u8g4.setFont(u8g2_font_ncenB08_tr);  // choose a suitable font
+  u8g4.drawStr(0, 10, "LOCATION MUR"); // write something to the internal memory
+  u8g4.sendBuffer();                   // transfer internal memory to the display
   delay(1000);
 }
 
