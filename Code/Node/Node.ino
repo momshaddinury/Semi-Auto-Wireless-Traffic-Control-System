@@ -5,176 +5,234 @@
 //Child Parameter:
 //#define Child_1
 //#define Child_2
- //#define Child_3
+//#define Child_3
 #define Child_4
 
 //
-  //Lora SX1278:
-  #define LORA_MODE             4             //mode: mode number to set the required BW, SF and CR of LoRa modem.
-  #define LORA_CHANNEL          CH_6_BW_125
-  uint8_t ControllerAddress = 5;              //Parent Address
+//Lora SX1278:
+#define LORA_MODE             4             //mode: mode number to set the required BW, SF and CR of LoRa modem.
+#define LORA_CHANNEL          CH_6_BW_125
+uint8_t ControllerAddress = 5;              //Parent Address
 
-  #ifdef Child_1
-  #define LORA_ADDRESS          3
-  #endif
-  // 
-  #ifdef Child_2
-  #define LORA_ADDRESS          4
-  #endif
+#ifdef Child_1
+#define LORA_ADDRESS          3
+#endif
+//
+#ifdef Child_2
+#define LORA_ADDRESS          4
+#endif
 
-  #ifdef Child_3
-  #define LORA_ADDRESS          6
-  #endif
+#ifdef Child_3
+#define LORA_ADDRESS          6
+#endif
 
-  #ifdef Child_4
-  #define LORA_ADDRESS          7
-  #endif
+#ifdef Child_4
+#define LORA_ADDRESS          7
+#endif
 
-  //Message var:
-  char my_packet [50];  //Used to store Incoming message in char array from Parent Node
-  char testData[50];    //Used to store message which will be sent to Parent Node
-  String receivedMsg;   //to store the converted my_packet string from char array
+//Message var:
+char my_packet [50];  //Used to store Incoming message in char array from Parent Node
+char testData[50];    //Used to store message which will be sent to Parent Node
+String receivedMsg;   //to store the converted my_packet string from char array
 
-  //Pin Def:
-  int ButtonPIN = 2;
-  int LED = 4;
-  int GreenLED = 5;
+//Pin Def:
+int ButtonPIN = 2;
+int LED = 4;
+int GreenLED = 5;
 
-  //Flag:
-  boolean T_ISR_F = false;
-  int T_packet_state;
-  int R_packet_state;
-  boolean FunctionBlockingFlag = true;
+//Flag:
+boolean T_ISR_F = false;
+int T_packet_state;
+int R_packet_state;
+boolean FunctionBlockingFlag = true;
 
-  //Debouncing timer
-  long debouncing_time = 3000;
-  volatile unsigned long last_micros;
+//Debouncing timer
+long debouncing_time = 3000;
+volatile unsigned long last_micros;
 
-  // timer for sending data:
-  long interval = 2000;
-  unsigned long last_interval = 0;
-  unsigned long current_millis;
+// timer for sending data:
+long ledBlinkingInterval = 5000;
+unsigned long last_interval = 0;
+unsigned long current_millis;
+unsigned long lastActivatedTime;
+unsigned long presentActivatedTime;
 
-  #define DEBUG
+#define DEBUG
 
 void setup() {
   //Serial communication begin:
-  #ifdef DEBUG
+#ifdef DEBUG
   Serial.begin(9600);
-  #endif
+#endif
   //Lora init:
   loraSetup();
   //Pin config:
   pinConfiguration();
   //Interrupt:
   attachInterrupt(digitalPinToInterrupt(ButtonPIN), Trigger_ISR, FALLING);
-  #ifdef DEBUG
+#ifdef DEBUG
   Serial.print("Lora Address :");
   Serial.println(LORA_ADDRESS);
-  #endif
+#endif
   //turnOff Led:
   ledOff();
-  }
+}
+
 void loop() {
+
   recieveData();
-  if(!FunctionBlockingFlag){
+
+  Process();
+
+  if (!FunctionBlockingFlag) {
     childTask();
   }
-  }
+}
 
 void childTask() {                          //Sends ACK after changing LED
-  #ifdef Child_1
+#ifdef Child_1
   if ( (receivedMsg.equals("GL1") || receivedMsg.equals("RL1")) /*&& T_ISR_F*/ && !FunctionBlockingFlag) {
     String("KL1").toCharArray(testData, 50);
     sendData(testData);
   }
-  #endif
+#endif
 
-  #ifdef Child_2
+#ifdef Child_2
   if ( (receivedMsg.equals("GL2") || receivedMsg.equals("RL2")) /*&& T_ISR_F*/ && !FunctionBlockingFlag) {
     String("KL2").toCharArray(testData, 50);
     sendData(testData);
   }
-  #endif
+#endif
 
-  #ifdef Child_3
+#ifdef Child_3
   if ( (receivedMsg.equals("GL3") || receivedMsg.equals("RL3")) /*&& T_ISR_F*/ && !FunctionBlockingFlag) {
     String("KL3").toCharArray(testData, 50);
     sendData(testData);
   }
-  #endif
+#endif
 
-  #ifdef Child_4
+#ifdef Child_4
   if ( (receivedMsg.equals("GL4") || receivedMsg.equals("RL4")) /*&& T_ISR_F*/ && !FunctionBlockingFlag) {
     String("KL4").toCharArray(testData, 50);
     sendData(testData);
   }
-  #endif
-  }
+#endif
+}
+
 void Process() {                            //Controls LED per received message
   //For Child 1
-  #ifdef Child_1
-  if (receivedMsg.equals("GL1")) {
+  presentActivatedTime = millis();
+#ifdef Child_1
+  if (receivedMsg.equals("GL1") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
     digitalWrite(LED, HIGH); //To turn off RED LED
     digitalWrite(GreenLED, LOW); //To turn on Green LED
   }
-  if (receivedMsg.equals("RL1")) {
+  else {
+    digitalWrite(LED, HIGH); //To turn off RED LED
+    digitalWrite(GreenLED, HIGH); //To turn Off Green LED
+    lastActivatedTime = presentActivatedTime;
+  }
+
+  if (receivedMsg.equals("RL1") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
     digitalWrite(LED, LOW); //Turns on RED LED
     digitalWrite(GreenLED, HIGH); //Turns off Green LED
   }
-  #endif
+  else {
+    digitalWrite(LED, HIGH); //Turns on RED LED
+    digitalWrite(GreenLED, HIGH); //Turns off Green LED
+    lastActivatedTime = presentActivatedTime;
+
+  }
+#endif
 
   //For Child 2
-  #ifdef Child_2
-  if (receivedMsg.equals("GL2")) {
+#ifdef Child_2
+  if (receivedMsg.equals("GL2") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
     digitalWrite(LED, HIGH); //To turn off RED LED
     digitalWrite(GreenLED, LOW); //To turn on Green LED
   }
-  if (receivedMsg.equals("RL2")) {
+  else {
+    digitalWrite(LED, HIGH); //To turn off RED LED
+    digitalWrite(GreenLED, HIGH); //To turn Off Green LED
+    lastActivatedTime = presentActivatedTime;
+  }
+
+  if (receivedMsg.equals("RL2") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
     digitalWrite(LED, LOW); //Turns on RED LED
     digitalWrite(GreenLED, HIGH); //Turns off Green LED
   }
-  #endif
+  else {
+    digitalWrite(LED, HIGH); //Turns on RED LED
+    digitalWrite(GreenLED, HIGH); //Turns off Green LED
+    lastActivatedTime = presentActivatedTime;
+
+  }
+#endif
 
   //For Child 3
-  #ifdef Child_3
-  if (receivedMsg.equals("GL3")) {
+#ifdef Child_3
+  if (receivedMsg.equals("GL3") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
     digitalWrite(LED, HIGH); //To turn off RED LED
     digitalWrite(GreenLED, LOW); //To turn on Green LED
   }
-  if (receivedMsg.equals("RL3")) {
+  else {
+    digitalWrite(LED, HIGH); //To turn off RED LED
+    digitalWrite(GreenLED, HIGH); //To turn Off Green LED
+    lastActivatedTime = presentActivatedTime;
+  }
+
+  if (receivedMsg.equals("RL3") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
     digitalWrite(LED, LOW); //Turns on RED LED
     digitalWrite(GreenLED, HIGH); //Turns off Green LED
   }
-  #endif
+  else {
+    digitalWrite(LED, HIGH); //Turns on RED LED
+    digitalWrite(GreenLED, HIGH); //Turns off Green LED
+    lastActivatedTime = presentActivatedTime;
+
+  }
+#endif
 
   //For Child 4
-  #ifdef Child_4
-  if (receivedMsg.equals("GL4")) {
+#ifdef Child_4
+  if (receivedMsg.equals("GL4") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
     digitalWrite(LED, HIGH); //To turn off RED LED
     digitalWrite(GreenLED, LOW); //To turn on Green LED
   }
-  if (receivedMsg.equals("RL4")) {
+  else {
+    digitalWrite(LED, HIGH); //To turn off RED LED
+    digitalWrite(GreenLED, HIGH); //To turn Off Green LED
+    lastActivatedTime = presentActivatedTime;
+  }
+
+  if (receivedMsg.equals("RL4") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
     digitalWrite(LED, LOW); //Turns on RED LED
     digitalWrite(GreenLED, HIGH); //Turns off Green LED
   }
-  #endif
+  else {
+    digitalWrite(LED, HIGH); //Turns on RED LED
+    digitalWrite(GreenLED, HIGH); //Turns off Green LED
+    lastActivatedTime = presentActivatedTime;
+
+  }
+#endif
+
 
   //This one should be broadcasted
   if (receivedMsg.equals("S")) {
     ESP.restart();
   }
-  }
+}
 void Trigger_ISR() {                        //ISR Trigger Function
   if ((long)(micros() - last_micros) >= debouncing_time * 1000) {
     T_ISR_F = true;
     last_micros = micros();
   } else {
-    #ifdef DEBUG
+#ifdef DEBUG
     Serial.println("Bounce");
-    #endif
+#endif
   }
-  }
+}
 
 /*
   Function: Configures the module to transmit information and receive an ACK.
@@ -197,10 +255,10 @@ void sendData(char message[]) {             //Global Send Data Function
   Serial.print("Send Packet State:");
   Serial.println(T_packet_state);
   if (T_packet_state == 0) {
-    #ifdef DEBUG
+#ifdef DEBUG
     //Serial.println(F("State = 0 --> Command Executed w no errors!"));
     Serial.println(F("Confirmation Packet sent....."));
-    #endif
+#endif
     T_ISR_F = false;
     FunctionBlockingFlag = true;
   }
@@ -208,50 +266,54 @@ void sendData(char message[]) {             //Global Send Data Function
     Serial.print("Conflict --> TRUE\t");
     FunctionBlockingFlag = true;
   }
-  }
-void recieveData() {                        //Global Receive Data Function
+}
+void recieveData() {
+
+  //Global Receive Data Function
   R_packet_state = sx1278.receivePacketTimeoutACK();
   if (R_packet_state == 0) {
-    #ifdef DEBUG
+#ifdef DEBUG
     Serial.println(F("Package received!"));
-    #endif
+#endif
 
     for (unsigned int i = 0; i < sx1278.packet_received.length; i++) {
       my_packet[i] = (char)sx1278.packet_received.data[i];
       yield();
     }
-    #ifdef DEBUG
+#ifdef DEBUG
     Serial.print(F("Message:  "));
     Serial.println(my_packet);
-    #endif
+#endif
     receivedMsg = String(my_packet); //Converts CharArray to String
-    Process();
-
+    //Process();
+    lastActivatedTime = presentActivatedTime;
     FunctionBlockingFlag = false;
   }
-  }
- 
+}
+
 void loraSetup() {                          //Sets Lora Modes & returns 'true' if successful Else 'false'
 
   Serial.println("");
   // Power ON the module:
-  (sx1278.ON() == 0)? Serial.println(F("Setting power ON: SUCCESS ")) : Serial.println(F("Setting power ON: ERROR "));
+  (sx1278.ON() == 0) ? Serial.println(F("Setting power ON: SUCCESS ")) : Serial.println(F("Setting power ON: ERROR "));
   // Set transmission mode and print the result:
-  (sx1278.setMode(LORA_MODE) == 0)? Serial.println(F("Setting Mode: SUCCESS ")) : Serial.println(F("Setting power ON: ERROR ")); 
+  (sx1278.setMode(LORA_MODE) == 0) ? Serial.println(F("Setting Mode: SUCCESS ")) : Serial.println(F("Setting power ON: ERROR "));
   // Set header:
-  (sx1278.setHeaderON() == 0)? Serial.println(F("Setting Header ON: SUCCESS ")) : Serial.println(F("Setting Header ON: ERROR "));
+  (sx1278.setHeaderON() == 0) ? Serial.println(F("Setting Header ON: SUCCESS ")) : Serial.println(F("Setting Header ON: ERROR "));
   // Select frequency channel:
-  (sx1278.setChannel(LORA_CHANNEL) == 0)? Serial.println(F("Setting Channel: SUCCESS ")) : Serial.println(F("Setting Channel: ERROR "));
+  (sx1278.setChannel(LORA_CHANNEL) == 0) ? Serial.println(F("Setting Channel: SUCCESS ")) : Serial.println(F("Setting Channel: ERROR "));
   // Set CRC:
-  (sx1278.setCRC_ON() == 0)? Serial.println(F("Setting CRC ON: SUCCESS ")) : Serial.println(F("Setting CRC ON: ERROR "));
+  (sx1278.setCRC_ON() == 0) ? Serial.println(F("Setting CRC ON: SUCCESS ")) : Serial.println(F("Setting CRC ON: ERROR "));
   // Select output power (Max, High, Intermediate or Low)
-  (sx1278.setPower('M') == 0)? Serial.println(F("Setting Power: SUCCESS ")) : Serial.println(F("Setting Power: ERROR "));
+  (sx1278.setPower('M') == 0) ? Serial.println(F("Setting Power: SUCCESS ")) : Serial.println(F("Setting Power: ERROR "));
   // Set the node address and print the result
-  (sx1278.setNodeAddress(LORA_ADDRESS) == 0)? Serial.println(F("Setting node address: SUCCESS ")) : Serial.println(F("Setting node address: ERROR "));
+  (sx1278.setNodeAddress(LORA_ADDRESS) == 0) ? Serial.println(F("Setting node address: SUCCESS ")) : Serial.println(F("Setting node address: ERROR "));
   // Print a success
   Serial.println(F("SX1278 configured finished"));
   Serial.println();
-  }
+}
+
+
 void pinConfiguration() {                   //All  PIN config
   pinMode(LED, OUTPUT);
   pinMode(0, OUTPUT);
@@ -260,12 +322,8 @@ void pinConfiguration() {                   //All  PIN config
   // pinMode(GreenLED, mode);
   digitalWrite(0, LOW);
   pinMode(ButtonPIN, INPUT);
-  }
+}
 void ledOff() {                             //To keep LED turned off during boot
   digitalWrite(LED, LOW);
   digitalWrite(GreenLED, LOW);
-  }
-
-
-
-
+}
