@@ -36,7 +36,7 @@ SX1278::SX1278()
 	_channel = CH_1;
 	_header = HEADER_ON;
 	_CRC = CRC_ON;
-	_modem = LORA;
+	_modem = FSK; //LORA;
 	_power = 15;
 	_packetNumber = 0;
 	_reception = CORRECT_PACKET;
@@ -3445,6 +3445,7 @@ uint8_t SX1278::receivePacketMAXTimeoutACK()
 uint8_t SX1278::receivePacketTimeoutACK()
 {
 	setTimeout();
+	//Serial.println(_sendTime);
 	return receivePacketTimeoutACK(_sendTime);
 }
 
@@ -4125,11 +4126,24 @@ uint8_t SX1278::setTimeout()
 	{
 		// calculate 'delay'
 		delay = ((0.1*_sendTime) + 1);
-
 		float Tpacket = timeOnAir();
 
+		/*
+        Serial.print("Tpacket Time : ");
+        Serial.println(Tpacket);
+        */
+
 		// calculate final send/receive timeout adding an offset and a random value
-		_sendTime = (uint16_t) Tpacket + (rand()%delay) + 1000;
+
+		//_sendTime = (uint16_t) Tpacket + (rand()%delay) + 1000; // Controller
+		_sendTime = (uint16_t) Tpacket + 80; // Node Test Purpose
+
+		/*
+        Serial.print("Send Time : ");
+        Serial.println(_sendTime);
+        Serial.print("Max Time : ");
+        Serial.println(MAX_TIMEOUT);
+        */
 
 		#if (SX1278_debug_mode > 2)
 			Serial.print(F("Tsym (ms):"));
@@ -4794,7 +4808,7 @@ uint8_t SX1278::sendPacketTimeoutACK(uint8_t dest, char *payload)
 	#endif
 
 	state = sendPacketTimeout(dest, payload);		// Sending packet to 'dest' destination
-	
+
 	if( state == 0 )
 	{
 		state = receive();	// Setting Rx mode to wait an ACK
@@ -5243,7 +5257,7 @@ uint8_t SX1278::sendPacketTimeoutACKRetries(uint8_t dest, char *payload)
 	// 		Serial.print("\t");
 	// 	}
 	// 	state = sendPacketTimeoutACK(dest, payload);
-		
+
 	// 	// if(state == 5 || state == 4) {
 	// 	// 	Serial.println("Conflict!!");
  //  //   		Serial.print("State: ");

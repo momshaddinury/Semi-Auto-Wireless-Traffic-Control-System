@@ -51,7 +51,9 @@
 
 #define SX1278_debug_mode 0
 
-#define SX1278_SS 15
+//#define SX1278_SS 5 //ESP32
+#define SX1278_SS 15 //ESP8266
+
 
 //! MACROS //
 #define bitRead(value, bit) (((value) >> (bit)) & 0x01)   // read a bit
@@ -297,7 +299,7 @@ const uint8_t OFFSET_PAYLOADLENGTH = 5;
 const uint8_t OFFSET_RSSI = 137;
 const uint8_t NOISE_FIGURE = 6.0;
 const uint8_t NOISE_ABSOLUTE_ZERO = 174.0;
-const uint16_t MAX_TIMEOUT = 10000;	//10000 msec = 10.0 sec
+const uint16_t MAX_TIMEOUT = 2500;	//5000 msec = 5.0 sec
 const uint32_t MAX_WAIT = 12000;	   //12000 msec = 12.0 sec
 const uint32_t MESH_TIMEOUT = 3600000; //3600000 msec = 3600 sec = 1 hour
 const uint8_t MAX_RETRIES = 5;

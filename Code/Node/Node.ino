@@ -53,13 +53,13 @@ long debouncing_time = 3000;
 volatile unsigned long last_micros;
 
 // timer for sending data:
-long ledBlinkingInterval = 1500;
+long ledBlinkingInterval = 350;
 unsigned long last_interval = 0;
 unsigned long current_millis;
 unsigned long lastActivatedTime;
 unsigned long presentActivatedTime;
 
-#define DEBUG
+//#define DEBUG
 
 void setup() {
   //Serial communication begin:
@@ -84,7 +84,13 @@ void setup() {
 
 void loop() {
 
+  unsigned long startTime = millis();
   recieveData();
+  unsigned long endtime = millis();
+   #ifdef DEBUG
+    Serial.print("Receive Data Processing Time : ");
+    Serial.println(endtime - startTime);
+   #endif
 
   Process();
 
@@ -132,10 +138,6 @@ void Process() {                            //Controls LED per received message
   //For Child 1
   presentActivatedTime = millis();
 
-#ifdef DEBUG
-  Serial.print(" Present Time : ");
-  Serial.println(presentActivatedTime);
-#endif
 
   if ( presentActivatedTime - lastActivatedTime <= ledBlinkingInterval ) {
     blinking = previousState;
@@ -336,9 +338,6 @@ void sendData(char message[]) {             //Global Send Data Function
 }
 void recieveData() {
 
-#ifdef DEBUG
-  Serial.println("*****Receive Data****");
-#endif
   //Global Receive Data Function
   R_packet_state = sx1278.receivePacketTimeoutACK();
   if (R_packet_state == 0) {
