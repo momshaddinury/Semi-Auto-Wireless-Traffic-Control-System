@@ -5,8 +5,8 @@
 //Child Parameter:
 //#define Child_1
 //#define Child_2
-//#define Child_3
-#define Child_4
+#define Child_3
+//#define Child_4
 
 //
 //Lora SX1278:
@@ -37,21 +37,23 @@ String receivedMsg;   //to store the converted my_packet string from char array
 
 //Pin Def:
 int ButtonPIN = 2;
-int LED = 4;
-int GreenLED = 5;
+int RedLED = 5;
+int GreenLED = 4;
 
 //Flag:
 boolean T_ISR_F = false;
 int T_packet_state;
 int R_packet_state;
 boolean FunctionBlockingFlag = true;
+boolean previousState = true;
+boolean blinking;
 
 //Debouncing timer
 long debouncing_time = 3000;
 volatile unsigned long last_micros;
 
 // timer for sending data:
-long ledBlinkingInterval = 5000;
+long ledBlinkingInterval = 1500;
 unsigned long last_interval = 0;
 unsigned long current_millis;
 unsigned long lastActivatedTime;
@@ -86,12 +88,17 @@ void loop() {
 
   Process();
 
+
   if (!FunctionBlockingFlag) {
     childTask();
   }
 }
 
-void childTask() {                          //Sends ACK after changing LED
+void childTask() {
+#ifdef DEBUG
+  Serial.println("*****Child Task****");
+#endif
+  //Sends ACK after changing LED
 #ifdef Child_1
   if ( (receivedMsg.equals("GL1") || receivedMsg.equals("RL1")) /*&& T_ISR_F*/ && !FunctionBlockingFlag) {
     String("KL1").toCharArray(testData, 50);
@@ -124,97 +131,155 @@ void childTask() {                          //Sends ACK after changing LED
 void Process() {                            //Controls LED per received message
   //For Child 1
   presentActivatedTime = millis();
-#ifdef Child_1
-  if (receivedMsg.equals("GL1") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
-    digitalWrite(LED, HIGH); //To turn off RED LED
-    digitalWrite(GreenLED, LOW); //To turn on Green LED
+
+#ifdef DEBUG
+  Serial.print(" Present Time : ");
+  Serial.println(presentActivatedTime);
+#endif
+
+  if ( presentActivatedTime - lastActivatedTime <= ledBlinkingInterval ) {
+    blinking = previousState;
   }
   else {
-    digitalWrite(LED, HIGH); //To turn off RED LED
-    digitalWrite(GreenLED, HIGH); //To turn Off Green LED
+    previousState = !previousState;
     lastActivatedTime = presentActivatedTime;
+
   }
 
-  if (receivedMsg.equals("RL1") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
-    digitalWrite(LED, LOW); //Turns on RED LED
-    digitalWrite(GreenLED, HIGH); //Turns off Green LED
+
+  //For Child 21
+#ifdef Child_1
+  if (receivedMsg.equals("GL1") && blinking) {
+    digitalWrite(RedLED, LOW); //To turn off RED LED
+    digitalWrite(GreenLED, HIGH); //To turn on Green LED
+#ifdef DEBUG
+    Serial.println("Green Is On");
+#endif
   }
-  else {
-    digitalWrite(LED, HIGH); //Turns on RED LED
-    digitalWrite(GreenLED, HIGH); //Turns off Green LED
-    lastActivatedTime = presentActivatedTime;
+  else if (receivedMsg.equals("GL1") && !blinking) {
+    digitalWrite(RedLED, LOW); //To turn off RED LED
+    digitalWrite(GreenLED, LOW); //To turn Off Green LED
+#ifdef DEBUG
+    Serial.println("Green Is OFF");
+#endif
+  }
+
+  if (receivedMsg.equals("RL1") && blinking) {
+    digitalWrite(RedLED, HIGH); //Turns on RED LED
+    digitalWrite(GreenLED, LOW); //Turns off Green LED
+#ifdef DEBUG
+    Serial.println("RED Is On");
+#endif
+  }
+  else if ( receivedMsg.equals("RL1") && !blinking) {
+    digitalWrite(RedLED, LOW); //Turns on RED LED
+    digitalWrite(GreenLED, LOW); //Turns off Green LED
+#ifdef DEBUG
+    Serial.println("RED Is OFF");
+#endif
 
   }
 #endif
 
   //For Child 2
 #ifdef Child_2
-  if (receivedMsg.equals("GL2") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
-    digitalWrite(LED, HIGH); //To turn off RED LED
-    digitalWrite(GreenLED, LOW); //To turn on Green LED
+  if (receivedMsg.equals("GL2") && blinking) {
+    digitalWrite(RedLED, LOW); //To turn off RED LED
+    digitalWrite(GreenLED, HIGH); //To turn on Green LED
+#ifdef DEBUG
+    Serial.println("Green Is On");
+#endif
   }
-  else {
-    digitalWrite(LED, HIGH); //To turn off RED LED
-    digitalWrite(GreenLED, HIGH); //To turn Off Green LED
-    lastActivatedTime = presentActivatedTime;
+  else if (receivedMsg.equals("GL2") && !blinking) {
+    digitalWrite(RedLED, LOW); //To turn off RED LED
+    digitalWrite(GreenLED, LOW); //To turn Off Green LED
+#ifdef DEBUG
+    Serial.println("Green Is OFF");
+#endif
   }
 
-  if (receivedMsg.equals("RL2") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
-    digitalWrite(LED, LOW); //Turns on RED LED
-    digitalWrite(GreenLED, HIGH); //Turns off Green LED
+  if (receivedMsg.equals("RL2") && blinking) {
+    digitalWrite(RedLED, HIGH); //Turns on RED LED
+    digitalWrite(GreenLED, LOW); //Turns off Green LED
+#ifdef DEBUG
+    Serial.println("RED Is On");
+#endif
   }
-  else {
-    digitalWrite(LED, HIGH); //Turns on RED LED
-    digitalWrite(GreenLED, HIGH); //Turns off Green LED
-    lastActivatedTime = presentActivatedTime;
+  else if ( receivedMsg.equals("RL2") && !blinking) {
+    digitalWrite(RedLED, LOW); //Turns on RED LED
+    digitalWrite(GreenLED, LOW); //Turns off Green LED
+#ifdef DEBUG
+    Serial.println("RED Is OFF");
+#endif
 
   }
 #endif
 
   //For Child 3
 #ifdef Child_3
-  if (receivedMsg.equals("GL3") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
-    digitalWrite(LED, HIGH); //To turn off RED LED
-    digitalWrite(GreenLED, LOW); //To turn on Green LED
+  if (receivedMsg.equals("GL3") && blinking) {
+    digitalWrite(RedLED, LOW); //To turn off RED LED
+    digitalWrite(GreenLED, HIGH); //To turn on Green LED
+#ifdef DEBUG
+    Serial.println("Green Is On");
+#endif
   }
-  else {
-    digitalWrite(LED, HIGH); //To turn off RED LED
-    digitalWrite(GreenLED, HIGH); //To turn Off Green LED
-    lastActivatedTime = presentActivatedTime;
+  else if (receivedMsg.equals("GL3") && !blinking) {
+    digitalWrite(RedLED, LOW); //To turn off RED LED
+    digitalWrite(GreenLED, LOW); //To turn Off Green LED
+#ifdef DEBUG
+    Serial.println("Green Is OFF");
+#endif
   }
 
-  if (receivedMsg.equals("RL3") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
-    digitalWrite(LED, LOW); //Turns on RED LED
-    digitalWrite(GreenLED, HIGH); //Turns off Green LED
+  if (receivedMsg.equals("RL3") && blinking) {
+    digitalWrite(RedLED, HIGH); //Turns on RED LED
+    digitalWrite(GreenLED, LOW); //Turns off Green LED
+#ifdef DEBUG
+    Serial.println("RED Is On");
+#endif
   }
-  else {
-    digitalWrite(LED, HIGH); //Turns on RED LED
-    digitalWrite(GreenLED, HIGH); //Turns off Green LED
-    lastActivatedTime = presentActivatedTime;
+  else if ( receivedMsg.equals("RL3") && !blinking) {
+    digitalWrite(RedLED, LOW); //Turns on RED LED
+    digitalWrite(GreenLED, LOW); //Turns off Green LED
+#ifdef DEBUG
+    Serial.println("RED Is OFF");
+#endif
 
   }
 #endif
 
+
   //For Child 4
 #ifdef Child_4
-  if (receivedMsg.equals("GL4") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
-    digitalWrite(LED, HIGH); //To turn off RED LED
-    digitalWrite(GreenLED, LOW); //To turn on Green LED
+  if (receivedMsg.equals("GL4") && blinking) {
+    digitalWrite(RedLED, LOW); //To turn off RED LED
+    digitalWrite(GreenLED, HIGH); //To turn on Green LED
+#ifdef DEBUG
+    Serial.println("Green Is On");
+#endif
   }
-  else {
-    digitalWrite(LED, HIGH); //To turn off RED LED
-    digitalWrite(GreenLED, HIGH); //To turn Off Green LED
-    lastActivatedTime = presentActivatedTime;
+  else if (receivedMsg.equals("GL4") && !blinking) {
+    digitalWrite(RedLED, LOW); //To turn off RED LED
+    digitalWrite(GreenLED, LOW); //To turn Off Green LED
+#ifdef DEBUG
+    Serial.println("Green Is OFF");
+#endif
   }
 
-  if (receivedMsg.equals("RL4") && presentActivatedTime - lastActivatedTime <= ledBlinkingInterval) {
-    digitalWrite(LED, LOW); //Turns on RED LED
-    digitalWrite(GreenLED, HIGH); //Turns off Green LED
+  if (receivedMsg.equals("RL4") && blinking) {
+    digitalWrite(RedLED, HIGH); //Turns on RED LED
+    digitalWrite(GreenLED, LOW); //Turns off Green LED
+#ifdef DEBUG
+    Serial.println("RED Is On");
+#endif
   }
-  else {
-    digitalWrite(LED, HIGH); //Turns on RED LED
-    digitalWrite(GreenLED, HIGH); //Turns off Green LED
-    lastActivatedTime = presentActivatedTime;
+  else if ( receivedMsg.equals("RL4") && !blinking) {
+    digitalWrite(RedLED, LOW); //Turns on RED LED
+    digitalWrite(GreenLED, LOW); //Turns off Green LED
+#ifdef DEBUG
+    Serial.println("RED Is OFF");
+#endif
 
   }
 #endif
@@ -271,6 +336,9 @@ void sendData(char message[]) {             //Global Send Data Function
 }
 void recieveData() {
 
+#ifdef DEBUG
+  Serial.println("*****Receive Data****");
+#endif
   //Global Receive Data Function
   R_packet_state = sx1278.receivePacketTimeoutACK();
   if (R_packet_state == 0) {
@@ -288,13 +356,14 @@ void recieveData() {
 #endif
     receivedMsg = String(my_packet); //Converts CharArray to String
     //Process();
-    lastActivatedTime = presentActivatedTime;
     FunctionBlockingFlag = false;
+    //blinking = true;
   }
 }
 
-void loraSetup() {                          //Sets Lora Modes & returns 'true' if successful Else 'false'
+void loraSetup() {
 
+  //Sets Lora Modes & returns 'true' if successful Else 'false'
   Serial.println("");
   // Power ON the module:
   (sx1278.ON() == 0) ? Serial.println(F("Setting power ON: SUCCESS ")) : Serial.println(F("Setting power ON: ERROR "));
@@ -317,7 +386,7 @@ void loraSetup() {                          //Sets Lora Modes & returns 'true' i
 
 
 void pinConfiguration() {                   //All  PIN config
-  pinMode(LED, OUTPUT);
+  pinMode(RedLED, OUTPUT);
   pinMode(0, OUTPUT);
   pinMode(GreenLED, OUTPUT);
   digitalWrite(GreenLED, LOW);
@@ -326,6 +395,6 @@ void pinConfiguration() {                   //All  PIN config
   pinMode(ButtonPIN, INPUT);
 }
 void ledOff() {                             //To keep LED turned off during boot
-  digitalWrite(LED, LOW);
+  digitalWrite(RedLED, LOW);
   digitalWrite(GreenLED, LOW);
 }
