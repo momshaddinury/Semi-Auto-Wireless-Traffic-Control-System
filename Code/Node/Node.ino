@@ -3,9 +3,9 @@
 #include <SX1278.h>
 
 //Child Parameter:
-//#define Child_1
+#define Child_1
 //#define Child_2
-#define Child_3
+//#define Child_3
 //#define Child_4
 
 //
@@ -59,7 +59,7 @@ unsigned long current_millis;
 unsigned long lastActivatedTime;
 unsigned long presentActivatedTime;
 
-//#define DEBUG
+#define DEBUG
 
 void setup() {
   //Serial communication begin:
