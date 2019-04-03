@@ -53,7 +53,7 @@ long debouncing_time = 3000;
 volatile unsigned long last_micros;
 
 // timer for sending data:
-long ledBlinkingInterval = 350;
+long ledBlinkingInterval = 400;
 unsigned long last_interval = 0;
 unsigned long current_millis;
 unsigned long lastActivatedTime;

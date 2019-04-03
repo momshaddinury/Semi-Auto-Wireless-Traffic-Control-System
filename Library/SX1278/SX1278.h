@@ -45,14 +45,27 @@
 #include <inttypes.h>
 #endif
 
+
+
+
 /******************************************************************************
  * Definitions & Declarations
  *****************************************************************************/
 
 #define SX1278_debug_mode 0
+//#define node
+#define controller
 
-//#define SX1278_SS 5 //ESP32
+
+#ifdef node
 #define SX1278_SS 15 //ESP8266
+#endif // node
+
+#ifdef controller
+#define SX1278_SS 5 //ESP32
+#endif // controller
+
+
 
 
 //! MACROS //

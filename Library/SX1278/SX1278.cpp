@@ -4134,9 +4134,13 @@ uint8_t SX1278::setTimeout()
         */
 
 		// calculate final send/receive timeout adding an offset and a random value
+        #ifdef node
+            _sendTime = (uint16_t) Tpacket + 120; // Node Test Purpose
+        #endif // node
 
-		//_sendTime = (uint16_t) Tpacket + (rand()%delay) + 1000; // Controller
-		_sendTime = (uint16_t) Tpacket + 80; // Node Test Purpose
+        #ifdef controller
+            _sendTime = (uint16_t) Tpacket + (rand()%delay) + 1000; // Controller
+        #endif // controller
 
 		/*
         Serial.print("Send Time : ");
