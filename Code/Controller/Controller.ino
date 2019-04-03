@@ -40,6 +40,18 @@ U8G2_PCD8544_84X48_F_4W_HW_SPI u8g4(U8G2_R0, /* cs=*/17, /* dc=*/23, /* reset=*/
 uint8_t NodeAddress; //Child Address
 int address;
 
+#define ADDR_1_INT 3
+#define ADDR_1_STR "GEC CIRCLE"
+
+#define ADDR_2_INT 4
+#define ADDR_2_STR "BAYEZID"
+
+#define ADDR_3_INT 6
+#define ADDR_3_STR "OXYGEN"
+
+#define ADDR_4_INT 7
+#define ADDR_4_STR "MURADPUR"
+
 //Packets var:
 char my_packet[50];
 char testData[50];
@@ -98,6 +110,12 @@ boolean is1First = true;
 boolean is2First = true;
 boolean is3First = true;
 boolean is4First = true;
+
+boolean isSyncDone = false;
+boolean is1Active = false;
+boolean is2Active = false;
+boolean is3Active = false;
+boolean is4Active = false;
 
 //Transmission Time Calculation Var @InterruptAction():
 unsigned long DB_1_Process_Start_Time;
@@ -158,7 +176,7 @@ void setup()
   pinMode(digitalButton_8, INPUT_PULLUP);
 
   pinMode(27, OUTPUT);
-  digitalWrite(27, LOW);  // To Light Up The Display.
+  digitalWrite(27, LOW); // To Light Up The Display.
 
   //Initialization of timers
   DB_1_Signal_Runtime = millis(); //L 1
@@ -187,11 +205,17 @@ void loop()
 {
   //After the device is booted it automatically re-boots other device:
   sync();
+
+
   //autoTransmission();
   InterruptAction();
 
   //This function checks for data to receive
-  recieveData();
+  if (!isSyncDone)
+  {
+    receiveSync();
+  }
+  else recieveData();
 
   //Show time on display:
   showTime();
@@ -213,6 +237,70 @@ void sync()
   }
 }
 
+void receiveSync()
+{
+  R_packet_state = sx1278.receivePacketTimeoutACK(300);
+  if (R_packet_state == 0)
+  {
+#ifdef DEBUG
+    Serial.println(F("Package received!"));
+#endif
+    for (unsigned int i = 0; i < sx1278.packet_received.length; i++)
+    {
+      my_packet[i] = (char)sx1278.packet_received.data[i];
+      yield();
+    }
+#ifdef DEBUG
+    Serial.print(F("Message:  "));
+    Serial.println(my_packet);
+#endif
+    receivedMsg = String(my_packet);
+    if (receivedMsg == "K01")
+    {
+      is1Active = true;
+      u8g1.clearBuffer();                 // clear the internal memory
+      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g1.drawStr(0, 10, " GEC CIRCLE");
+      u8g1.drawStr(15, 20, "Active");
+      u8g1.sendBuffer();
+    }
+    else if (receivedMsg == "K02")
+    {
+      is2Active = true;
+      u8g2.clearBuffer();                 // clear the internal memory
+      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g2.drawStr(0, 10, " BAIZID");
+      u8g2.drawStr(15, 20, "Active");
+      u8g2.sendBuffer();
+    }
+    else if (receivedMsg == "K03")
+    {
+      is3Active = true;
+      u8g3.clearBuffer();                 // clear the internal memory
+      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g3.drawStr(0, 10, " OXYGEN");
+      u8g3.drawStr(15, 20, "Active");
+      u8g3.sendBuffer();
+    }
+    else if (receivedMsg == "K04")
+    {
+      is4Active = true;
+      u8g4.clearBuffer();                 // clear the internal memory
+      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g4.drawStr(0, 10, " MURADPUR");
+      u8g4.drawStr(15, 20, "Active");
+      u8g4.sendBuffer();
+    }
+    else {
+      Setting_Block_State_Color();
+    }
+    if (is1Active && is2Active && is3Active && is4Active)
+    {
+      isSyncDone = true;
+    }
+  }
+}
+
 //Experimental esp32 ISRs
 void ISR_DB_1_G_32()
 {
@@ -226,13 +314,12 @@ void ISR_DB_1_G_32()
     Serial.print(count += 1);
     Serial.print("\t");
     button1State = true;
-
   }
 }
 
 void ISR_DB_1_R_32()
 {
-  if (button1State)
+  if (button1State && !is1First)
     return;
   if ((long(millis()) - DB_priv_time_1) >= interval)
   {
@@ -242,7 +329,6 @@ void ISR_DB_1_R_32()
     Serial.print(count += 1);
     Serial.print("\t");
     button1State = false;
-
   }
 }
 
@@ -258,13 +344,12 @@ void ISR_DB_2_G_32()
     Serial.print(count += 1);
     Serial.print("\t");
     button2State = true;
-
   }
 }
 
 void ISR_DB_2_R_32()
 {
-  if (button2State)
+  if (button2State && !is2First)
     return;
   if ((long(millis()) - DB_priv_time_2) >= interval)
   {
@@ -274,7 +359,6 @@ void ISR_DB_2_R_32()
     Serial.print(count += 1);
     Serial.print("\t");
     button2State = false;
-
   }
 }
 
@@ -290,13 +374,12 @@ void ISR_DB_3_G_32()
     Serial.print(count += 1);
     Serial.print("\t");
     button3State = true;
-
   }
 }
 
 void ISR_DB_3_R_32()
 {
-  if (button3State)
+  if (button3State && !is3First)
     return;
   if ((long(millis()) - DB_priv_time_3) >= interval)
   {
@@ -306,7 +389,6 @@ void ISR_DB_3_R_32()
     Serial.print(count += 1);
     Serial.print("\t");
     button3State = false;
-
   }
 }
 
@@ -322,13 +404,12 @@ void ISR_DB_4_G_32()
     Serial.print(count += 1);
     Serial.print("\t");
     button4State = true;
-
   }
 }
 
 void ISR_DB_4_R_32()
 {
-  if (button4State)
+  if (button4State && !is4First)
     return;
   if ((long(millis()) - DB_priv_time_4) >= interval)
   {
@@ -338,7 +419,6 @@ void ISR_DB_4_R_32()
     Serial.print(count += 1);
     Serial.print("\t");
     button4State = false;
-
   }
 }
 
@@ -582,7 +662,6 @@ void InterruptAction()
    state = 0  --> The command has been executed with no errors
 */
 
-
 //Global send data function
 void sendData(uint8_t NodeAddress, char message[])
 {
@@ -596,29 +675,41 @@ void sendData(uint8_t NodeAddress, char message[])
   else
     return;
   //delay(1000);
-  u8g1.clearBuffer();                 // clear the internal memory
-  u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  u8g1.drawStr(5, 10, " GEC CIRCLE");   // write something to the internal memory
-  u8g1.drawStr(10, 30, "Connecting...");
-  u8g1.sendBuffer();
+  switch (NodeAddress)
+  {
 
-  u8g2.clearBuffer();                 // clear the internal memory
-  u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  u8g2.drawStr(20, 10, " BAIZID");
-  u8g2.drawStr(10, 30, "Connecting...");
-  u8g2.sendBuffer();
+    case ADDR_1_INT:
+      u8g1.clearBuffer();                 // clear the internal memory
+      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g1.drawStr(0, 10, " GEC CIRCLE"); // write something to the internal memory
+      u8g1.drawStr(15, 30, "Connecting...");
+      u8g1.sendBuffer();
+      break;
 
-  u8g3.clearBuffer();                 // clear the internal memory
-  u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  u8g3.drawStr(15, 10, " OXYGEN");
-  u8g3.drawStr(10, 30, "Connecting...");
-  u8g3.sendBuffer();
+    case ADDR_2_INT:
+      u8g2.clearBuffer();                 // clear the internal memory
+      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g2.drawStr(0, 10, " BAIZID");
+      u8g2.drawStr(15, 30, "Connecting...");
+      u8g2.sendBuffer();
+      break;
 
-  u8g4.clearBuffer();                 // clear the internal memory
-  u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  u8g4.drawStr(5, 10, " MURADPUR");
-  u8g4.drawStr(10, 30, "Connecting...");
-  u8g4.sendBuffer();
+    case ADDR_3_INT:
+      u8g3.clearBuffer();                 // clear the internal memory
+      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g3.drawStr(0, 10, " OXYGEN");
+      u8g3.drawStr(15, 30, "Connecting...");
+      u8g3.sendBuffer();
+      break;
+
+    case ADDR_4_INT:
+      u8g4.clearBuffer();                 // clear the internal memory
+      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g4.drawStr(0, 10, " MURADPUR");
+      u8g4.drawStr(15, 30, "Connecting...");
+      u8g4.sendBuffer();
+      break;
+  }
 
   for (int retry = 1; retry <= 5; retry++)
   {
@@ -635,27 +726,48 @@ void sendData(uint8_t NodeAddress, char message[])
       Serial.println(F("Packet sent..."));
 #endif
       isTransmissionInProgress = false;
-      u8g1.clearBuffer();                 // clear the internal memory
-      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g1.drawStr(5, 10, " GEC CIRCLE");   // write something to the internal memory
-      u8g1.drawStr(30, 30, "Sent!");
-      u8g1.sendBuffer();
-      u8g2.clearBuffer();                 // clear the internal memory
-      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g2.drawStr(20, 10, " BAIZID");
-      u8g2.drawStr(30, 30, "Sent!");
-      u8g2.sendBuffer();
-      u8g3.clearBuffer();                 // clear the internal memory
-      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g3.drawStr(15, 10, " OXYGEN");
-      u8g3.drawStr(30, 30, "Sent!");
-      u8g3.sendBuffer();
-      u8g4.clearBuffer();                 // clear the internal memory
-      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g4.drawStr(5, 10, " MURADPUR");
-      u8g4.drawStr(30, 30, "Sent!");
-      u8g4.sendBuffer();
-      break;
+
+      switch (NodeAddress)
+      {
+
+        case ADDR_1_INT:
+          u8g1.clearBuffer();                 // clear the internal memory
+          u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+          u8g1.drawStr(0, 10, " GEC CIRCLE"); // write something to the internal memory
+          u8g1.drawStr(15, 30, "Sent!");
+          is1Active = true;
+          u8g1.sendBuffer();
+          break;
+
+        case ADDR_2_INT:
+          u8g2.clearBuffer();                 // clear the internal memory
+          u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+          u8g2.drawStr(0, 10, " BAIZID");
+          u8g2.drawStr(15, 30, "Sent!");
+          is2Active = true;
+          u8g2.sendBuffer();
+          break;
+
+        case ADDR_3_INT:
+          u8g3.clearBuffer();                 // clear the internal memory
+          u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+          u8g3.drawStr(0, 10, " OXYGEN");
+          u8g3.drawStr(15, 30, "Sent!");
+          is3Active = true;
+          u8g3.sendBuffer();
+          break;
+
+        case ADDR_4_INT:
+          u8g4.clearBuffer();                 // clear the internal memory
+          u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+          u8g4.drawStr(0, 10, " MURADPUR");
+          u8g4.drawStr(15, 30, "Sent!");
+          is4Active = true;
+          u8g4.sendBuffer();
+          break;
+      }
+      //break;
+      return;
     }
     else if (T_packet_state == 5 || T_packet_state == 6 || T_packet_state == 7)
     {
@@ -674,6 +786,51 @@ void sendData(uint8_t NodeAddress, char message[])
     }
     showTime();
   }
+
+  switch (NodeAddress)
+  {
+
+    case ADDR_1_INT:
+      u8g1.clearBuffer();                 // clear the internal memory
+      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g1.drawStr(0, 10, " GEC CIRCLE"); // write something to the internal memory
+      u8g1.drawStr(15, 30, "Falied!");
+      is1Active = false;
+      u8g1.drawStr(15, 30, "Offline");
+      u8g1.sendBuffer();
+      break;
+
+    case ADDR_2_INT:
+      u8g2.clearBuffer();                 // clear the internal memory
+      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g2.drawStr(0, 10, " BAIZID");
+      u8g2.drawStr(15, 30, "Falied!");
+      is2Active = false;
+      u8g2.drawStr(15, 30, "Offline");
+      u8g2.sendBuffer();
+      break;
+
+    case ADDR_3_INT:
+      u8g3.clearBuffer();                 // clear the internal memory
+      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g3.drawStr(0, 10, " OXYGEN");
+      u8g3.drawStr(15, 30, "Falied!");
+      is3Active = false;
+      u8g3.drawStr(15, 30, "Offline");
+      u8g3.sendBuffer();
+      break;
+
+    case ADDR_4_INT:
+      u8g4.clearBuffer();                 // clear the internal memory
+      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+      u8g4.drawStr(0, 10, " MURADPUR");
+      u8g4.drawStr(15, 30, "Falied!");
+      is4Active = false;
+      u8g4.drawStr(15, 30, "Offline");
+      u8g4.sendBuffer();
+      break;
+  }
+
   isTransmissionInProgress = false;
 }
 
@@ -722,10 +879,13 @@ void showTime()
       u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt1 = "Red " + printt1;
       u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
-      u8g1.drawStr(5, 10, " GEC CIRCLE");   // write something to the internal memory
+      u8g1.drawStr(0, 10, " GEC CIRCLE");    // write something to the internal memory
       if (isTransmissionInProgress)
-        u8g1.drawStr(10, 30, "Connecting...");
-
+        u8g1.drawStr(15, 30, "Connecting...");
+      if (is1Active)
+        u8g1.drawStr(15, 20, "Active");
+      else
+        u8g1.drawStr(15, 30, "Offline");
       u8g1.sendBuffer();
       break;
 
@@ -734,10 +894,13 @@ void showTime()
       u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt1 = "Green " + printt1;
       u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
-      u8g1.drawStr(5, 10, " GEC CIRCLE");   // write something to the internal memory
+      u8g1.drawStr(0, 10, " GEC CIRCLE");    // write something to the internal memory
       if (isTransmissionInProgress)
-        u8g1.drawStr(10, 30, "Connecting...");
-
+        u8g1.drawStr(15, 30, "Connecting...");
+      if (is1Active)
+        u8g1.drawStr(15, 20, "Active");
+      else
+        u8g1.drawStr(15, 30, "Offline");
       u8g1.sendBuffer();
       break;
 
@@ -752,10 +915,13 @@ void showTime()
       u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt2 = "Red " + printt2;
       u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
-      u8g2.drawStr(20, 10, " BAIZID");
+      u8g2.drawStr(0, 10, " BAIZID");
       if (isTransmissionInProgress)
-        u8g2.drawStr(10, 30, "Connecting...");
-
+        u8g2.drawStr(15, 30, "Connecting...");
+      if (is2Active)
+        u8g2.drawStr(15, 20, "Active");
+      else
+        u8g2.drawStr(15, 30, "Offline");
       u8g2.sendBuffer();
       break;
 
@@ -764,10 +930,13 @@ void showTime()
       u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt2 = "Green " + printt2;
       u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
-      u8g2.drawStr(20, 10, " BAIZID");
+      u8g2.drawStr(0, 10, " BAIZID");
       if (isTransmissionInProgress)
-        u8g2.drawStr(10, 30, "Connecting...");
-
+        u8g2.drawStr(15, 30, "Connecting...");
+      if (is2Active)
+        u8g2.drawStr(15, 20, "Active");
+      else
+        u8g2.drawStr(15, 30, "Offline");
       u8g2.sendBuffer();
       break;
 
@@ -782,10 +951,13 @@ void showTime()
       u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt3 = "Red " + printt3;
       u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
-      u8g3.drawStr(15, 10, " OXYGEN");
+      u8g3.drawStr(0, 10, " OXYGEN");
       if (isTransmissionInProgress)
-        u8g3.drawStr(10, 30, "Connecting...");
-
+        u8g3.drawStr(15, 30, "Connecting...");
+      if (is3Active)
+        u8g3.drawStr(15, 20, "Active");
+      else
+        u8g3.drawStr(15, 30, "Offline");
       u8g3.sendBuffer();
       break;
     case G:
@@ -793,10 +965,13 @@ void showTime()
       u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt3 = "Green " + printt3;
       u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
-      u8g3.drawStr(15, 10, " OXYGEN");
+      u8g3.drawStr(0, 10, " OXYGEN");
       if (isTransmissionInProgress)
-        u8g3.drawStr(10, 30, "Connecting...");
-
+        u8g3.drawStr(15, 30, "Connecting...");
+      if (is3Active)
+        u8g3.drawStr(15, 20, "Active");
+      else
+        u8g3.drawStr(15, 30, "Offline");
       u8g3.sendBuffer();
       break;
     case X:
@@ -810,10 +985,13 @@ void showTime()
       u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt4 = "Red " + printt4;
       u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
-      u8g4.drawStr(5, 10, " MURADPUR");
+      u8g4.drawStr(0, 10, " MURADPUR");
       if (isTransmissionInProgress)
-        u8g4.drawStr(10, 30, "Connecting...");
-
+        u8g4.drawStr(15, 30, "Connecting...");
+      if (is4Active)
+        u8g4.drawStr(15, 20, "Active");
+      else
+        u8g4.drawStr(15, 30, "Offline");
       u8g4.sendBuffer();
       break;
     case G:
@@ -821,10 +999,13 @@ void showTime()
       u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
       printt4 = "Green " + printt4;
       u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
-      u8g4.drawStr(5, 10, " MURADPUR");
+      u8g4.drawStr(0, 10, " MURADPUR");
       if (isTransmissionInProgress)
-        u8g4.drawStr(10, 30, "Connecting...");
-
+        u8g4.drawStr(15, 30, "Connecting...");
+      if (is4Active)
+        u8g4.drawStr(15, 20, "Active");
+      else
+        u8g4.drawStr(15, 30, "Offline");
       u8g4.sendBuffer();
       break;
     case X:
@@ -1034,28 +1215,32 @@ void displaySetup()
   u8g3.begin();
   u8g4.begin();
 
-  u8g1.clearBuffer();                  // clear the internal memory
-  u8g1.setFont(u8g2_font_ncenB08_tr);  // choose a suitable font
-  u8g1.drawStr(5, 10, " GEC CIRCLE"); // write something to the internal memory
-  u8g1.sendBuffer();                   // transfer internal memory to the display
+  u8g1.clearBuffer();                 // clear the internal memory
+  u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+  u8g1.drawStr(0, 10, " GEC Circle"); // write something to the internal memory
+  u8g1.drawStr(15, 20, "Offline");
+  u8g1.sendBuffer();                  // transfer internal memory to the display
   delay(1000);
 
-  u8g2.clearBuffer();                     // clear the internal memory
-  u8g2.setFont(u8g2_font_ncenB08_tr);     // choose a suitable font
-  u8g2.drawStr(20, 10, " BAIZID"); // write something to the internal memory
-  u8g2.sendBuffer();                      // transfer internal memory to the display
+  u8g2.clearBuffer();                 // clear the internal memory
+  u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+  u8g2.drawStr(0, 10, " BAIZID");     // write something to the internal memory
+  u8g2.drawStr(15, 20, "Offline");
+  u8g2.sendBuffer();                  // transfer internal memory to the display
   delay(1000);
 
-  u8g3.clearBuffer();                  // clear the internal memory
-  u8g3.setFont(u8g2_font_ncenB08_tr);  // choose a suitable font
-  u8g3.drawStr(15, 10, " OXYGEN"); // write something to the internal memory
-  u8g3.sendBuffer();                   // transfer internal memory to the display
+  u8g3.clearBuffer();                 // clear the internal memory
+  u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+  u8g3.drawStr(0, 10, " OXYGEN");     // write something to the internal memory
+  u8g3.drawStr(15, 20, "Offline");
+  u8g3.sendBuffer();                  // transfer internal memory to the display
   delay(1000);
 
-  u8g4.clearBuffer();                  // clear the internal memory
-  u8g4.setFont(u8g2_font_ncenB08_tr);  // choose a suitable font
-  u8g4.drawStr(5, 10, " MURADPUR"); // write something to the internal memory
-  u8g4.sendBuffer();                   // transfer internal memory to the display
+  u8g4.clearBuffer();                 // clear the internal memory
+  u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+  u8g4.drawStr(0, 10, " MURADPUR");   // write something to the internal memory
+  u8g4.drawStr(15, 20, "Offline");
+  u8g4.sendBuffer();                  // transfer internal memory to the display
   delay(1000);
 }
 

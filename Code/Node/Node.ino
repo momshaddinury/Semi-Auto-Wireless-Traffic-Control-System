@@ -5,8 +5,8 @@
 //Child Parameter:
 //#define Child_1
 //#define Child_2
-#define Child_3
-//#define Child_4
+//#define Child_3
+#define Child_4
 
 //
 //Lora SX1278:
@@ -33,6 +33,7 @@ uint8_t ControllerAddress = 5;              //Parent Address
 //Message var:
 char my_packet [50];  //Used to store Incoming message in char array from Parent Node
 char testData[50];    //Used to store message which will be sent to Parent Node
+char syncData[50];
 String receivedMsg;   //to store the converted my_packet string from char array
 
 //Pin Def:
@@ -63,20 +64,44 @@ unsigned long presentActivatedTime;
 
 void setup() {
   //Serial communication begin:
+  
 #ifdef DEBUG
   Serial.begin(9600);
 #endif
+
   //Lora init:
   loraSetup();
+  
   //Pin config:
   pinConfiguration();
+  
   //Interrupt:
   attachInterrupt(digitalPinToInterrupt(ButtonPIN), Trigger_ISR, FALLING);
+  
 #ifdef DEBUG
   Serial.print("Lora Address :");
   Serial.println(LORA_ADDRESS);
 #endif
-  //turnOff Led:
+
+  delay(500);
+  
+  #ifdef Child_1
+    String("K01").toCharArray(syncData, 50);
+    sendData(syncData);
+  #endif
+    #ifdef Child_2
+    String("K02").toCharArray(syncData, 50);
+    sendData(syncData);
+  #endif
+    #ifdef Child_3
+    String("K03").toCharArray(syncData, 50);
+    sendData(syncData);
+  #endif
+    #ifdef Child_4
+    String("K04").toCharArray(syncData, 50);
+    sendData(syncData);
+  #endif
+  
   ledOff();
   lastActivatedTime = millis();
   presentActivatedTime = millis();
