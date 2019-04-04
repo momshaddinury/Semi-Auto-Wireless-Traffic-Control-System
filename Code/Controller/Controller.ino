@@ -223,6 +223,62 @@ void loop()
   showTime();
 }
 
+void display1Write()
+{
+  u8g1.clearBuffer(); // clear the internal memory
+  u8g1.setFont(u8g2_font_ncenB08_tr);
+  u8g1.drawStr(0, 10, " GEC CIRCLE");
+  if (isTransmissionInProgress)
+    u8g1.drawStr(15, 30, "Connecting...");
+  if (is1Active)
+    u8g1.drawStr(15, 20, "Active");
+  else
+    u8g1.drawStr(15, 30, "Offline");
+  u8g1.sendBuffer();
+}
+
+void display2Write()
+{
+  u8g2.clearBuffer(); // clear the internal memory
+  u8g2.setFont(u8g2_font_ncenB08_tr);
+  u8g2.drawStr(0, 10, " GEC CIRCLE");
+  if (isTransmissionInProgress)
+    u8g2.drawStr(15, 30, "Connecting...");
+  if (is2Active)
+    u8g2.drawStr(15, 20, "Active");
+  else
+    u8g2.drawStr(15, 30, "Offline");
+  u8g2.sendBuffer();
+}
+
+void display3Write()
+{
+  u8g3.clearBuffer(); // clear the internal memory
+  u8g3.setFont(u8g2_font_ncenB08_tr);
+  u8g3.drawStr(0, 10, " GEC CIRCLE");
+  if (isTransmissionInProgress)
+    u8g3.drawStr(15, 30, "Connecting...");
+  if (is3Active)
+    u8g3.drawStr(15, 20, "Active");
+  else
+    u8g3.drawStr(15, 30, "Offline");
+  u8g3.sendBuffer();
+}
+
+void display4Write()
+{
+  u8g4.clearBuffer(); // clear the internal memory
+  u8g4.setFont(u8g2_font_ncenB08_tr);
+  u8g4.drawStr(0, 10, " GEC CIRCLE");
+  if (isTransmissionInProgress)
+    u8g4.drawStr(15, 30, "Connecting...");
+  if (is4Active)
+    u8g4.drawStr(15, 20, "Active");
+  else
+    u8g4.drawStr(15, 30, "Offline");
+  u8g4.sendBuffer();
+}
+
 //RESETs connected Nodes
 void sync()
 {
