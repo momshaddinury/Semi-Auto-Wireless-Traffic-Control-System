@@ -1,12 +1,13 @@
 //Library:
-#include <Ticker.h>
+//#include <Ticker.h>
 #include <SX1278.h>
+//#include<WiFi.h>
 
 //Child Parameter:
 //#define Child_1
-//#define Child_2
+#define Child_2
 //#define Child_3
-#define Child_4
+//#define Child_4
 
 //
 //Lora SX1278:
@@ -16,18 +17,22 @@ uint8_t ControllerAddress = 5;              //Parent Address
 
 #ifdef Child_1
 #define LORA_ADDRESS          3
+#define delay_time          3000
 #endif
-//
+
 #ifdef Child_2
 #define LORA_ADDRESS          4
+#define delay_time          3500
 #endif
 
 #ifdef Child_3
 #define LORA_ADDRESS          6
+#define delay_time          4000
 #endif
 
 #ifdef Child_4
 #define LORA_ADDRESS          7
+#define delay_time          4500
 #endif
 
 //Message var:
@@ -86,18 +91,25 @@ void setup() {
   delay(500);
   
   #ifdef Child_1
+    //delay(delay_time);
     String("K01").toCharArray(syncData, 50);
     sendData(syncData);
   #endif
+  
     #ifdef Child_2
+//    delay(delay_time);
     String("K02").toCharArray(syncData, 50);
     sendData(syncData);
   #endif
+  
     #ifdef Child_3
+//    delay(delay_time);
     String("K03").toCharArray(syncData, 50);
     sendData(syncData);
   #endif
+  
     #ifdef Child_4
+//     delay(delay_time);
     String("K04").toCharArray(syncData, 50);
     sendData(syncData);
   #endif
@@ -364,7 +376,7 @@ void sendData(char message[]) {             //Global Send Data Function
 void recieveData() {
 
   //Global Receive Data Function
-  R_packet_state = sx1278.receivePacketTimeoutACK();
+  R_packet_state = sx1278.receivePacketTimeoutACK(350);
   if (R_packet_state == 0) {
 #ifdef DEBUG
     Serial.println(F("Package received!"));

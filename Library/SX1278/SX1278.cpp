@@ -45,13 +45,11 @@ SX1278::SX1278()
 	packet_sent.retry = _retries;
 };
 
-
-
-
 /*
  Function: Sets the module ON.
  Returns: Nothing
 */
+
 uint8_t SX1278::ON()
 {
 	uint8_t state = 2;

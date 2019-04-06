@@ -53,8 +53,8 @@
  *****************************************************************************/
 
 #define SX1278_debug_mode 0
-//#define node
-#define controller
+#define node
+//#define controller
 
 
 #ifdef node
