@@ -23,7 +23,7 @@
 #include <Ticker.h>
 //Library for Display
 #include <U8g2lib.h>
-#include<WiFi.h>
+#include <WiFi.h>
 
 /*****************************************************************************
    Definitions & Declarations
@@ -294,43 +294,82 @@ void receiveSync()
     if (receivedMsg == "K01")
     {
       is1Active = is1First = true;
-      colorRG1 = X;
-      u8g1.clearBuffer();                 // clear the internal memory
-      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g1.drawStr(0, 10, ADDR_1_STR);
-      u8g1.drawStr(25, 20, "Active");
-      u8g1.sendBuffer();
+      if (colorRG1 == X)
+      {
+        u8g1.clearBuffer();                 // clear the internal memory
+        u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+        u8g1.drawStr(0, 10, ADDR_1_STR);
+        u8g1.drawStr(25, 20, "Active");
+        u8g1.sendBuffer();
+      }
+      else if (colorRG1 == R)
+      {
+        ISR_DB_1_R_32();
+      }
+      else if (colorRG1 == G)
+      {
+        ISR_DB_1_G_32();
+      }
     }
     else if (receivedMsg == "K02")
     {
       is2Active = is2First = true;
-      colorRG2 = X;
-      u8g2.clearBuffer();                 // clear the internal memory
-      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g2.drawStr(0, 10, ADDR_2_STR);
-      u8g2.drawStr(25, 20, "Active");
-      u8g2.sendBuffer();
+      if (colorRG2 == X)
+      {
+        u8g2.clearBuffer();                 // clear the internal memory
+        u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+        u8g2.drawStr(0, 10, ADDR_2_STR);
+        u8g2.drawStr(25, 20, "Active");
+        u8g2.sendBuffer();
+      }
+      else if (colorRG2 == R)
+      {
+        ISR_DB_2_R_32();
+      }
+      else if (colorRG2 == G)
+      {
+        ISR_DB_2_G_32();
+      }
     }
     else if (receivedMsg == "K03")
     {
       is3Active = is3First = true;
-      colorRG3 = X;
-      u8g3.clearBuffer();                 // clear the internal memory
-      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g3.drawStr(0, 10, ADDR_3_STR);
-      u8g3.drawStr(25, 20, "Active");
-      u8g3.sendBuffer();
-
+      if (colorRG3 == X)
+      {
+        u8g3.clearBuffer();                 // clear the internal memory
+        u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+        u8g3.drawStr(0, 10, ADDR_3_STR);
+        u8g3.drawStr(25, 20, "Active");
+        u8g3.sendBuffer();
+      }
+      else if (colorRG3 == R)
+      {
+        ISR_DB_3_R_32();
+      }
+      else if (colorRG3 == G)
+      {
+        ISR_DB_3_G_32();
+      }
     }
     else if (receivedMsg == "K04")
     {
       is4Active = is4First = true;
-      colorRG4 = X;
-      u8g4.clearBuffer();                 // clear the internal memory
-      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g4.drawStr(0, 10, ADDR_4_STR);
-      u8g4.drawStr(25, 20, "Active");
-      u8g4.sendBuffer();
+      if (colorRG4 == X)
+      {
+        u8g4.clearBuffer();                 // clear the internal memory
+        u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+        u8g4.drawStr(0, 10, ADDR_4_STR);
+        u8g4.drawStr(25, 20, "Active");
+        u8g4.sendBuffer();
+      }
+      else if (colorRG4 == R)
+      {
+        ISR_DB_4_R_32();
+      }
+      else if (colorRG4 == G)
+      {
+        ISR_DB_4_G_32();
+      }
     }
     else
     {
@@ -720,41 +759,41 @@ void sendData(uint8_t NodeAddress, char message[])
   switch (NodeAddress)
   {
 
-    case ADDR_1_INT:
-      isTransmissionInProgress_1 = true;
-      u8g1.clearBuffer();                 // clear the internal memory
-      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g1.drawStr(0, 10, ADDR_1_STR); // write something to the internal memory
-      u8g1.drawStr(5, 30, "Transmitting..");
-      u8g1.sendBuffer();
-      break;
+  case ADDR_1_INT:
+    isTransmissionInProgress_1 = true;
+    u8g1.clearBuffer();                 // clear the internal memory
+    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    u8g1.drawStr(0, 10, ADDR_1_STR);    // write something to the internal memory
+    u8g1.drawStr(5, 30, "Transmitting..");
+    u8g1.sendBuffer();
+    break;
 
-    case ADDR_2_INT:
-      isTransmissionInProgress_2 = true;
-      u8g2.clearBuffer();                 // clear the internal memory
-      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g2.drawStr(0, 10, ADDR_2_STR);
-      u8g2.drawStr(5, 30, "Transmitting..");
-      u8g2.sendBuffer();
-      break;
+  case ADDR_2_INT:
+    isTransmissionInProgress_2 = true;
+    u8g2.clearBuffer();                 // clear the internal memory
+    u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    u8g2.drawStr(0, 10, ADDR_2_STR);
+    u8g2.drawStr(5, 30, "Transmitting..");
+    u8g2.sendBuffer();
+    break;
 
-    case ADDR_3_INT:
-      isTransmissionInProgress_3 = true;
-      u8g3.clearBuffer();                 // clear the internal memory
-      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g3.drawStr(0, 10, ADDR_3_STR);
-      u8g3.drawStr(5, 30, "Transmitting..");
-      u8g3.sendBuffer();
-      break;
+  case ADDR_3_INT:
+    isTransmissionInProgress_3 = true;
+    u8g3.clearBuffer();                 // clear the internal memory
+    u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    u8g3.drawStr(0, 10, ADDR_3_STR);
+    u8g3.drawStr(5, 30, "Transmitting..");
+    u8g3.sendBuffer();
+    break;
 
-    case ADDR_4_INT:
-      isTransmissionInProgress_4 = true;
-      u8g4.clearBuffer();                 // clear the internal memory
-      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g4.drawStr(0, 10, ADDR_4_STR);
-      u8g4.drawStr(5, 30, "Transmitting..");
-      u8g4.sendBuffer();
-      break;
+  case ADDR_4_INT:
+    isTransmissionInProgress_4 = true;
+    u8g4.clearBuffer();                 // clear the internal memory
+    u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    u8g4.drawStr(0, 10, ADDR_4_STR);
+    u8g4.drawStr(5, 30, "Transmitting..");
+    u8g4.sendBuffer();
+    break;
   }
 
   for (int retry = 1; retry <= 5; retry++)
@@ -776,45 +815,45 @@ void sendData(uint8_t NodeAddress, char message[])
       switch (NodeAddress)
       {
 
-        case ADDR_1_INT:
-          isTransmissionInProgress_1 = false;
-          u8g1.clearBuffer();                 // clear the internal memory
-          u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-          u8g1.drawStr(0, 10, ADDR_1_STR); // write something to the internal memory
-          u8g1.drawStr(25, 30, "Sent!");
-          is1Active = true;
-          u8g1.sendBuffer();
-          break;
+      case ADDR_1_INT:
+        isTransmissionInProgress_1 = false;
+        u8g1.clearBuffer();                 // clear the internal memory
+        u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+        u8g1.drawStr(0, 10, ADDR_1_STR);    // write something to the internal memory
+        u8g1.drawStr(25, 30, "Sent!");
+        is1Active = true;
+        u8g1.sendBuffer();
+        break;
 
-        case ADDR_2_INT:
-          isTransmissionInProgress_2 = false;
-          u8g2.clearBuffer();                 // clear the internal memory
-          u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-          u8g2.drawStr(0, 10, ADDR_2_STR);
-          u8g2.drawStr(25, 30, "Sent!");
-          is2Active = true;
-          u8g2.sendBuffer();
-          break;
+      case ADDR_2_INT:
+        isTransmissionInProgress_2 = false;
+        u8g2.clearBuffer();                 // clear the internal memory
+        u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+        u8g2.drawStr(0, 10, ADDR_2_STR);
+        u8g2.drawStr(25, 30, "Sent!");
+        is2Active = true;
+        u8g2.sendBuffer();
+        break;
 
-        case ADDR_3_INT:
-          isTransmissionInProgress_3 = false;
-          u8g3.clearBuffer();                 // clear the internal memory
-          u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-          u8g3.drawStr(0, 10, ADDR_3_STR);
-          u8g3.drawStr(25, 30, "Sent!");
-          is3Active = true;
-          u8g3.sendBuffer();
-          break;
+      case ADDR_3_INT:
+        isTransmissionInProgress_3 = false;
+        u8g3.clearBuffer();                 // clear the internal memory
+        u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+        u8g3.drawStr(0, 10, ADDR_3_STR);
+        u8g3.drawStr(25, 30, "Sent!");
+        is3Active = true;
+        u8g3.sendBuffer();
+        break;
 
-        case ADDR_4_INT:
-          isTransmissionInProgress_4 = false;
-          u8g4.clearBuffer();                 // clear the internal memory
-          u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-          u8g4.drawStr(0, 10, ADDR_4_STR);
-          u8g4.drawStr(25, 30, "Sent!");
-          is4Active = true;
-          u8g4.sendBuffer();
-          break;
+      case ADDR_4_INT:
+        isTransmissionInProgress_4 = false;
+        u8g4.clearBuffer();                 // clear the internal memory
+        u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+        u8g4.drawStr(0, 10, ADDR_4_STR);
+        u8g4.drawStr(25, 30, "Sent!");
+        is4Active = true;
+        u8g4.sendBuffer();
+        break;
       }
       //break;
       return;
@@ -840,49 +879,49 @@ void sendData(uint8_t NodeAddress, char message[])
   switch (NodeAddress)
   {
 
-    case ADDR_1_INT:
-      isTransmissionInProgress_1 = false;
-      u8g1.clearBuffer();                 // clear the internal memory
-      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g1.drawStr(0, 10, ADDR_1_STR); // write something to the internal memory
-      u8g1.drawStr(15, 30, "Falied!");
-      is1Active = false;
-      u8g1.drawStr(20, 20, "Offline");
-      u8g1.sendBuffer();
-      break;
+  case ADDR_1_INT:
+    isTransmissionInProgress_1 = false;
+    u8g1.clearBuffer();                 // clear the internal memory
+    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    u8g1.drawStr(0, 10, ADDR_1_STR);    // write something to the internal memory
+    u8g1.drawStr(15, 30, "Falied!");
+    is1Active = false;
+    u8g1.drawStr(20, 20, "Offline");
+    u8g1.sendBuffer();
+    break;
 
-    case ADDR_2_INT:
-      isTransmissionInProgress_2 = false;
-      u8g2.clearBuffer();                 // clear the internal memory
-      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g2.drawStr(0, 10, ADDR_2_STR);
-      u8g2.drawStr(15, 30, "Falied!");
-      is2Active = false;
-      u8g2.drawStr(20, 20, "Offline");
-      u8g2.sendBuffer();
-      break;
+  case ADDR_2_INT:
+    isTransmissionInProgress_2 = false;
+    u8g2.clearBuffer();                 // clear the internal memory
+    u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    u8g2.drawStr(0, 10, ADDR_2_STR);
+    u8g2.drawStr(15, 30, "Falied!");
+    is2Active = false;
+    u8g2.drawStr(20, 20, "Offline");
+    u8g2.sendBuffer();
+    break;
 
-    case ADDR_3_INT:
-      isTransmissionInProgress_3 = false;
-      u8g3.clearBuffer();                 // clear the internal memory
-      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g3.drawStr(0, 10, ADDR_3_STR);
-      u8g3.drawStr(15, 30, "Falied!");
-      is3Active = false;
-      u8g3.drawStr(20, 20, "Offline");
-      u8g3.sendBuffer();
-      break;
+  case ADDR_3_INT:
+    isTransmissionInProgress_3 = false;
+    u8g3.clearBuffer();                 // clear the internal memory
+    u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    u8g3.drawStr(0, 10, ADDR_3_STR);
+    u8g3.drawStr(15, 30, "Falied!");
+    is3Active = false;
+    u8g3.drawStr(20, 20, "Offline");
+    u8g3.sendBuffer();
+    break;
 
-    case ADDR_4_INT:
-      isTransmissionInProgress_4 = false;
-      u8g4.clearBuffer();                 // clear the internal memory
-      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      u8g4.drawStr(0, 10, ADDR_4_STR);
-      u8g4.drawStr(15, 30, "Falied!");
-      is4Active = false;
-      u8g4.drawStr(20, 20, "Offline");
-      u8g4.sendBuffer();
-      break;
+  case ADDR_4_INT:
+    isTransmissionInProgress_4 = false;
+    u8g4.clearBuffer();                 // clear the internal memory
+    u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    u8g4.drawStr(0, 10, ADDR_4_STR);
+    u8g4.drawStr(15, 30, "Falied!");
+    is4Active = false;
+    u8g4.drawStr(20, 20, "Offline");
+    u8g4.sendBuffer();
+    break;
   }
 
   isTransmissionInProgress = false;
@@ -1099,142 +1138,142 @@ void showTime()
   switch (colorRG1)
   {
 
-    case R:
-      u8g1.clearBuffer();                 // clear the internal memory
-      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt1 = "Red " + printt1;
-      u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
-      u8g1.drawStr(0, 10, ADDR_1_STR);    // write something to the internal memory
-      if (isTransmissionInProgress_1)
-        u8g1.drawStr(5, 30, "Transmitting..");
-      if (is1Active)
-        u8g1.drawStr(25, 20, "Active");
-      else
-        u8g1.drawStr(20, 30, "Offline");
-      u8g1.sendBuffer();
-      break;
+  case R:
+    u8g1.clearBuffer();                 // clear the internal memory
+    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt1 = "Red " + printt1;
+    u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
+    u8g1.drawStr(0, 10, ADDR_1_STR);       // write something to the internal memory
+    if (isTransmissionInProgress_1)
+      u8g1.drawStr(5, 30, "Transmitting..");
+    if (is1Active)
+      u8g1.drawStr(25, 20, "Active");
+    else
+      u8g1.drawStr(20, 30, "Offline");
+    u8g1.sendBuffer();
+    break;
 
-    case G:
-      u8g1.clearBuffer();                 // clear the internal memory
-      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt1 = "Green " + printt1;
-      u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
-      u8g1.drawStr(0, 10, ADDR_1_STR);    // write something to the internal memory
-      if (isTransmissionInProgress_2)
-        u8g1.drawStr(5, 30, "Transmitting..");
-      if (is1Active)
-        u8g1.drawStr(25, 20, "Active");
-      else
-        u8g1.drawStr(20, 30, "Offline");
-      u8g1.sendBuffer();
-      break;
+  case G:
+    u8g1.clearBuffer();                 // clear the internal memory
+    u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt1 = "Green " + printt1;
+    u8g1.drawStr(20, 40, printt1.c_str()); // write something to the internal memory
+    u8g1.drawStr(0, 10, ADDR_1_STR);       // write something to the internal memory
+    if (isTransmissionInProgress_2)
+      u8g1.drawStr(5, 30, "Transmitting..");
+    if (is1Active)
+      u8g1.drawStr(25, 20, "Active");
+    else
+      u8g1.drawStr(20, 30, "Offline");
+    u8g1.sendBuffer();
+    break;
 
-    case X:
-      break;
+  case X:
+    break;
   }
 
   switch (colorRG2)
   {
-    case R:
-      u8g2.clearBuffer();                 // clear the internal memory
-      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt2 = "Red " + printt2;
-      u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
-      u8g2.drawStr(0, 10, ADDR_2_STR);
-      if (isTransmissionInProgress_3)
-        u8g2.drawStr(5, 30, "Transmitting..");
-      if (is2Active)
-        u8g2.drawStr(25, 20, "Active");
-      else
-        u8g2.drawStr(20, 30, "Offline");
-      u8g2.sendBuffer();
-      break;
+  case R:
+    u8g2.clearBuffer();                 // clear the internal memory
+    u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt2 = "Red " + printt2;
+    u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
+    u8g2.drawStr(0, 10, ADDR_2_STR);
+    if (isTransmissionInProgress_3)
+      u8g2.drawStr(5, 30, "Transmitting..");
+    if (is2Active)
+      u8g2.drawStr(25, 20, "Active");
+    else
+      u8g2.drawStr(20, 30, "Offline");
+    u8g2.sendBuffer();
+    break;
 
-    case G:
-      u8g2.clearBuffer();                 // clear the internal memory
-      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt2 = "Green " + printt2;
-      u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
-      u8g2.drawStr(0, 10, ADDR_2_STR);
-      if (isTransmissionInProgress_4)
-        u8g2.drawStr(5, 30, "Transmitting..");
-      if (is2Active)
-        u8g2.drawStr(25, 20, "Active");
-      else
-        u8g2.drawStr(20, 30, "Offline");
-      u8g2.sendBuffer();
-      break;
+  case G:
+    u8g2.clearBuffer();                 // clear the internal memory
+    u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt2 = "Green " + printt2;
+    u8g2.drawStr(20, 40, printt2.c_str()); // write something to the internal memory
+    u8g2.drawStr(0, 10, ADDR_2_STR);
+    if (isTransmissionInProgress_4)
+      u8g2.drawStr(5, 30, "Transmitting..");
+    if (is2Active)
+      u8g2.drawStr(25, 20, "Active");
+    else
+      u8g2.drawStr(20, 30, "Offline");
+    u8g2.sendBuffer();
+    break;
 
-    case X:
-      break;
+  case X:
+    break;
   }
 
   switch (colorRG3)
   {
-    case R:
-      u8g3.clearBuffer();                 // clear the internal memory
-      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt3 = "Red " + printt3;
-      u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
-      u8g3.drawStr(0, 10, ADDR_3_STR);
-      if (isTransmissionInProgress_3)
-        u8g3.drawStr(5, 30, "Transmitting..");
-      if (is3Active)
-        u8g3.drawStr(25, 20, "Active");
-      else
-        u8g3.drawStr(20, 30, "Offline");
-      u8g3.sendBuffer();
-      break;
-    case G:
-      u8g3.clearBuffer();                 // clear the internal memory
-      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt3 = "Green " + printt3;
-      u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
-      u8g3.drawStr(0, 10, ADDR_3_STR);
-      if (isTransmissionInProgress_3)
-        u8g3.drawStr(5, 30, "Transmitting..");
-      if (is3Active)
-        u8g3.drawStr(25, 20, "Active");
-      else
-        u8g3.drawStr(20, 30, "Offline");
-      u8g3.sendBuffer();
-      break;
-    case X:
-      break;
+  case R:
+    u8g3.clearBuffer();                 // clear the internal memory
+    u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt3 = "Red " + printt3;
+    u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
+    u8g3.drawStr(0, 10, ADDR_3_STR);
+    if (isTransmissionInProgress_3)
+      u8g3.drawStr(5, 30, "Transmitting..");
+    if (is3Active)
+      u8g3.drawStr(25, 20, "Active");
+    else
+      u8g3.drawStr(20, 30, "Offline");
+    u8g3.sendBuffer();
+    break;
+  case G:
+    u8g3.clearBuffer();                 // clear the internal memory
+    u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt3 = "Green " + printt3;
+    u8g3.drawStr(20, 40, printt3.c_str()); // write something to the internal memory
+    u8g3.drawStr(0, 10, ADDR_3_STR);
+    if (isTransmissionInProgress_3)
+      u8g3.drawStr(5, 30, "Transmitting..");
+    if (is3Active)
+      u8g3.drawStr(25, 20, "Active");
+    else
+      u8g3.drawStr(20, 30, "Offline");
+    u8g3.sendBuffer();
+    break;
+  case X:
+    break;
   }
 
   switch (colorRG4)
   {
-    case R:
-      u8g4.clearBuffer();                 // clear the internal memory
-      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt4 = "Red " + printt4;
-      u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
-      u8g4.drawStr(0, 10, ADDR_4_STR);
-      if (isTransmissionInProgress_4)
-        u8g4.drawStr(5, 30, "Transmitting..");
-      if (is4Active)
-        u8g4.drawStr(25, 20, "Active");
-      else
-        u8g4.drawStr(20, 30, "Offline");
-      u8g4.sendBuffer();
-      break;
-    case G:
-      u8g4.clearBuffer();                 // clear the internal memory
-      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      printt4 = "Green " + printt4;
-      u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
-      u8g4.drawStr(0, 10, ADDR_4_STR);
-      if (isTransmissionInProgress_4)
-        u8g4.drawStr(5, 30, "Transmitting..");
-      if (is4Active)
-        u8g4.drawStr(25, 20, "Active");
-      else
-        u8g4.drawStr(20, 30, "Offline");
-      u8g4.sendBuffer();
-      break;
-    case X:
-      break;
+  case R:
+    u8g4.clearBuffer();                 // clear the internal memory
+    u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt4 = "Red " + printt4;
+    u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
+    u8g4.drawStr(0, 10, ADDR_4_STR);
+    if (isTransmissionInProgress_4)
+      u8g4.drawStr(5, 30, "Transmitting..");
+    if (is4Active)
+      u8g4.drawStr(25, 20, "Active");
+    else
+      u8g4.drawStr(20, 30, "Offline");
+    u8g4.sendBuffer();
+    break;
+  case G:
+    u8g4.clearBuffer();                 // clear the internal memory
+    u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
+    printt4 = "Green " + printt4;
+    u8g4.drawStr(20, 40, printt4.c_str()); // write something to the internal memory
+    u8g4.drawStr(0, 10, ADDR_4_STR);
+    if (isTransmissionInProgress_4)
+      u8g4.drawStr(5, 30, "Transmitting..");
+    if (is4Active)
+      u8g4.drawStr(25, 20, "Active");
+    else
+      u8g4.drawStr(20, 30, "Offline");
+    u8g4.sendBuffer();
+    break;
+  case X:
+    break;
   }
 }
 
@@ -1448,30 +1487,30 @@ void displaySetup()
 
   u8g1.clearBuffer();                 // clear the internal memory
   u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  u8g1.drawStr(0, 10, ADDR_1_STR); // write something to the internal memory
+  u8g1.drawStr(0, 10, ADDR_1_STR);    // write something to the internal memory
   u8g1.drawStr(20, 20, "Offline");
-  u8g1.sendBuffer();                  // transfer internal memory to the display
+  u8g1.sendBuffer(); // transfer internal memory to the display
   delay(1000);
 
   u8g2.clearBuffer();                 // clear the internal memory
   u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  u8g2.drawStr(0, 10, ADDR_2_STR);     // write something to the internal memory
+  u8g2.drawStr(0, 10, ADDR_2_STR);    // write something to the internal memory
   u8g2.drawStr(20, 20, "Offline");
-  u8g2.sendBuffer();                  // transfer internal memory to the display
+  u8g2.sendBuffer(); // transfer internal memory to the display
   delay(1000);
 
   u8g3.clearBuffer();                 // clear the internal memory
   u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  u8g3.drawStr(0, 10, ADDR_3_STR);     // write something to the internal memory
+  u8g3.drawStr(0, 10, ADDR_3_STR);    // write something to the internal memory
   u8g3.drawStr(20, 20, "Offline");
-  u8g3.sendBuffer();                  // transfer internal memory to the display
+  u8g3.sendBuffer(); // transfer internal memory to the display
   delay(1000);
 
   u8g4.clearBuffer();                 // clear the internal memory
   u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  u8g4.drawStr(0, 10, ADDR_4_STR);   // write something to the internal memory
+  u8g4.drawStr(0, 10, ADDR_4_STR);    // write something to the internal memory
   u8g4.drawStr(20, 20, "Offline");
-  u8g4.sendBuffer();                  // transfer internal memory to the display
+  u8g4.sendBuffer(); // transfer internal memory to the display
   delay(1000);
 }
 
