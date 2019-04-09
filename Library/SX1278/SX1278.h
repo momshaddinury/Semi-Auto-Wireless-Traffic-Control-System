@@ -45,32 +45,25 @@
 #include <inttypes.h>
 #endif
 
-
-
-
 /******************************************************************************
  * Definitions & Declarations
  *****************************************************************************/
 
 #define SX1278_debug_mode 0
-#define node
-//#define controller
-
+//#define node
+#define controller
 
 #ifdef node
 #define SX1278_SS 15 //ESP8266
-#endif // node
+#endif							 // node
 
 #ifdef controller
 #define SX1278_SS 5 //ESP32
-#endif // controller
-
-
-
+#endif							// controller
 
 //! MACROS //
-#define bitRead(value, bit) (((value) >> (bit)) & 0x01)   // read a bit
-#define bitSet(value, bit) ((value) |= (1UL << (bit)))	// set bit to '1'
+#define bitRead(value, bit) (((value) >> (bit)) & 0x01)		// read a bit
+#define bitSet(value, bit) ((value) |= (1UL << (bit)))		// set bit to '1'
 #define bitClear(value, bit) ((value) &= ~(1UL << (bit))) // set bit to '0'
 
 //! REGISTERS //
@@ -206,30 +199,30 @@ const uint32_t CH_5_BW_250 = 0x6c978f; // channel 5, bandwidth 250KHz, center fr
 const uint32_t CH_6_BW_250 = 0x6caaa1; // channel 6, bandwidth 250KHz, center frequency = 434.665MHz ( 434.540MHz - 434.790MHz )
 
 // FREQUENCY CHANNELS (BANDWIDTH 125KHz):
-const uint32_t CH_1_BW_125 = 0x6c4745;  // channel 1, bandwidth 125KHz, center frequency = 433.1125MHz ( 433.050MHz - 433.175MHz )
-const uint32_t CH_2_BW_125 = 0x6c4fe1;  // channel 2, bandwidth 125KHz, center frequency = 433.247MHz ( 433.1845MHz - 433.3095MHz )
-const uint32_t CH_3_BW_125 = 0x6c587c;  // channel 3, bandwidth 125KHz, center frequency = 433.3815MHz ( 433.319MHz - 433.444MHz )
-const uint32_t CH_4_BW_125 = 0x6c6118;  // channel 4, bandwidth 125KHz, center frequency = 433.516MHz ( 433.4535MHz - 433.5785MHz )
-const uint32_t CH_5_BW_125 = 0x6c69b3;  // channel 5, bandwidth 125KHz, center frequency = 433.6505MHz ( 433.588MHz - 433.713MHz )
-const uint32_t CH_6_BW_125 = 0x6c724f;  // channel 6, bandwidth 125KHz, center frequency = 433.785MHz ( 433.7225MHz - 433.8475MHz )
-const uint32_t CH_7_BW_125 = 0x6c7af3;  // channel 7, bandwidth 125KHz, center frequency = 433.92MHz ( 433.8575MHz - 433.9825MHz )
-const uint32_t CH_8_BW_125 = 0x6c8397;  // channel 8, bandwidth 125KHz, center frequency = 434.055MHz ( 433.9925MHz - 434.1175MHz )
-const uint32_t CH_9_BW_125 = 0x6c8c32;  // channel 9, bandwidth 125KHz, center frequency = 434.1895MHz ( 434.127MHz - 434.252MHz )
+const uint32_t CH_1_BW_125 = 0x6c4745;	// channel 1, bandwidth 125KHz, center frequency = 433.1125MHz ( 433.050MHz - 433.175MHz )
+const uint32_t CH_2_BW_125 = 0x6c4fe1;	// channel 2, bandwidth 125KHz, center frequency = 433.247MHz ( 433.1845MHz - 433.3095MHz )
+const uint32_t CH_3_BW_125 = 0x6c587c;	// channel 3, bandwidth 125KHz, center frequency = 433.3815MHz ( 433.319MHz - 433.444MHz )
+const uint32_t CH_4_BW_125 = 0x6c6118;	// channel 4, bandwidth 125KHz, center frequency = 433.516MHz ( 433.4535MHz - 433.5785MHz )
+const uint32_t CH_5_BW_125 = 0x6c69b3;	// channel 5, bandwidth 125KHz, center frequency = 433.6505MHz ( 433.588MHz - 433.713MHz )
+const uint32_t CH_6_BW_125 = 0x6c724f;	// channel 6, bandwidth 125KHz, center frequency = 433.785MHz ( 433.7225MHz - 433.8475MHz )
+const uint32_t CH_7_BW_125 = 0x6c7af3;	// channel 7, bandwidth 125KHz, center frequency = 433.92MHz ( 433.8575MHz - 433.9825MHz )
+const uint32_t CH_8_BW_125 = 0x6c8397;	// channel 8, bandwidth 125KHz, center frequency = 434.055MHz ( 433.9925MHz - 434.1175MHz )
+const uint32_t CH_9_BW_125 = 0x6c8c32;	// channel 9, bandwidth 125KHz, center frequency = 434.1895MHz ( 434.127MHz - 434.252MHz )
 const uint32_t CH_10_BW_125 = 0x6c94ce; // channel 10, bandwidth 125KHz, center frequency = 434.324MHz ( 434.2615MHz - 434.3865MHz )
 const uint32_t CH_11_BW_125 = 0x6c9d6a; // channel 11, bandwidth 125KHz, center frequency = 434.4585MHz ( 434.396MHz - 434.521MHz )
 const uint32_t CH_12_BW_125 = 0x6ca605; // channel 12, bandwidth 125KHz, center frequency = 434.593MHz ( 434.5305MHz - 434.6555MHz )
 const uint32_t CH_13_BW_125 = 0x6CaeA1; // channel 13, bandwidth 125KHz, center frequency = 434.7275MHz ( 434.665MHz - 434.790MHz )
 
 // FREQUENCY CHANNELS (BANDWIDTH < 125KHz: separate 72.5KHz):
-const uint32_t CH_1 = 0x6c4597;  // channel 1, center freq = 433.086MHz
-const uint32_t CH_2 = 0x6c4a3b;  // channel 2, center freq = 433.159MHz
-const uint32_t CH_3 = 0x6c4edf;  // channel 3, center freq = 433.231MHz
-const uint32_t CH_4 = 0x6c5383;  // channel 4, center freq = 433.304MHz
-const uint32_t CH_5 = 0x6c5827;  // channel 5, center freq = 433.376MHz
-const uint32_t CH_6 = 0x6c5ccb;  // channel 6, center freq = 433.449MHz
-const uint32_t CH_7 = 0x6c616f;  // channel 7, center freq = 433.521MHz
-const uint32_t CH_8 = 0x6c6613;  // channel 8, center freq = 433.594MHz
-const uint32_t CH_9 = 0x6c6ab7;  // channel 9, center freq = 433.666MHz
+const uint32_t CH_1 = 0x6c4597;	// channel 1, center freq = 433.086MHz
+const uint32_t CH_2 = 0x6c4a3b;	// channel 2, center freq = 433.159MHz
+const uint32_t CH_3 = 0x6c4edf;	// channel 3, center freq = 433.231MHz
+const uint32_t CH_4 = 0x6c5383;	// channel 4, center freq = 433.304MHz
+const uint32_t CH_5 = 0x6c5827;	// channel 5, center freq = 433.376MHz
+const uint32_t CH_6 = 0x6c5ccb;	// channel 6, center freq = 433.449MHz
+const uint32_t CH_7 = 0x6c616f;	// channel 7, center freq = 433.521MHz
+const uint32_t CH_8 = 0x6c6613;	// channel 8, center freq = 433.594MHz
+const uint32_t CH_9 = 0x6c6ab7;	// channel 9, center freq = 433.666MHz
 const uint32_t CH_10 = 0x6c6f5b; // channel 10, center freq = 433.739MHz
 const uint32_t CH_11 = 0x6c73ff; // channel 11, center freq = 433.811MHz
 const uint32_t CH_12 = 0x6c78a3; // channel 12, center freq = 433.884MHz
@@ -259,10 +252,10 @@ const uint8_t BW_250 = 0x08;
 const uint8_t BW_500 = 0x09;
 
 const double SignalBwLog[] =
-	{
-		5.0969100130080564143587833158265,
-		5.397940008672037609572522210551,
-		5.6989700043360188047862611052755};
+		{
+				5.0969100130080564143587833158265,
+				5.397940008672037609572522210551,
+				5.6989700043360188047862611052755};
 
 //LORA CODING RATE:
 const uint8_t CR_5 = 0x01; // CR = 4/5
@@ -312,8 +305,8 @@ const uint8_t OFFSET_PAYLOADLENGTH = 5;
 const uint8_t OFFSET_RSSI = 137;
 const uint8_t NOISE_FIGURE = 6.0;
 const uint8_t NOISE_ABSOLUTE_ZERO = 174.0;
-const uint16_t MAX_TIMEOUT = 2500;	//5000 msec = 5.0 sec
-const uint32_t MAX_WAIT = 12000;	   //12000 msec = 12.0 sec
+const uint16_t MAX_TIMEOUT = 2500;		 //5000 msec = 5.0 sec
+const uint32_t MAX_WAIT = 12000;			 //12000 msec = 12.0 sec
 const uint32_t MESH_TIMEOUT = 3600000; //3600000 msec = 3600 sec = 1 hour
 const uint8_t MAX_RETRIES = 5;
 const uint8_t CORRECT_PACKET = 0;
@@ -367,7 +360,7 @@ struct pack
 class SX1278
 {
 
-  public:
+public:
 	//! class constructor
 	/*!
 	\param void
@@ -893,7 +886,7 @@ class SX1278
 	\return '0' on success, '1' otherwise
 	*/
 	uint8_t sendPacketMAXTimeout(uint8_t dest,
-								 char *payload);
+															 char *payload);
 
 	//! It tries to send the packet which payload is a parameter before ending
 	//! MAX_TIMEOUT.
@@ -904,8 +897,8 @@ class SX1278
 	\return '0' on success, '1' otherwise
 	*/
 	uint8_t sendPacketMAXTimeout(uint8_t dest,
-								 uint8_t *payload,
-								 uint16_t length);
+															 uint8_t *payload,
+															 uint16_t length);
 
 	//! It sends the packet which payload is a parameter before ending
 	//! MAX_TIMEOUT.
@@ -915,7 +908,7 @@ class SX1278
 	\return '0' on success, '1' otherwise
 	*/
 	uint8_t sendPacketTimeout(uint8_t dest,
-							  char *payload);
+														char *payload);
 
 	//! It sends the packet which payload is a parameter before ending
 	//! MAX_TIMEOUT.
@@ -926,8 +919,8 @@ class SX1278
 	\return '0' on success, '1' otherwise
 	*/
 	uint8_t sendPacketTimeout(uint8_t dest,
-							  uint8_t *payload,
-							  uint16_t length);
+														uint8_t *payload,
+														uint16_t length);
 
 	//! It sends the packet which payload is a parameter before ending 'wait'
 	//! time.
@@ -938,8 +931,8 @@ class SX1278
 	\return '0' on success, '1' otherwise
 	*/
 	uint8_t sendPacketTimeout(uint8_t dest,
-							  char *payload,
-							  uint32_t wait);
+														char *payload,
+														uint32_t wait);
 
 	//! It sends the packet which payload is a parameter before ending 'wait'
 	//! time.
@@ -951,9 +944,9 @@ class SX1278
 	\return '0' on success, '1' otherwise
 	*/
 	uint8_t sendPacketTimeout(uint8_t dest,
-							  uint8_t *payload,
-							  uint16_t length,
-							  uint32_t wait);
+														uint8_t *payload,
+														uint16_t length,
+														uint32_t wait);
 
 	//! It sends the packet which payload is a parameter before MAX_TIMEOUT,
 	//! and replies with ACK.
@@ -972,7 +965,7 @@ class SX1278
 			'0'  --> The ACK has been received with no errors
 	*/
 	uint8_t sendPacketMAXTimeoutACK(uint8_t dest,
-									char *payload);
+																	char *payload);
 
 	//! It sends the packet which payload is a parameter before MAX_TIMEOUT,
 	//! and replies with ACK.
@@ -992,8 +985,8 @@ class SX1278
 			'0'  --> The ACK has been received with no errors
 	*/
 	uint8_t sendPacketMAXTimeoutACK(uint8_t dest,
-									uint8_t *payload,
-									uint16_t length);
+																	uint8_t *payload,
+																	uint16_t length);
 
 	//! It sends the packet which payload is a parameter before a timeout,
 	//! and replies with ACK.
@@ -1012,7 +1005,7 @@ class SX1278
 			'0'  --> The ACK has been received with no errors
 	*/
 	uint8_t sendPacketTimeoutACK(uint8_t dest,
-								 char *payload);
+															 char *payload);
 
 	//! It sends the packet which payload is a parameter before a timeout,
 	//! and replies with ACK.
@@ -1032,8 +1025,8 @@ class SX1278
 			'0'  --> The ACK has been received with no errors
 	*/
 	uint8_t sendPacketTimeoutACK(uint8_t dest,
-								 uint8_t *payload,
-								 uint16_t length);
+															 uint8_t *payload,
+															 uint16_t length);
 
 	//! It sends the packet which payload is a parameter before 'wait' time,
 	//! and replies with ACK.
@@ -1053,8 +1046,8 @@ class SX1278
 			'0'  --> The ACK has been received with no errors
 	*/
 	uint8_t sendPacketTimeoutACK(uint8_t dest,
-								 char *payload,
-								 uint32_t wait);
+															 char *payload,
+															 uint32_t wait);
 
 	//! It sends the packet which payload is a parameter before 'wait' time,
 	//! and replies with ACK.
@@ -1075,9 +1068,9 @@ class SX1278
 			'0'  --> The ACK has been received with no errors
 	*/
 	uint8_t sendPacketTimeoutACK(uint8_t dest,
-								 uint8_t *payload,
-								 uint16_t length,
-								 uint32_t wait);
+															 uint8_t *payload,
+															 uint16_t length,
+															 uint32_t wait);
 
 	//! It sets the destination of a packet.
 	/*!
@@ -1155,7 +1148,7 @@ class SX1278
 	\return '0' on success, '1' otherwise
 	*/
 	uint8_t sendPacketMAXTimeoutACKRetries(uint8_t dest,
-										   char *payload);
+																				 char *payload);
 
 	//! It sends a packet, waits to receive an ACK and updates the _retries
 	//! value, before ending MAX_TIMEOUT time.
@@ -1166,8 +1159,8 @@ class SX1278
 	\return '0' on success, '1' otherwise
 	*/
 	uint8_t sendPacketMAXTimeoutACKRetries(uint8_t dest,
-										   uint8_t *payload,
-										   uint16_t length);
+																				 uint8_t *payload,
+																				 uint16_t length);
 
 	//! It sends a packet, waits to receive an ACK and updates the _retries value
 	/*!
@@ -1176,7 +1169,7 @@ class SX1278
 	\return '0' on success, '1' otherwise
 	*/
 	uint8_t sendPacketTimeoutACKRetries(uint8_t dest,
-										char *payload);
+																			char *payload);
 
 	//! It sends a packet, waits to receive an ACK and updates the _retries value
 	/*!
@@ -1186,8 +1179,8 @@ class SX1278
 	\return '0' on success, '1' otherwise
 	*/
 	uint8_t sendPacketTimeoutACKRetries(uint8_t dest,
-										uint8_t *payload,
-										uint16_t length);
+																			uint8_t *payload,
+																			uint16_t length);
 
 	//! It sends a packet, waits to receive an ACK and updates the _retries
 	//! value, before ending 'wait' time.
@@ -1198,8 +1191,8 @@ class SX1278
 	\return '0' on success, '1' otherwise
 	*/
 	uint8_t sendPacketTimeoutACKRetries(uint8_t dest,
-										char *payload,
-										uint32_t wait);
+																			char *payload,
+																			uint32_t wait);
 
 	//! It sends a packet, waits to receive an ACK and updates the _retries
 	//! value, before ending 'wait' time.
@@ -1211,9 +1204,9 @@ class SX1278
 	\return '0' on success, '1' otherwise
 	*/
 	uint8_t sendPacketTimeoutACKRetries(uint8_t dest,
-										uint8_t *payload,
-										uint16_t length,
-										uint32_t wait);
+																			uint8_t *payload,
+																			uint16_t length,
+																			uint32_t wait);
 
 	//! It gets the internal temperature of the module.
 	/*!

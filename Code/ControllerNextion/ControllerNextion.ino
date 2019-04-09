@@ -22,17 +22,17 @@
 //Library for Ticker
 #include <Ticker.h>
 //Library for Display
-#include <U8g2lib.h>
+// #include <U8g2lib.h>
 #include <WiFi.h>
 
 /*****************************************************************************
    Definitions & Declarations
  *****************************************************************************/
 
-U8G2_PCD8544_84X48_F_4W_HW_SPI u8g1(U8G2_R0, /* cs=*/2, /* dc=*/23, /* reset=*/100);  // Nokia 5110 Display
-U8G2_PCD8544_84X48_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/4, /* dc=*/23, /* reset=*/100);  // Nokia 5110 Display
-U8G2_PCD8544_84X48_F_4W_HW_SPI u8g3(U8G2_R0, /* cs=*/15, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
-U8G2_PCD8544_84X48_F_4W_HW_SPI u8g4(U8G2_R0, /* cs=*/17, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
+// U8G2_PCD8544_84X48_F_4W_HW_SPI u8g1(U8G2_R0, /* cs=*/2, /* dc=*/23, /* reset=*/100);  // Nokia 5110 Display
+// U8G2_PCD8544_84X48_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/4, /* dc=*/23, /* reset=*/100);  // Nokia 5110 Display
+// U8G2_PCD8544_84X48_F_4W_HW_SPI u8g3(U8G2_R0, /* cs=*/15, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
+// U8G2_PCD8544_84X48_F_4W_HW_SPI u8g4(U8G2_R0, /* cs=*/17, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
 
 //Lora SX1278:
 #define LORA_MODE 4
@@ -42,6 +42,7 @@ uint8_t NodeAddress; //Child Address
 int address;
 
 #define NEXTION_RED "63488"
+#define NEXTION_DARK_RED "43008"
 #define NEXTION_BLACK "0"
 #define NEXTION_GREEN "1632"
 #define NEXTION_LIGHT_GREEN "2016"
@@ -65,7 +66,7 @@ int address;
 #define NEXTION_TRANSMISSION_4 "t15"
 
 #define NEXTION_TIMER_1 "t8"
-#define NEXTION_TIMER_2 "t19"
+#define NEXTION_TIMER_2 "t9"
 #define NEXTION_TIMER_3 "t10"
 #define NEXTION_TIMER_4 "t11"
 
@@ -275,27 +276,45 @@ void sync()
   {
 
     String("S").toCharArray(testData, 50);
-    address = ADDR_1_INT;
-    sendData2(ADDR_1_INT, testData);
-    delay(500);
 
-    receiveSync();
+    for (int lj = 0; lj < 5; lj++)
+    {
+      if (!is1Active)
+      {
+        address = ADDR_1_INT;
+        sendData2(ADDR_1_INT, testData);
+        delay(500);
 
-    address = ADDR_2_INT;
-    sendData2(ADDR_2_INT, testData);
-    delay(500);
+        receiveSync();
+      }
 
-    receiveSync();
+      if (!is2Active)
+      {
+        address = ADDR_2_INT;
+        sendData2(ADDR_2_INT, testData);
+        delay(500);
 
-    address = ADDR_3_INT;
-    sendData2(ADDR_3_INT, testData);
-    delay(500);
+        receiveSync();
+      }
 
-    receiveSync();
+      if (!is3Active)
+      {
+        address = ADDR_3_INT;
+        sendData2(ADDR_3_INT, testData);
+        delay(500);
 
-    address = ADDR_4_INT;
-    sendData2(ADDR_4_INT, testData);
-    delay(500);
+        receiveSync();
+      }
+
+      if (!is4Active)
+      {
+        address = ADDR_4_INT;
+        sendData2(ADDR_4_INT, testData);
+        delay(500);
+
+        receiveSync();
+      }
+    }
 
     //    sendData2(0, testData);
 
@@ -842,12 +861,16 @@ void sendData(uint8_t NodeAddress, char message[])
         is1Active = true;
         nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, "Sent!!", false);
         nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+        nextionWriter(NEXTION_STATUS_1, NEXTION_COMMAND_TEXT, "Active", false);
+        nextionWriter(NEXTION_STATUS_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
         break;
 
       case ADDR_2_INT:
         isTransmissionInProgress_2 = false;
         nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, "Sent!!", false);
         nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+        nextionWriter(NEXTION_STATUS_2, NEXTION_COMMAND_TEXT, "Active", false);
+        nextionWriter(NEXTION_STATUS_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
         is2Active = true;
         break;
 
@@ -855,6 +878,8 @@ void sendData(uint8_t NodeAddress, char message[])
         isTransmissionInProgress_3 = false;
         nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, "Sent!!", false);
         nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+        nextionWriter(NEXTION_STATUS_3, NEXTION_COMMAND_TEXT, "Active", false);
+        nextionWriter(NEXTION_STATUS_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
         is3Active = true;
         break;
 
@@ -862,6 +887,8 @@ void sendData(uint8_t NodeAddress, char message[])
         isTransmissionInProgress_4 = false;
         nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, "Sent!!", false);
         nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+        nextionWriter(NEXTION_STATUS_4, NEXTION_COMMAND_TEXT, "Active", false);
+        nextionWriter(NEXTION_STATUS_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
         is4Active = true;
         break;
       }
@@ -902,8 +929,8 @@ void sendData(uint8_t NodeAddress, char message[])
     nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, "Falied!!", false);
     nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
     is2Active = false;
-    nextionWriter(NEXTION_STATUS_1, NEXTION_COMMAND_TEXT, "Offline", false);
-    nextionWriter(NEXTION_STATUS_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+    nextionWriter(NEXTION_STATUS_2, NEXTION_COMMAND_TEXT, "Offline", false);
+    nextionWriter(NEXTION_STATUS_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
     break;
 
   case ADDR_3_INT:
@@ -911,8 +938,8 @@ void sendData(uint8_t NodeAddress, char message[])
     nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, "Falied!!", false);
     nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
     is3Active = false;
-    nextionWriter(NEXTION_STATUS_1, NEXTION_COMMAND_TEXT, "Offline", false);
-    nextionWriter(NEXTION_STATUS_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+    nextionWriter(NEXTION_STATUS_3, NEXTION_COMMAND_TEXT, "Offline", false);
+    nextionWriter(NEXTION_STATUS_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
     break;
 
   case ADDR_4_INT:
@@ -920,8 +947,8 @@ void sendData(uint8_t NodeAddress, char message[])
     nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, "Falied!!", false);
     nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
     is4Active = false;
-    nextionWriter(NEXTION_STATUS_1, NEXTION_COMMAND_TEXT, "Offline", false);
-    nextionWriter(NEXTION_STATUS_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+    nextionWriter(NEXTION_STATUS_4, NEXTION_COMMAND_TEXT, "Offline", false);
+    nextionWriter(NEXTION_STATUS_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
     break;
   }
   isTransmissionInProgress = false;
@@ -975,7 +1002,7 @@ void sendData2(uint8_t NodeAddress, char message[])
   //      break;
   //  }
 
-  for (int retry = 1; retry <= 5; retry++) //NO RETRIES ON SYNC
+  for (int retry = 1; retry <= 1; retry++) //NO RETRIES ON SYNC
   {
 #ifdef DEBUG
     Serial.print("Attempt: ");
@@ -1130,33 +1157,44 @@ void showTime()
   int time3 = (currentMil - DB_3_Signal_Runtime) / 1000;
   int time4 = (currentMil - DB_4_Signal_Runtime) / 1000;
 
-  String printt1 = String(time1 % 60) + " Sec";
-  String printt2 = String(time2 % 60) + " Sec";
-  String printt3 = String(time3 % 60) + " Sec";
-  String printt4 = String(time4 % 60) + " Sec";
+  char printx1[50];
+  char printx2[50];
+  char printx3[50];
+  char printx4[50];
 
-  if (time1 / 60 != 0)
-    printt1 = String(time1 / 60) + " Min " + printt1;
-  if (time2 / 60 != 0)
-    printt2 = String(time2 / 60) + " Min " + printt2;
-  if (time3 / 60 != 0)
-    printt3 = String(time3 / 60) + " Min " + printt3;
-  if (time4 / 60 != 0)
-    printt4 = String(time4 / 60) + " Min " + printt4;
+  char printm1[50];
+  char printm2[50];
+  char printm3[50];
+  char printm4[50];
+
+  sprintf(printx1, "%02d", time1 % 60);
+  sprintf(printx2, "%02d", time2 % 60);
+  sprintf(printx3, "%02d", time3 % 60);
+  sprintf(printx4, "%02d", time4 % 60);
+
+  sprintf(printm1, "%02d", time1 / 60);
+  sprintf(printm2, "%02d", time2 / 60);
+  sprintf(printm3, "%02d", time3 / 60);
+  sprintf(printm4, "%02d", time4 / 60);
+
+  String printt1 = String(printm1) + ":" + String(printx1);
+  String printt2 = String(printm2) + ":" + String(printx2);
+  String printt3 = String(printm3) + ":" + String(printx3);
+  String printt4 = String(printm4) + ":" + String(printx4);
 
   switch (colorRG1)
   {
 
   case R:
     nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, printt1, false);
-    nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_BACKGROUND, NEXTION_RED, true);
+    nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
     nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     break;
 
   case G:
     nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, printt1, false);
-    nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_BACKGROUND, NEXTION_GREEN, true);
-    nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_BLACK, true);
+    nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
+    nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     break;
   case X:
     break;
@@ -1166,14 +1204,14 @@ void showTime()
   {
   case R:
     nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, printt2, false);
-    nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_BACKGROUND, NEXTION_RED, true);
+    nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
     nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     break;
 
   case G:
     nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, printt2, false);
-    nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_BACKGROUND, NEXTION_GREEN, true);
-    nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_BLACK, true);
+    nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
+    nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     break;
   case X:
     break;
@@ -1183,14 +1221,14 @@ void showTime()
   {
   case R:
     nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, printt3, false);
-    nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_BACKGROUND, NEXTION_RED, true);
+    nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
     nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     break;
 
   case G:
     nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, printt3, false);
-    nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_BACKGROUND, NEXTION_GREEN, true);
-    nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_BLACK, true);
+    nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
+    nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     break;
   case X:
     break;
@@ -1200,14 +1238,14 @@ void showTime()
   {
   case R:
     nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, printt4, false);
-    nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_BACKGROUND, NEXTION_RED, true);
+    nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
     nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     break;
 
   case G:
     nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, printt4, false);
-    nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_BACKGROUND, NEXTION_GREEN, true);
-    nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_BLACK, true);
+    nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
+    nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     break;
   case X:
     break;
@@ -1432,10 +1470,10 @@ void displaySetup()
   nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "", false);
   nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "", false);
 
-  nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, "0 Min 0 Sec", false);
-  nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, "0 Min 0 Sec", false);
-  nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, "0 Min 0 Sec", false);
-  nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, "0 Min 0 Sec", false);
+  nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, "00:00", false);
+  nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, "00:00", false);
+  nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, "00:00", false);
+  nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, "00:00", false);
 
   nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_BACKGROUND, NEXTION_BLACK, true);
   nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_BACKGROUND, NEXTION_BLACK, true);
@@ -1451,6 +1489,11 @@ void displaySetup()
   nextionWriter(NEXTION_STATUS_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
   nextionWriter(NEXTION_STATUS_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
   nextionWriter(NEXTION_STATUS_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+
+  nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+  nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+  nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+  nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
 
   // u8g1.begin();
   // u8g2.begin();
