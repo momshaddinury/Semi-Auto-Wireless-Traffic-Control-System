@@ -75,16 +75,16 @@ int address;
 #define NEXTION_FOREGROUND_TEXT_COLOR "pco"
 
 #define ADDR_1_INT 3
-#define ADDR_1_STR "  GEC CIRCLE"
+#define ADDR_1_STR "GEC CIRCLE"
 
 #define ADDR_2_INT 4
-#define ADDR_2_STR "      BAYEZID"
+#define ADDR_2_STR "BAYEZID"
 
 #define ADDR_3_INT 6
-#define ADDR_3_STR "      OXYGEN"
+#define ADDR_3_STR "OXYGEN"
 
 #define ADDR_4_INT 7
-#define ADDR_4_STR "  MURADPUR"
+#define ADDR_4_STR "MURADPUR"
 
 //Packets var:
 char my_packet[50];
@@ -334,7 +334,9 @@ void nextionWriter(String id, String command, String value, boolean isColor)
     data = id + "." + command + "=" + value;
   else
     data = id + "." + command + "=\"" + value + "\"";
+#ifdef DEBUG
   Serial.println(data);
+#endif
   Serial2.print(data);
   Serial2.write(0xff);
   Serial2.write(0xff);
@@ -815,26 +817,26 @@ void sendData(uint8_t NodeAddress, char message[])
   switch (NodeAddress)
   {
 
-  case ADDR_1_INT:
-    isTransmissionInProgress_1 = true;
-    nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "Transmitting...", false);
-    break;
+    case ADDR_1_INT:
+      isTransmissionInProgress_1 = true;
+      nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "Transmitting...", false);
+      break;
 
-  case ADDR_2_INT:
-    isTransmissionInProgress_2 = true;
-    nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "Transmitting...", false);
+    case ADDR_2_INT:
+      isTransmissionInProgress_2 = true;
+      nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "Transmitting...", false);
 
-    break;
+      break;
 
-  case ADDR_3_INT:
-    isTransmissionInProgress_3 = true;
-    nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "Transmitting...", false);
-    break;
+    case ADDR_3_INT:
+      isTransmissionInProgress_3 = true;
+      nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "Transmitting...", false);
+      break;
 
-  case ADDR_4_INT:
-    isTransmissionInProgress_4 = true;
-    nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "Transmitting...", false);
-    ;
+    case ADDR_4_INT:
+      isTransmissionInProgress_4 = true;
+      nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "Transmitting...", false);
+      ;
   }
 
   for (int retry = 1; retry <= 5; retry++)
@@ -856,41 +858,41 @@ void sendData(uint8_t NodeAddress, char message[])
       switch (NodeAddress)
       {
 
-      case ADDR_1_INT:
-        isTransmissionInProgress_1 = false;
-        is1Active = true;
-        nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, "Sent!!", false);
-        nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-        nextionWriter(NEXTION_STATUS_1, NEXTION_COMMAND_TEXT, "Active", false);
-        nextionWriter(NEXTION_STATUS_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-        break;
+        case ADDR_1_INT:
+          isTransmissionInProgress_1 = false;
+          is1Active = true;
+          nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "Sent!!", false);
+          nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+          nextionWriter(NEXTION_STATUS_1, NEXTION_COMMAND_TEXT, "Active", false);
+          nextionWriter(NEXTION_STATUS_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+          break;
 
-      case ADDR_2_INT:
-        isTransmissionInProgress_2 = false;
-        nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, "Sent!!", false);
-        nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-        nextionWriter(NEXTION_STATUS_2, NEXTION_COMMAND_TEXT, "Active", false);
-        nextionWriter(NEXTION_STATUS_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-        is2Active = true;
-        break;
+        case ADDR_2_INT:
+          isTransmissionInProgress_2 = false;
+          nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "Sent!!", false);
+          nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+          nextionWriter(NEXTION_STATUS_2, NEXTION_COMMAND_TEXT, "Active", false);
+          nextionWriter(NEXTION_STATUS_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+          is2Active = true;
+          break;
 
-      case ADDR_3_INT:
-        isTransmissionInProgress_3 = false;
-        nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, "Sent!!", false);
-        nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-        nextionWriter(NEXTION_STATUS_3, NEXTION_COMMAND_TEXT, "Active", false);
-        nextionWriter(NEXTION_STATUS_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-        is3Active = true;
-        break;
+        case ADDR_3_INT:
+          isTransmissionInProgress_3 = false;
+          nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "Sent!!", false);
+          nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+          nextionWriter(NEXTION_STATUS_3, NEXTION_COMMAND_TEXT, "Active", false);
+          nextionWriter(NEXTION_STATUS_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+          is3Active = true;
+          break;
 
-      case ADDR_4_INT:
-        isTransmissionInProgress_4 = false;
-        nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, "Sent!!", false);
-        nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-        nextionWriter(NEXTION_STATUS_4, NEXTION_COMMAND_TEXT, "Active", false);
-        nextionWriter(NEXTION_STATUS_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-        is4Active = true;
-        break;
+        case ADDR_4_INT:
+          isTransmissionInProgress_4 = false;
+          nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "Sent!!", false);
+          nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+          nextionWriter(NEXTION_STATUS_4, NEXTION_COMMAND_TEXT, "Active", false);
+          nextionWriter(NEXTION_STATUS_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+          is4Active = true;
+          break;
       }
       //break;
       return;
@@ -915,41 +917,41 @@ void sendData(uint8_t NodeAddress, char message[])
 
   switch (NodeAddress)
   {
-  case ADDR_1_INT:
-    isTransmissionInProgress_1 = false;
-    is1Active = false;
-    nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, "Falied!!", false);
-    nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-    nextionWriter(NEXTION_STATUS_1, NEXTION_COMMAND_TEXT, "Offline", false);
-    nextionWriter(NEXTION_STATUS_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-    break;
+    case ADDR_1_INT:
+      isTransmissionInProgress_1 = false;
+      is1Active = false;
+      nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, "Falied!!", false);
+      nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+      nextionWriter(NEXTION_STATUS_1, NEXTION_COMMAND_TEXT, "Offline", false);
+      nextionWriter(NEXTION_STATUS_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+      break;
 
-  case ADDR_2_INT:
-    isTransmissionInProgress_2 = false;
-    nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, "Falied!!", false);
-    nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-    is2Active = false;
-    nextionWriter(NEXTION_STATUS_2, NEXTION_COMMAND_TEXT, "Offline", false);
-    nextionWriter(NEXTION_STATUS_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-    break;
+    case ADDR_2_INT:
+      isTransmissionInProgress_2 = false;
+      nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, "Falied!!", false);
+      nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+      is2Active = false;
+      nextionWriter(NEXTION_STATUS_2, NEXTION_COMMAND_TEXT, "Offline", false);
+      nextionWriter(NEXTION_STATUS_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+      break;
 
-  case ADDR_3_INT:
-    isTransmissionInProgress_3 = false;
-    nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, "Falied!!", false);
-    nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-    is3Active = false;
-    nextionWriter(NEXTION_STATUS_3, NEXTION_COMMAND_TEXT, "Offline", false);
-    nextionWriter(NEXTION_STATUS_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-    break;
+    case ADDR_3_INT:
+      isTransmissionInProgress_3 = false;
+      nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, "Falied!!", false);
+      nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+      is3Active = false;
+      nextionWriter(NEXTION_STATUS_3, NEXTION_COMMAND_TEXT, "Offline", false);
+      nextionWriter(NEXTION_STATUS_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+      break;
 
-  case ADDR_4_INT:
-    isTransmissionInProgress_4 = false;
-    nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, "Falied!!", false);
-    nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-    is4Active = false;
-    nextionWriter(NEXTION_STATUS_4, NEXTION_COMMAND_TEXT, "Offline", false);
-    nextionWriter(NEXTION_STATUS_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-    break;
+    case ADDR_4_INT:
+      isTransmissionInProgress_4 = false;
+      nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, "Falied!!", false);
+      nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+      is4Active = false;
+      nextionWriter(NEXTION_STATUS_4, NEXTION_COMMAND_TEXT, "Offline", false);
+      nextionWriter(NEXTION_STATUS_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+      break;
   }
   isTransmissionInProgress = false;
 }
@@ -1185,70 +1187,70 @@ void showTime()
   switch (colorRG1)
   {
 
-  case R:
-    nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, printt1, false);
-    nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
-    nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-    break;
+    case R:
+      nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, printt1, false);
+      nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
+      nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+      break;
 
-  case G:
-    nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, printt1, false);
-    nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
-    nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-    break;
-  case X:
-    break;
+    case G:
+      nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, printt1, false);
+      nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
+      nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+      break;
+    case X:
+      break;
   }
 
   switch (colorRG2)
   {
-  case R:
-    nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, printt2, false);
-    nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
-    nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-    break;
+    case R:
+      nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, printt2, false);
+      nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
+      nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+      break;
 
-  case G:
-    nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, printt2, false);
-    nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
-    nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-    break;
-  case X:
-    break;
+    case G:
+      nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, printt2, false);
+      nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
+      nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+      break;
+    case X:
+      break;
   }
 
   switch (colorRG3)
   {
-  case R:
-    nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, printt3, false);
-    nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
-    nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-    break;
+    case R:
+      nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, printt3, false);
+      nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
+      nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+      break;
 
-  case G:
-    nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, printt3, false);
-    nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
-    nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-    break;
-  case X:
-    break;
+    case G:
+      nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, printt3, false);
+      nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
+      nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+      break;
+    case X:
+      break;
   }
 
   switch (colorRG4)
   {
-  case R:
-    nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, printt4, false);
-    nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
-    nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-    break;
+    case R:
+      nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, printt4, false);
+      nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
+      nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+      break;
 
-  case G:
-    nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, printt4, false);
-    nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
-    nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-    break;
-  case X:
-    break;
+    case G:
+      nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, printt4, false);
+      nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
+      nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+      break;
+    case X:
+      break;
   }
 }
 
