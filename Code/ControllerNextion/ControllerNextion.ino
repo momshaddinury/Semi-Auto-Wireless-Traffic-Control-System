@@ -43,7 +43,8 @@ int address;
 
 #define NEXTION_RED "63488"
 #define NEXTION_BLACK "0"
-#define NEXTION_GREEN "2016"
+#define NEXTION_GREEN "1632"
+#define NEXTION_LIGHT_GREEN "2016"
 #define NEXTION_BLUE "31"
 #define NEXTION_WHITE "65535"
 
@@ -1415,7 +1416,6 @@ void loraSetup()
 //Creates the UI layout
 void displaySetup()
 {
-
   nextionWriter(NEXTION_LOCATION_1, NEXTION_COMMAND_TEXT, ADDR_1_STR, false);
   nextionWriter(NEXTION_LOCATION_2, NEXTION_COMMAND_TEXT, ADDR_2_STR, false);
   nextionWriter(NEXTION_LOCATION_3, NEXTION_COMMAND_TEXT, ADDR_3_STR, false);
