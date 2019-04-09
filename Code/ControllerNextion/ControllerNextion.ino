@@ -45,6 +45,7 @@ int address;
 #define NEXTION_BLACK "0"
 #define NEXTION_GREEN "1632"
 #define NEXTION_LIGHT_GREEN "2016"
+#define NEXTION_DARK_GREEN "512"
 #define NEXTION_BLUE "31"
 #define NEXTION_WHITE "65535"
 
