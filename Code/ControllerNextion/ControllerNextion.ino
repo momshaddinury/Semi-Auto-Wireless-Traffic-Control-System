@@ -284,36 +284,36 @@ void sync()
         address = ADDR_1_INT;
         sendData2(ADDR_1_INT, testData);
         delay(500);
-
-        receiveSync();
       }
+      receiveSync();
+
 
       if (!is2Active)
       {
         address = ADDR_2_INT;
         sendData2(ADDR_2_INT, testData);
         delay(500);
-
-        receiveSync();
       }
+      receiveSync();
+
 
       if (!is3Active)
       {
         address = ADDR_3_INT;
         sendData2(ADDR_3_INT, testData);
         delay(500);
-
-        receiveSync();
       }
+      receiveSync();
+
 
       if (!is4Active)
       {
         address = ADDR_4_INT;
         sendData2(ADDR_4_INT, testData);
         delay(500);
-
-        receiveSync();
       }
+      receiveSync();
+
     }
 
     //    sendData2(0, testData);
@@ -820,22 +820,26 @@ void sendData(uint8_t NodeAddress, char message[])
     case ADDR_1_INT:
       isTransmissionInProgress_1 = true;
       nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "Transmitting...", false);
+          nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
       break;
 
     case ADDR_2_INT:
       isTransmissionInProgress_2 = true;
       nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "Transmitting...", false);
+          nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
 
       break;
 
     case ADDR_3_INT:
       isTransmissionInProgress_3 = true;
       nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "Transmitting...", false);
+          nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
       break;
 
     case ADDR_4_INT:
       isTransmissionInProgress_4 = true;
       nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "Transmitting...", false);
+          nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
       ;
   }
 
@@ -920,16 +924,16 @@ void sendData(uint8_t NodeAddress, char message[])
     case ADDR_1_INT:
       isTransmissionInProgress_1 = false;
       is1Active = false;
-      nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, "Falied!!", false);
-      nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+      nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "Falied!!", false);
+      nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
       nextionWriter(NEXTION_STATUS_1, NEXTION_COMMAND_TEXT, "Offline", false);
       nextionWriter(NEXTION_STATUS_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
       break;
 
     case ADDR_2_INT:
       isTransmissionInProgress_2 = false;
-      nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, "Falied!!", false);
-      nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+      nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "Falied!!", false);
+      nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
       is2Active = false;
       nextionWriter(NEXTION_STATUS_2, NEXTION_COMMAND_TEXT, "Offline", false);
       nextionWriter(NEXTION_STATUS_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
@@ -937,8 +941,8 @@ void sendData(uint8_t NodeAddress, char message[])
 
     case ADDR_3_INT:
       isTransmissionInProgress_3 = false;
-      nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, "Falied!!", false);
-      nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+      nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "Falied!!", false);
+      nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
       is3Active = false;
       nextionWriter(NEXTION_STATUS_3, NEXTION_COMMAND_TEXT, "Offline", false);
       nextionWriter(NEXTION_STATUS_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
@@ -946,8 +950,8 @@ void sendData(uint8_t NodeAddress, char message[])
 
     case ADDR_4_INT:
       isTransmissionInProgress_4 = false;
-      nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, "Falied!!", false);
-      nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+      nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "Falied!!", false);
+      nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
       is4Active = false;
       nextionWriter(NEXTION_STATUS_4, NEXTION_COMMAND_TEXT, "Offline", false);
       nextionWriter(NEXTION_STATUS_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
