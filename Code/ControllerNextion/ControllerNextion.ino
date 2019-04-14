@@ -163,6 +163,9 @@ unsigned long DB_3_Process_End_Time;
 unsigned long DB_4_Process_Start_Time;
 unsigned long DB_4_Process_End_Time;
 
+unsigned long firstTime;
+unsigned long secondTime;
+
 //Automatic Transmission Flags and Var:
 // #define automation
 long int autoTime1 = 0;
@@ -188,6 +191,8 @@ boolean isTransmissionInProgress_2 = false;
 boolean isTransmissionInProgress_3 = false;
 boolean isTransmissionInProgress_4 = false;
 int countDebug = 1;
+
+int syncCounter = 0;
 
 //MAIN SETUP FUNCTION
 void setup()
@@ -255,6 +260,16 @@ void loop()
   //  if (countDebug % 2 == 0) ISR_DB_3_G_32();
   //  else ISR_DB_3_R_32();
   //autoTransmission();
+
+  int state = sx1278.getRSSI();
+  if (!state) {
+#ifdef DEBUG
+    Serial.print("RSSI");
+    Serial.print(" ");
+    Serial.println(sx1278._RSSI);
+#endif
+  }
+
   InterruptAction();
 
   //This function checks for data to receive
@@ -267,6 +282,8 @@ void loop()
   //Show time on display:
   showTime();
   //  delay(500);
+
+
 }
 
 //RESETs connected Nodes
@@ -277,8 +294,9 @@ void sync()
 
     String("S").toCharArray(testData, 50);
 
-    for (int lj = 0; lj < 5; lj++)
-    {
+    //    for (int lj = 0; lj < 5; lj++)
+    //    {
+    if (syncCounter < 5) {
       if (!is1Active)
       {
         address = ADDR_1_INT;
@@ -313,16 +331,11 @@ void sync()
         delay(500);
       }
       receiveSync();
-
+      syncCounter++;
     }
 
-    //    sendData2(0, testData);
-
-    //    if (T_packet_state == 0)
-    //    {
-    resetCondition = false;
-    delay(1000);
-    //    }
+    if ((is1Active && is2Active && is3Active && is4Active) || syncCounter >= 5)
+      resetCondition = false;
   }
 }
 
@@ -335,7 +348,7 @@ void nextionWriter(String id, String command, String value, boolean isColor)
   else
     data = id + "." + command + "=\"" + value + "\"";
 #ifdef DEBUG
-  Serial.println(data);
+  //Serial.println(data);
 #endif
   Serial2.print(data);
   Serial2.write(0xff);
@@ -345,6 +358,10 @@ void nextionWriter(String id, String command, String value, boolean isColor)
 
 void receiveSync()
 {
+  firstTime = millis();
+#ifdef DEBUG
+  Serial.println(" ReceiveSync .... ");
+#endif
   R_packet_state = sx1278.receivePacketTimeoutACK();
   if (R_packet_state == 0)
   {
@@ -438,6 +455,11 @@ void receiveSync()
       isSyncDone = true;
     }
   }
+  secondTime = millis();
+#ifdef DEBUG
+  Serial.print("Total Time in ReceiveSync : ");
+  Serial.println( secondTime - firstTime);
+#endif
 }
 
 //Experimental esp32 ISRs
@@ -561,14 +583,20 @@ void ISR_DB_4_R_32()
   }
 }
 
+/* Changed so that last color state is continued on failure, note variable lastcolor and colorRGX (1, 2, 3, 4)*/
+
+/* Changed so that last time is continued on failure, note variable DB_Process_Last_Time and DB_X_Process_Start_Time (1, 2, 3, 4)*/
+
 //States what happens when InterruptAction Function is called:
 void InterruptAction()
 {
-
+  int lastcolor = 0;
+  unsigned long DB_Process_Last_Time = 0;
   if (DB_ISR_F_1)
   {
+    DB_Process_Last_Time = DB_1_Process_Start_Time;
     DB_1_Process_Start_Time = millis();
-
+    lastcolor = colorRG1;
     colorRG1 = X;
 
     if (button1State)
@@ -595,6 +623,8 @@ void InterruptAction()
       else
       {
         button1State = true;
+        colorRG1 = lastcolor;
+        DB_1_Process_Start_Time = DB_Process_Last_Time;
       }
 #ifndef TEST
       DB_ISR_F_1 = false;
@@ -625,6 +655,8 @@ void InterruptAction()
       else
       {
         button1State = false;
+        colorRG1 = lastcolor;
+        DB_1_Process_Start_Time = DB_Process_Last_Time;
       }
 
 #ifndef TEST
@@ -635,8 +667,9 @@ void InterruptAction()
 
   else if (DB_ISR_F_2)
   {
+    DB_Process_Last_Time = DB_2_Process_Start_Time;
     DB_2_Process_Start_Time = millis();
-
+    lastcolor = colorRG2;
     colorRG2 = X;
 
     if (button2State)
@@ -657,6 +690,8 @@ void InterruptAction()
       else
       {
         button2State = true;
+        colorRG2 = lastcolor;
+        DB_2_Process_Start_Time = DB_Process_Last_Time;
       }
 
       DB_ISR_F_2 = false;
@@ -679,6 +714,8 @@ void InterruptAction()
       else
       {
         button2State = false;
+        colorRG2 = lastcolor;
+        DB_2_Process_Start_Time = DB_Process_Last_Time;
       }
       DB_ISR_F_2 = false;
     }
@@ -686,8 +723,9 @@ void InterruptAction()
   // DB 3:
   else if (DB_ISR_F_3)
   {
+    DB_Process_Last_Time = DB_3_Process_Start_Time;
     DB_3_Process_Start_Time = millis();
-
+    lastcolor = colorRG3;
     colorRG3 = X;
 
     if (button3State)
@@ -708,6 +746,8 @@ void InterruptAction()
       else
       {
         button3State = true;
+        colorRG3 = lastcolor;
+        DB_3_Process_Start_Time = DB_Process_Last_Time;
       }
       DB_ISR_F_3 = false;
     }
@@ -729,6 +769,8 @@ void InterruptAction()
       else
       {
         button3State = false;
+        colorRG3 = lastcolor;
+        DB_3_Process_Start_Time = DB_Process_Last_Time;
       }
       DB_ISR_F_3 = false;
     }
@@ -736,8 +778,9 @@ void InterruptAction()
 
   else if (DB_ISR_F_4)
   {
+    DB_Process_Last_Time = DB_4_Process_Start_Time;
     DB_4_Process_Start_Time = millis();
-
+    lastcolor = colorRG4;
     colorRG4 = X;
 
     if (button4State)
@@ -758,6 +801,8 @@ void InterruptAction()
       else
       {
         button4State = true;
+        colorRG4 = lastcolor;
+        DB_4_Process_Start_Time = DB_Process_Last_Time;
       }
 
       DB_ISR_F_4 = false;
@@ -780,6 +825,8 @@ void InterruptAction()
       else
       {
         button4State = false;
+        colorRG4 = lastcolor;
+        DB_4_Process_Start_Time = DB_Process_Last_Time;
       }
       DB_ISR_F_4 = false;
     }
@@ -820,26 +867,26 @@ void sendData(uint8_t NodeAddress, char message[])
     case ADDR_1_INT:
       isTransmissionInProgress_1 = true;
       nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "Transmitting...", false);
-          nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+      nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
       break;
 
     case ADDR_2_INT:
       isTransmissionInProgress_2 = true;
       nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "Transmitting...", false);
-          nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+      nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
 
       break;
 
     case ADDR_3_INT:
       isTransmissionInProgress_3 = true;
       nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "Transmitting...", false);
-          nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+      nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
       break;
 
     case ADDR_4_INT:
       isTransmissionInProgress_4 = true;
       nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "Transmitting...", false);
-          nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+      nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
       ;
   }
 
@@ -1157,6 +1204,10 @@ void recieveData()
 // //Experimental show signal time in seconds
 void showTime()
 {
+#ifdef DEBUG
+  String yx = String(colorRG1) + String(colorRG2) + String(colorRG3) + String(colorRG4) + "";
+  Serial.println(yx);
+#endif
   currentMil = millis();
   int time1 = (currentMil - DB_1_Signal_Runtime) / 1000;
   int time2 = (currentMil - DB_2_Signal_Runtime) / 1000;

@@ -1,13 +1,13 @@
 //Library:
 //#include <Ticker.h>
 #include <SX1278.h>
-//#include<WiFi.h>
+#include<ESP8266WiFi.h>
 
 //Child Parameter:
 //#define Child_1
-#define Child_2
+//#define Child_2
 //#define Child_3
-//#define Child_4
+#define Child_4
 
 //
 //Lora SX1278:
@@ -69,7 +69,7 @@ unsigned long presentActivatedTime;
 
 void setup() {
   //Serial communication begin:
-  
+  WiFi.mode(WIFI_OFF);
 #ifdef DEBUG
   Serial.begin(9600);
 #endif
