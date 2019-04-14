@@ -261,15 +261,26 @@ void loop()
   //  else ISR_DB_3_R_32();
   //autoTransmission();
 
-  int state = sx1278.getRSSI();
-  if (!state) {
-#ifdef DEBUG
-    Serial.print("RSSI");
-    Serial.print(" ");
-    Serial.println(sx1278._RSSI);
-#endif
-  }
+//////////////////////////////////////////////////////////////////////
+//RSSI value:
+//   int state = sx1278.getRSSI();
+//   if (!state) {
+// #ifdef DEBUG
+//     Serial.print("RSSI");
+//     Serial.print(" ");
+//     Serial.println(sx1278._RSSI);
+// #endif
+//   }
 
+//Power:
+  // int power = sx1278.getPower();
+  sx1278.getPower();
+// #ifdef DEBUG
+//     Serial.print("Power");
+//     Serial.print(" ");
+//     Serial.println(sx1278._power);
+// #endif
+/////////////////////////////////////////////////////////////////////
   InterruptAction();
 
   //This function checks for data to receive
@@ -358,15 +369,22 @@ void nextionWriter(String id, String command, String value, boolean isColor)
 
 void receiveSync()
 {
-  firstTime = millis();
-#ifdef DEBUG
-  Serial.println(" ReceiveSync .... ");
-#endif
+//   firstTime = millis();
+// #ifdef DEBUG
+//   Serial.println(" ReceiveSync .... ");
+// #endif
   R_packet_state = sx1278.receivePacketTimeoutACK();
   if (R_packet_state == 0)
   {
 #ifdef DEBUG
     Serial.println(F("Package received!"));
+    //RSSI value:
+    int state = sx1278.getRSSI();
+    // if (!state) {
+      Serial.print("RSSI");
+      Serial.print(" ");
+      Serial.println(sx1278._RSSI);
+    // }
 #endif
     for (unsigned int i = 0; i < sx1278.packet_received.length; i++)
     {
@@ -455,11 +473,11 @@ void receiveSync()
       isSyncDone = true;
     }
   }
-  secondTime = millis();
-#ifdef DEBUG
-  Serial.print("Total Time in ReceiveSync : ");
-  Serial.println( secondTime - firstTime);
-#endif
+//   secondTime = millis();
+// #ifdef DEBUG
+//   Serial.print("Total Time in ReceiveSync : ");
+//   Serial.println( secondTime - firstTime);
+// #endif
 }
 
 //Experimental esp32 ISRs
@@ -1204,10 +1222,10 @@ void recieveData()
 // //Experimental show signal time in seconds
 void showTime()
 {
-#ifdef DEBUG
-  String yx = String(colorRG1) + String(colorRG2) + String(colorRG3) + String(colorRG4) + "";
-  Serial.println(yx);
-#endif
+// #ifdef DEBUG
+//   String yx = String(colorRG1) + String(colorRG2) + String(colorRG3) + String(colorRG4) + "";
+//   Serial.println(yx);
+// #endif
   currentMil = millis();
   int time1 = (currentMil - DB_1_Signal_Runtime) / 1000;
   int time2 = (currentMil - DB_2_Signal_Runtime) / 1000;
