@@ -5248,26 +5248,26 @@ uint8_t SX1278::sendPacketTimeoutACKRetries(uint8_t dest, char *payload)
 	/////////////////////////////////////////////////////
 
 	//////////////////Custom/////////////////////////////
-	// while((state != 0) || (state != 5))
-	// {
-	// 	if (_retries>0) {
-	// 		Serial.print("State:");
-	// 		Serial.print(state);
-	// 		Serial.print(" ");
-	// 		Serial.print("Retries: ");
-	// 		Serial.print(_retries);
-	// 		Serial.print("\t");
-	// 	}
-	// 	state = sendPacketTimeoutACK(dest, payload);
+	while((state != 0) || (state != 5))
+	{
+		if (_retries>0) {
+			Serial.print("State:");
+			Serial.print(state);
+			Serial.print(" ");
+			Serial.print("Retries: ");
+			Serial.print(_retries);
+			Serial.print("\t");
+		}
+		state = sendPacketTimeoutACK(dest, payload);
 
-	// 	// if(state == 5 || state == 4) {
-	// 	// 	Serial.println("Conflict!!");
- //  //   		Serial.print("State: ");
-	// 	// 	Serial.println(state);
- //  //   		return state;
-	// 	// }
-	// 	_retries++;
-	// }
+		if(state == 5 || state == 4) {
+			Serial.println("Conflict!!");
+    		Serial.print("State: ");
+			Serial.println(state);
+    		return state;
+		}
+		_retries++;
+	}
 	/////////////////////////////////////////////////////
 
 	_retries = 0;
