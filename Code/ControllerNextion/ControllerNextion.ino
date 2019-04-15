@@ -1325,7 +1325,7 @@ void loraSetup()
   Serial.println("");
 #endif
   // Power ON the module:
-  if (sx1278.ON() == 0)
+  if (sx1278.ON(5) == 0)
   {
 #ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting power ON: SUCCESS "));

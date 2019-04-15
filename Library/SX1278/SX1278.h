@@ -53,13 +53,13 @@
 //#define node
 #define controller
 
-#ifdef node
-#define SX1278_SS 15 //ESP8266
-#endif							 // node
+// #ifdef node
+// #define SX1278_SS 15 //ESP8266
+// #endif							 // node
 
-#ifdef controller
-#define SX1278_SS 5 //ESP32
-#endif							// controller
+// #ifdef controller
+// #define SX1278_SS 5 //ESP32
+// #endif							// controller
 
 //! MACROS //
 #define bitRead(value, bit) (((value) >> (bit)) & 0x01)		// read a bit
@@ -367,13 +367,13 @@ public:
 	\return void
   	 */
 	SX1278();
-
+	int SX1278_SS = 0;
 	//! It puts the module ON
 	/*!
 	\param void
 	\return void
 	 */
-	uint8_t ON();
+	uint8_t ON(int SS_PIN);
 
 	//! It puts the module OFF
 	/*!
@@ -1437,6 +1437,7 @@ public:
 	/*!
    	*/
 	uint16_t _sendTime;
+	int SS_PIN_NEW;
 };
 
 extern SX1278 sx1278;
