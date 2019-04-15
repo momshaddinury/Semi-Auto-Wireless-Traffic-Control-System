@@ -3,13 +3,14 @@
   Project Name - Semi Automatic Traffic Control System using Lora SX1278
   Components used:
            MCU - ESP32
-           Communication module - Lora SX1278 ( FDK Mode )
-           Indicator - LED Custom Made Strip
+           Communication module - Lora SX1278 ( FSK Mode )
+           Display - Nextion 3.5"
            Power Source - LC 18650
   Author - Momshad Dinury
   Contributor:
+           Abdullah Zowad Khan
            Towqir Ahmed Shaem
-           Abdullah Zawad Khan
+           
 */
 // ---------------------------------------------------------------------
 
@@ -25,14 +26,28 @@
 // #include <U8g2lib.h>
 #include <WiFi.h>
 
+#define DEBUG_ALL
+#define DEBUG_DISPLAY
+#define DEBUG_TRANSMISSION
+#define DEBUG_FUNCTION_CALL
+#define DEBUG_INTERRUPT
+
+#ifdef DEBUG_ALL
+#define DEBUG_DISPLAY
+#define DEBUG_TRANSMISSION
+#define DEBUG_FUNCTION_CALL
+#define DEBUG_INTERRUPT
+#endif
+
+#define CONTROLLER
+
+//TESTCASE:
+//#define TEST
+//#define TESTDEBUG
+
 /*****************************************************************************
    Definitions & Declarations
  *****************************************************************************/
-
-// U8G2_PCD8544_84X48_F_4W_HW_SPI u8g1(U8G2_R0, /* cs=*/2, /* dc=*/23, /* reset=*/100);  // Nokia 5110 Display
-// U8G2_PCD8544_84X48_F_4W_HW_SPI u8g2(U8G2_R0, /* cs=*/4, /* dc=*/23, /* reset=*/100);  // Nokia 5110 Display
-// U8G2_PCD8544_84X48_F_4W_HW_SPI u8g3(U8G2_R0, /* cs=*/15, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
-// U8G2_PCD8544_84X48_F_4W_HW_SPI u8g4(U8G2_R0, /* cs=*/17, /* dc=*/23, /* reset=*/100); // Nokia 5110 Display
 
 //Lora SX1278:
 #define LORA_MODE 4
@@ -41,6 +56,7 @@
 uint8_t NodeAddress; //Child Address
 int address;
 
+//NEXTION Color values
 #define NEXTION_RED "63488"
 #define NEXTION_DARK_RED "43008"
 #define NEXTION_BLACK "0"
@@ -75,16 +91,16 @@ int address;
 #define NEXTION_FOREGROUND_TEXT_COLOR "pco"
 
 #define ADDR_1_INT 3
-#define ADDR_1_STR "GEC CIRCLE"
+#define ADDR_1_STR "LANE 1"
 
 #define ADDR_2_INT 4
-#define ADDR_2_STR "BAYEZID"
+#define ADDR_2_STR "LANE 2"
 
 #define ADDR_3_INT 6
-#define ADDR_3_STR "OXYGEN"
+#define ADDR_3_STR "LANE 3"
 
 #define ADDR_4_INT 7
-#define ADDR_4_STR "MURADPUR"
+#define ADDR_4_STR "LANE 4"
 
 //Packets var:
 char my_packet[50];
@@ -174,12 +190,6 @@ long int autoTime2 = 0;
 //*****
 int signalTimeCount = 0;
 
-//Serial Print and Debug:
-#define DEBUG
-//TESTCASE:
-//#define TEST
-//#define TESTDEBUG
-
 float t_time;
 //Block State Color:
 boolean blockStateColor;
@@ -230,13 +240,13 @@ void setup()
   digitalWrite(27, LOW); // To Light Up The Display.
 
   //Initialization of timers
-  DB_1_Signal_Runtime = millis(); //L 1
-  DB_2_Signal_Runtime = millis(); //L 2
+  DB_1_Signal_Runtime = millis();
+  DB_2_Signal_Runtime = millis();
   DB_3_Signal_Runtime = millis();
   DB_4_Signal_Runtime = millis();
 
-  colorRG1 = X; //L 1
-  colorRG2 = X; //L 2
+  colorRG1 = X;
+  colorRG2 = X;
   colorRG3 = X;
   colorRG4 = X;
 
@@ -257,30 +267,30 @@ void loop()
   //After the device is booted it automatically re-boots other device:
   sync();
 
+  /**************************AUTO-TRANSMISSION*************************/
   //  if (countDebug % 2 == 0) ISR_DB_3_G_32();
   //  else ISR_DB_3_R_32();
-  //autoTransmission();
 
-//////////////////////////////////////////////////////////////////////
-//RSSI value:
-//   int state = sx1278.getRSSI();
-//   if (!state) {
-// #ifdef DEBUG
-//     Serial.print("RSSI");
-//     Serial.print(" ");
-//     Serial.println(sx1278._RSSI);
-// #endif
-//   }
+  //////////////////////////////////////////////////////////////////////
+  //RSSI value:
+  //   int state = sx1278.getRSSI();
+  //   if (!state) {
+  // #ifdef DEBUG
+  //     Serial.print("RSSI");
+  //     Serial.print(" ");
+  //     Serial.println(sx1278._RSSI);
+  // #endif
+  //   }
 
-//Power:
+  //Power:
   // int power = sx1278.getPower();
   sx1278.getPower();
-// #ifdef DEBUG
-//     Serial.print("Power");
-//     Serial.print(" ");
-//     Serial.println(sx1278._power);
-// #endif
-/////////////////////////////////////////////////////////////////////
+#ifdef DEBUG_TRANSMISSION
+  Serial.print("Power");
+  Serial.print(" ");
+  Serial.println(sx1278._power);
+#endif
+  /////////////////////////////////////////////////////////////////////
   InterruptAction();
 
   //This function checks for data to receive
@@ -293,8 +303,6 @@ void loop()
   //Show time on display:
   showTime();
   //  delay(500);
-
-
 }
 
 //RESETs connected Nodes
@@ -305,41 +313,37 @@ void sync()
 
     String("S").toCharArray(testData, 50);
 
-    //    for (int lj = 0; lj < 5; lj++)
-    //    {
-    if (syncCounter < 5) {
+    if (syncCounter < 5)
+    {
       if (!is1Active)
       {
         address = ADDR_1_INT;
         sendData2(ADDR_1_INT, testData);
-        delay(500);
+        delay(700);
       }
       receiveSync();
-
 
       if (!is2Active)
       {
         address = ADDR_2_INT;
         sendData2(ADDR_2_INT, testData);
-        delay(500);
+        delay(700);
       }
       receiveSync();
-
 
       if (!is3Active)
       {
         address = ADDR_3_INT;
         sendData2(ADDR_3_INT, testData);
-        delay(500);
+        delay(700);
       }
       receiveSync();
-
 
       if (!is4Active)
       {
         address = ADDR_4_INT;
         sendData2(ADDR_4_INT, testData);
-        delay(500);
+        delay(700);
       }
       receiveSync();
       syncCounter++;
@@ -358,8 +362,8 @@ void nextionWriter(String id, String command, String value, boolean isColor)
     data = id + "." + command + "=" + value;
   else
     data = id + "." + command + "=\"" + value + "\"";
-#ifdef DEBUG
-  //Serial.println(data);
+#ifdef DEBUG_DISPLAY
+  Serial.println(data);
 #endif
   Serial2.print(data);
   Serial2.write(0xff);
@@ -369,21 +373,21 @@ void nextionWriter(String id, String command, String value, boolean isColor)
 
 void receiveSync()
 {
-//   firstTime = millis();
-// #ifdef DEBUG
-//   Serial.println(" ReceiveSync .... ");
-// #endif
+  firstTime = millis();
+#ifdef DEBUG_FUNCTION_CALL
+  Serial.println(" ReceiveSync .... ");
+#endif
   R_packet_state = sx1278.receivePacketTimeoutACK();
   if (R_packet_state == 0)
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Package received!"));
     //RSSI value:
     int state = sx1278.getRSSI();
     // if (!state) {
-      Serial.print("RSSI");
-      Serial.print(" ");
-      Serial.println(sx1278._RSSI);
+    Serial.print("RSSI");
+    Serial.print(" ");
+    Serial.println(sx1278._RSSI);
     // }
 #endif
     for (unsigned int i = 0; i < sx1278.packet_received.length; i++)
@@ -391,7 +395,7 @@ void receiveSync()
       my_packet[i] = (char)sx1278.packet_received.data[i];
       yield();
     }
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.print(F("Message:  "));
     Serial.println(my_packet);
 #endif
@@ -473,11 +477,11 @@ void receiveSync()
       isSyncDone = true;
     }
   }
-//   secondTime = millis();
-// #ifdef DEBUG
-//   Serial.print("Total Time in ReceiveSync : ");
-//   Serial.println( secondTime - firstTime);
-// #endif
+  secondTime = millis();
+#ifdef DEBUG_FUNCTION_CALL
+  Serial.print("Total Time in ReceiveSync : ");
+  Serial.println(secondTime - firstTime);
+#endif
 }
 
 //Experimental esp32 ISRs
@@ -489,9 +493,11 @@ void ISR_DB_1_G_32()
   {
     DB_ISR_F_1 = true;
     DB_priv_time_1 = millis();
+#ifdef DEBUG_INTERRUPT
     Serial.print("\n##");
     Serial.print(count += 1);
     Serial.print("\t");
+#endif
     button1State = true;
   }
 }
@@ -504,9 +510,11 @@ void ISR_DB_1_R_32()
   {
     DB_ISR_F_1 = true;
     DB_priv_time_1 = millis();
+#ifdef DEBUG_INTERRUPT
     Serial.print("\n##");
     Serial.print(count += 1);
     Serial.print("\t");
+#endif
     button1State = false;
   }
 }
@@ -519,9 +527,11 @@ void ISR_DB_2_G_32()
   {
     DB_ISR_F_2 = true;
     DB_priv_time_2 = millis();
+#ifdef DEBUG_INTERRUPT
     Serial.print("\n##");
     Serial.print(count += 1);
     Serial.print("\t");
+#endif
     button2State = true;
   }
 }
@@ -534,9 +544,11 @@ void ISR_DB_2_R_32()
   {
     DB_ISR_F_2 = true;
     DB_priv_time_2 = millis();
+#ifdef DEBUG_INTERRUPT
     Serial.print("\n##");
     Serial.print(count += 1);
     Serial.print("\t");
+#endif
     button2State = false;
   }
 }
@@ -549,9 +561,11 @@ void ISR_DB_3_G_32()
   {
     DB_ISR_F_3 = true;
     DB_priv_time_3 = millis();
+#ifdef DEBUG_INTERRUPT
     Serial.print("\n##");
     Serial.print(count += 1);
     Serial.print("\t");
+#endif
     button3State = true;
   }
 }
@@ -564,9 +578,11 @@ void ISR_DB_3_R_32()
   {
     DB_ISR_F_3 = true;
     DB_priv_time_3 = millis();
+#ifdef DEBUG_INTERRUPT
     Serial.print("\n##");
     Serial.print(count += 1);
     Serial.print("\t");
+#endif
     button3State = false;
   }
 }
@@ -579,9 +595,11 @@ void ISR_DB_4_G_32()
   {
     DB_ISR_F_4 = true;
     DB_priv_time_4 = millis();
+#ifdef DEBUG_INTERRUPT
     Serial.print("\n##");
     Serial.print(count += 1);
     Serial.print("\t");
+#endif
     button4State = true;
   }
 }
@@ -594,9 +612,11 @@ void ISR_DB_4_R_32()
   {
     DB_ISR_F_4 = true;
     DB_priv_time_4 = millis();
+#ifdef DEBUG_INTERRUPT
     Serial.print("\n##");
     Serial.print(count += 1);
     Serial.print("\t");
+#endif
     button4State = false;
   }
 }
@@ -619,7 +639,7 @@ void InterruptAction()
 
     if (button1State)
     {
-#ifdef DEBUG
+#ifdef DEBUG_FUNCTION_CALL
       Serial.println("\nButton 1 was pressed once!");
 #endif
 
@@ -651,7 +671,7 @@ void InterruptAction()
     else if (!button1State)
     {
 
-#ifdef DEBUG
+#ifdef DEBUG_FUNCTION_CALL
       Serial.println("\nButton 1 was pressed twice!");
 #endif
 
@@ -692,7 +712,7 @@ void InterruptAction()
 
     if (button2State)
     {
-#ifdef DEBUG
+#ifdef DEBUG_FUNCTION_CALL
       Serial.println("\nButton 2 was pressed once!");
 #endif
 
@@ -716,7 +736,7 @@ void InterruptAction()
     }
     else if (!button2State)
     {
-#ifdef DEBUG
+#ifdef DEBUG_FUNCTION_CALL
       Serial.println("\nButton 2 was pressed twice!");
 #endif
 
@@ -748,7 +768,7 @@ void InterruptAction()
 
     if (button3State)
     {
-#ifdef DEBUG
+#ifdef DEBUG_FUNCTION_CALL
       Serial.println("\nButton 3 was pressed once!");
 #endif
 
@@ -771,7 +791,7 @@ void InterruptAction()
     }
     else if (!button3State)
     {
-#ifdef DEBUG
+#ifdef DEBUG_FUNCTION_CALL
       Serial.println("\nButton 3 was pressed twice!");
 #endif
 
@@ -803,7 +823,7 @@ void InterruptAction()
 
     if (button4State)
     {
-#ifdef DEBUG
+#ifdef DEBUG_FUNCTION_CALL
       Serial.println("\nButton 4 was pressed once!");
 #endif
 
@@ -827,7 +847,7 @@ void InterruptAction()
     }
     else if (!button4State)
     {
-#ifdef DEBUG
+#ifdef DEBUG_FUNCTION_CALL
       Serial.println("\nButton 4 was pressed twice!");
 #endif
 
@@ -869,7 +889,7 @@ void InterruptAction()
 //Global send data function
 void sendData(uint8_t NodeAddress, char message[])
 {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
   Serial.print("Node Address : ");
   Serial.println(address);
 #endif
@@ -882,35 +902,35 @@ void sendData(uint8_t NodeAddress, char message[])
   switch (NodeAddress)
   {
 
-    case ADDR_1_INT:
-      isTransmissionInProgress_1 = true;
-      nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "Transmitting...", false);
-      nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-      break;
+  case ADDR_1_INT:
+    isTransmissionInProgress_1 = true;
+    nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "Transmitting...", false);
+    nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    break;
 
-    case ADDR_2_INT:
-      isTransmissionInProgress_2 = true;
-      nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "Transmitting...", false);
-      nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+  case ADDR_2_INT:
+    isTransmissionInProgress_2 = true;
+    nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "Transmitting...", false);
+    nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
 
-      break;
+    break;
 
-    case ADDR_3_INT:
-      isTransmissionInProgress_3 = true;
-      nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "Transmitting...", false);
-      nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-      break;
+  case ADDR_3_INT:
+    isTransmissionInProgress_3 = true;
+    nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "Transmitting...", false);
+    nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    break;
 
-    case ADDR_4_INT:
-      isTransmissionInProgress_4 = true;
-      nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "Transmitting...", false);
-      nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-      ;
+  case ADDR_4_INT:
+    isTransmissionInProgress_4 = true;
+    nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "Transmitting...", false);
+    nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    ;
   }
 
   for (int retry = 1; retry <= 5; retry++)
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.print("Attempt: ");
     Serial.println(retry);
 #endif
@@ -918,7 +938,7 @@ void sendData(uint8_t NodeAddress, char message[])
 
     if (T_packet_state == 0)
     {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
       Serial.println(F("State = 0 --> Command Executed w no errors!"));
       Serial.println(F("Packet sent..."));
 #endif
@@ -927,55 +947,57 @@ void sendData(uint8_t NodeAddress, char message[])
       switch (NodeAddress)
       {
 
-        case ADDR_1_INT:
-          isTransmissionInProgress_1 = false;
-          is1Active = true;
-          nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "Sent!!", false);
-          nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-          nextionWriter(NEXTION_STATUS_1, NEXTION_COMMAND_TEXT, "Active", false);
-          nextionWriter(NEXTION_STATUS_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-          break;
+      case ADDR_1_INT:
+        isTransmissionInProgress_1 = false;
+        is1Active = true;
+        nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "Sent!!", false);
+        nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+        nextionWriter(NEXTION_STATUS_1, NEXTION_COMMAND_TEXT, "Active", false);
+        nextionWriter(NEXTION_STATUS_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+        break;
 
-        case ADDR_2_INT:
-          isTransmissionInProgress_2 = false;
-          nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "Sent!!", false);
-          nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-          nextionWriter(NEXTION_STATUS_2, NEXTION_COMMAND_TEXT, "Active", false);
-          nextionWriter(NEXTION_STATUS_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-          is2Active = true;
-          break;
+      case ADDR_2_INT:
+        isTransmissionInProgress_2 = false;
+        nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "Sent!!", false);
+        nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+        nextionWriter(NEXTION_STATUS_2, NEXTION_COMMAND_TEXT, "Active", false);
+        nextionWriter(NEXTION_STATUS_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+        is2Active = true;
+        break;
 
-        case ADDR_3_INT:
-          isTransmissionInProgress_3 = false;
-          nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "Sent!!", false);
-          nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-          nextionWriter(NEXTION_STATUS_3, NEXTION_COMMAND_TEXT, "Active", false);
-          nextionWriter(NEXTION_STATUS_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-          is3Active = true;
-          break;
+      case ADDR_3_INT:
+        isTransmissionInProgress_3 = false;
+        nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "Sent!!", false);
+        nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+        nextionWriter(NEXTION_STATUS_3, NEXTION_COMMAND_TEXT, "Active", false);
+        nextionWriter(NEXTION_STATUS_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+        is3Active = true;
+        break;
 
-        case ADDR_4_INT:
-          isTransmissionInProgress_4 = false;
-          nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "Sent!!", false);
-          nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-          nextionWriter(NEXTION_STATUS_4, NEXTION_COMMAND_TEXT, "Active", false);
-          nextionWriter(NEXTION_STATUS_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
-          is4Active = true;
-          break;
+      case ADDR_4_INT:
+        isTransmissionInProgress_4 = false;
+        nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "Sent!!", false);
+        nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+        nextionWriter(NEXTION_STATUS_4, NEXTION_COMMAND_TEXT, "Active", false);
+        nextionWriter(NEXTION_STATUS_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_GREEN, true);
+        is4Active = true;
+        break;
       }
       //break;
       return;
     }
     else if (T_packet_state == 5 || T_packet_state == 6 || T_packet_state == 7)
     {
+#ifdef DEBUG_TRANSMISSION
       Serial.println("Conflict!");
       Serial.print("Error code-");
       Serial.println(T_packet_state);
+#endif
       sendData(address, testData);
     }
     else
     {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
       Serial.print(F("Error Code: "));
       Serial.println(T_packet_state);
       Serial.println(F("Packet not sent...."));
@@ -986,96 +1008,55 @@ void sendData(uint8_t NodeAddress, char message[])
 
   switch (NodeAddress)
   {
-    case ADDR_1_INT:
-      isTransmissionInProgress_1 = false;
-      is1Active = false;
-      nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "Falied!!", false);
-      nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-      nextionWriter(NEXTION_STATUS_1, NEXTION_COMMAND_TEXT, "Offline", false);
-      nextionWriter(NEXTION_STATUS_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-      break;
+  case ADDR_1_INT:
+    isTransmissionInProgress_1 = false;
+    is1Active = false;
+    nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "Falied!!", false);
+    nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+    nextionWriter(NEXTION_STATUS_1, NEXTION_COMMAND_TEXT, "Offline", false);
+    nextionWriter(NEXTION_STATUS_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+    break;
 
-    case ADDR_2_INT:
-      isTransmissionInProgress_2 = false;
-      nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "Falied!!", false);
-      nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-      is2Active = false;
-      nextionWriter(NEXTION_STATUS_2, NEXTION_COMMAND_TEXT, "Offline", false);
-      nextionWriter(NEXTION_STATUS_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-      break;
+  case ADDR_2_INT:
+    isTransmissionInProgress_2 = false;
+    nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "Falied!!", false);
+    nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+    is2Active = false;
+    nextionWriter(NEXTION_STATUS_2, NEXTION_COMMAND_TEXT, "Offline", false);
+    nextionWriter(NEXTION_STATUS_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+    break;
 
-    case ADDR_3_INT:
-      isTransmissionInProgress_3 = false;
-      nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "Falied!!", false);
-      nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-      is3Active = false;
-      nextionWriter(NEXTION_STATUS_3, NEXTION_COMMAND_TEXT, "Offline", false);
-      nextionWriter(NEXTION_STATUS_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-      break;
+  case ADDR_3_INT:
+    isTransmissionInProgress_3 = false;
+    nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "Falied!!", false);
+    nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+    is3Active = false;
+    nextionWriter(NEXTION_STATUS_3, NEXTION_COMMAND_TEXT, "Offline", false);
+    nextionWriter(NEXTION_STATUS_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+    break;
 
-    case ADDR_4_INT:
-      isTransmissionInProgress_4 = false;
-      nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "Falied!!", false);
-      nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-      is4Active = false;
-      nextionWriter(NEXTION_STATUS_4, NEXTION_COMMAND_TEXT, "Offline", false);
-      nextionWriter(NEXTION_STATUS_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
-      break;
+  case ADDR_4_INT:
+    isTransmissionInProgress_4 = false;
+    nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "Falied!!", false);
+    nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+    is4Active = false;
+    nextionWriter(NEXTION_STATUS_4, NEXTION_COMMAND_TEXT, "Offline", false);
+    nextionWriter(NEXTION_STATUS_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_RED, true);
+    break;
   }
   isTransmissionInProgress = false;
 }
 
 void sendData2(uint8_t NodeAddress, char message[])
 {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
   Serial.print("Node Address : ");
   Serial.println(NodeAddress);
 #endif
 
-  //  if (!isTransmissionInProgress)
-  //    isTransmissionInProgress = true;
-  //  else
-  //    return;
-  //  //delay(1000);
-  //  switch (NodeAddress)
-  //  {
-  //
-  //    case ADDR_1_INT:
-  //      u8g1.clearBuffer();                 // clear the internal memory
-  //      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  //      u8g1.drawStr(0, 10, ADDR_1_STR); // write something to the internal memory
-  //      u8g1.drawStr(15, 30, "Transmitting..");
-  //      u8g1.sendBuffer();
-  //      break;
-  //
-  //    case ADDR_2_INT:
-  //      u8g2.clearBuffer();                 // clear the internal memory
-  //      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  //      u8g2.drawStr(0, 10, ADDR_2_STR);
-  //      u8g2.drawStr(15, 30, "Transmitting..");
-  //      u8g2.sendBuffer();
-  //      break;
-  //
-  //    case ADDR_3_INT:
-  //      u8g3.clearBuffer();                 // clear the internal memory
-  //      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  //      u8g3.drawStr(0, 10, ADDR_3_STR);
-  //      u8g3.drawStr(15, 30, "Transmitting..");
-  //      u8g3.sendBuffer();
-  //      break;
-  //
-  //    case ADDR_4_INT:
-  //      u8g4.clearBuffer();                 // clear the internal memory
-  //      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  //      u8g4.drawStr(0, 10, ADDR_4_STR);
-  //      u8g4.drawStr(15, 30, "Transmitting..");
-  //      u8g4.sendBuffer();
-  //      break;
-  //  }
-
   for (int retry = 1; retry <= 1; retry++) //NO RETRIES ON SYNC
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.print("Attempt: ");
     Serial.println(retry);
 #endif
@@ -1083,64 +1064,25 @@ void sendData2(uint8_t NodeAddress, char message[])
 
     if (T_packet_state == 0)
     {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
       Serial.println(F("State = 0 --> Command Executed w no errors!"));
       Serial.println(F("Packet sent..."));
 #endif
       isTransmissionInProgress = false;
-
-      //      switch (NodeAddress)
-      //      {
-      //
-      //        case ADDR_1_INT:
-      //          u8g1.clearBuffer();                 // clear the internal memory
-      //          u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      //          u8g1.drawStr(0, 10, ADDR_1_STR); // write something to the internal memory
-      //          u8g1.drawStr(15, 30, "Sent!");
-      //          is1Active = true;
-      //          u8g1.sendBuffer();
-      //          break;
-      //
-      //        case ADDR_2_INT:
-      //          u8g2.clearBuffer();                 // clear the internal memory
-      //          u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      //          u8g2.drawStr(0, 10, ADDR_2_STR);
-      //          u8g2.drawStr(15, 30, "Sent!");
-      //          is2Active = true;
-      //          u8g2.sendBuffer();
-      //          break;
-      //
-      //        case ADDR_3_INT:
-      //          u8g3.clearBuffer();                 // clear the internal memory
-      //          u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      //          u8g3.drawStr(0, 10, ADDR_3_STR);
-      //          u8g3.drawStr(15, 30, "Sent!");
-      //          is3Active = true;
-      //          u8g3.sendBuffer();
-      //          break;
-      //
-      //        case ADDR_4_INT:
-      //          u8g4.clearBuffer();                 // clear the internal memory
-      //          u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-      //          u8g4.drawStr(0, 10, ADDR_4_STR);
-      //          u8g4.drawStr(15, 30, "Sent!");
-      //          is4Active = true;
-      //          u8g4.sendBuffer();
-      //          break;
-      //      }
-      //break;
       return;
     }
     else if (T_packet_state == 5 || T_packet_state == 6 || T_packet_state == 7)
     {
+#ifdef DEBUG_TRANSMISSION
       Serial.println("Conflict!");
       Serial.print("Error code-");
       Serial.println(T_packet_state);
+#endif
       //sendData(address, testData);
     }
     else
     {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
       Serial.print(F("Error Code: "));
       Serial.println(T_packet_state);
       Serial.println(F("Packet not sent...."));
@@ -1148,50 +1090,6 @@ void sendData2(uint8_t NodeAddress, char message[])
     }
     showTime();
   }
-
-  //  switch (NodeAddress)
-  //  {
-  //
-  //    case ADDR_1_INT:
-  //      u8g1.clearBuffer();                 // clear the internal memory
-  //      u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  //      u8g1.drawStr(0, 10, ADDR_1_STR); // write something to the internal memory
-  //      u8g1.drawStr(15, 30, "Falied!");
-  //      is1Active = false;
-  //      u8g1.drawStr(15, 30, "Offline");
-  //      u8g1.sendBuffer();
-  //      break;
-  //
-  //    case ADDR_2_INT:
-  //      u8g2.clearBuffer();                 // clear the internal memory
-  //      u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  //      u8g2.drawStr(0, 10, ADDR_2_STR);
-  //      u8g2.drawStr(15, 30, "Falied!");
-  //      is2Active = false;
-  //      u8g2.drawStr(15, 30, "Offline");
-  //      u8g2.sendBuffer();
-  //      break;
-  //
-  //    case ADDR_3_INT:
-  //      u8g3.clearBuffer();                 // clear the internal memory
-  //      u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  //      u8g3.drawStr(0, 10, ADDR_3_STR);
-  //      u8g3.drawStr(15, 30, "Falied!");
-  //      is3Active = false;
-  //      u8g3.drawStr(15, 30, "Offline");
-  //      u8g3.sendBuffer();
-  //      break;
-  //
-  //    case ADDR_4_INT:
-  //      u8g4.clearBuffer();                 // clear the internal memory
-  //      u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  //      u8g4.drawStr(0, 10, ADDR_4_STR);
-  //      u8g4.drawStr(15, 30, "Falied!");
-  //      is4Active = false;
-  //      u8g4.drawStr(15, 30, "Offline");
-  //      u8g4.sendBuffer();
-  //      break;
-  //  }
 
   isTransmissionInProgress = false;
 }
@@ -1202,7 +1100,7 @@ void recieveData()
   R_packet_state = sx1278.receivePacketTimeoutACK();
   if (R_packet_state == 0)
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Package received!"));
 #endif
     for (unsigned int i = 0; i < sx1278.packet_received.length; i++)
@@ -1210,7 +1108,7 @@ void recieveData()
       my_packet[i] = (char)sx1278.packet_received.data[i];
       yield();
     }
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.print(F("Message:  "));
     Serial.println(my_packet);
 #endif
@@ -1222,10 +1120,10 @@ void recieveData()
 // //Experimental show signal time in seconds
 void showTime()
 {
-// #ifdef DEBUG
-//   String yx = String(colorRG1) + String(colorRG2) + String(colorRG3) + String(colorRG4) + "";
-//   Serial.println(yx);
-// #endif
+#ifdef DEBUG_DISPLAY
+  String yx = String(colorRG1) + String(colorRG2) + String(colorRG3) + String(colorRG4) + "";
+  Serial.println(yx);
+#endif
   currentMil = millis();
   int time1 = (currentMil - DB_1_Signal_Runtime) / 1000;
   int time2 = (currentMil - DB_2_Signal_Runtime) / 1000;
@@ -1260,70 +1158,70 @@ void showTime()
   switch (colorRG1)
   {
 
-    case R:
-      nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, printt1, false);
-      nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
-      nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-      break;
+  case R:
+    nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, printt1, false);
+    nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
+    nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    break;
 
-    case G:
-      nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, printt1, false);
-      nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
-      nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-      break;
-    case X:
-      break;
+  case G:
+    nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_TEXT, printt1, false);
+    nextionWriter(NEXTION_TIMER_1, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
+    nextionWriter(NEXTION_TIMER_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    break;
+  case X:
+    break;
   }
 
   switch (colorRG2)
   {
-    case R:
-      nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, printt2, false);
-      nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
-      nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-      break;
+  case R:
+    nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, printt2, false);
+    nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
+    nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    break;
 
-    case G:
-      nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, printt2, false);
-      nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
-      nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-      break;
-    case X:
-      break;
+  case G:
+    nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_TEXT, printt2, false);
+    nextionWriter(NEXTION_TIMER_2, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
+    nextionWriter(NEXTION_TIMER_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    break;
+  case X:
+    break;
   }
 
   switch (colorRG3)
   {
-    case R:
-      nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, printt3, false);
-      nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
-      nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-      break;
+  case R:
+    nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, printt3, false);
+    nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
+    nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    break;
 
-    case G:
-      nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, printt3, false);
-      nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
-      nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-      break;
-    case X:
-      break;
+  case G:
+    nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_TEXT, printt3, false);
+    nextionWriter(NEXTION_TIMER_3, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
+    nextionWriter(NEXTION_TIMER_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    break;
+  case X:
+    break;
   }
 
   switch (colorRG4)
   {
-    case R:
-      nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, printt4, false);
-      nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
-      nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-      break;
+  case R:
+    nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, printt4, false);
+    nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_RED, true);
+    nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    break;
 
-    case G:
-      nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, printt4, false);
-      nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
-      nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-      break;
-    case X:
-      break;
+  case G:
+    nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_TEXT, printt4, false);
+    nextionWriter(NEXTION_TIMER_4, NEXTION_COMMAND_BACKGROUND, NEXTION_DARK_GREEN, true);
+    nextionWriter(NEXTION_TIMER_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    break;
+  case X:
+    break;
   }
 }
 
@@ -1346,8 +1244,10 @@ void Setting_Block_State_Color()
     }
     DB_1_Process_End_Time = millis();
     t_time = ((DB_1_Process_End_Time - DB_1_Process_Start_Time) / 1000.0);
+#ifdef DEBUG_TRANSMISSION
     Serial.print("Required time (L1): ");
     Serial.println(t_time, 3);
+#endif
 
     is1First = false;
   }
@@ -1366,8 +1266,10 @@ void Setting_Block_State_Color()
       DB_2_Signal_Runtime = millis();
     }
     DB_2_Process_End_Time = millis();
+#ifdef DEBUG_TRANSMISSION
     Serial.print("Required time (L2): ");
     Serial.println(((DB_2_Process_End_Time - DB_2_Process_Start_Time) / 1000.0), 3);
+#endif
     is2First = false;
   }
 
@@ -1386,14 +1288,11 @@ void Setting_Block_State_Color()
       // location1Sec.attach(5, showTime);
     }
     DB_3_Process_End_Time = millis();
+#ifdef DEBUG_TRANSMISSION
     Serial.print("Required time (L3): ");
-    //    if (countDebug < 10)
-    //      Serial.print(" ");
-    //    Serial.print(countDebug++);
     Serial.print(" ");
     Serial.println(((DB_3_Process_End_Time - DB_3_Process_Start_Time) / 1000.0), 3);
-    //    Serial.print(" ");
-    //    Serial.println(attemptDebug);
+#endif
     is3First = false;
   }
 
@@ -1411,8 +1310,10 @@ void Setting_Block_State_Color()
       DB_4_Signal_Runtime = millis();
     }
     DB_4_Process_End_Time = millis();
+#ifdef DEBUG_TRANSMISSION
     Serial.print("Required time (L4): ");
     Serial.println(((DB_4_Process_End_Time - DB_4_Process_Start_Time) / 1000.0), 3);
+#endif
     is4First = false;
   }
 }
@@ -1426,13 +1327,13 @@ void loraSetup()
   // Power ON the module:
   if (sx1278.ON() == 0)
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting power ON: SUCCESS "));
 #endif
   }
   else
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting power ON: ERROR "));
 #endif
   }
@@ -1440,13 +1341,13 @@ void loraSetup()
   // Set transmission mode and print the result:
   if (sx1278.setMode(LORA_MODE) == 0)
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting Mode: SUCCESS "));
 #endif
   }
   else
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting Mode: ERROR "));
 #endif
   }
@@ -1454,13 +1355,13 @@ void loraSetup()
   // Set header:
   if (sx1278.setHeaderON() == 0)
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting Header ON: SUCCESS "));
 #endif
   }
   else
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting Header ON: ERROR "));
 #endif
   }
@@ -1468,13 +1369,13 @@ void loraSetup()
   // Select frequency channel:
   if (sx1278.setChannel(LORA_CHANNEL) == 0)
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting Channel: SUCCESS "));
 #endif
   }
   else
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting Channel: ERROR "));
 #endif
   }
@@ -1482,13 +1383,13 @@ void loraSetup()
   // Set CRC:
   if (sx1278.setCRC_ON() == 0)
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting CRC ON: SUCCESS "));
 #endif
   }
   else
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting CRC ON: ERROR "));
 #endif
   }
@@ -1496,13 +1397,13 @@ void loraSetup()
   // Select output power (Max, High, Intermediate or Low)
   if (sx1278.setPower('M') == 0)
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting Power: SUCCESS "));
 #endif
   }
   else
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting Power: ERROR "));
 #endif
   }
@@ -1510,19 +1411,19 @@ void loraSetup()
   // Set the node address and print the result
   if (sx1278.setNodeAddress(LORA_ADDRESS) == 0)
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting node address: SUCCESS "));
 #endif
   }
   else
   {
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting node address: ERROR "));
 #endif
   }
 
   // Print a success
-#ifdef DEBUG
+#ifdef DEBUG_TRANSMISSION
   Serial.println(F("SX1278 configured finished"));
   Serial.println();
 #endif
@@ -1569,39 +1470,6 @@ void displaySetup()
   nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
   nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
   nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
-
-  // u8g1.begin();
-  // u8g2.begin();
-  // u8g3.begin();
-  // u8g4.begin();
-
-  // u8g1.clearBuffer();                 // clear the internal memory
-  // u8g1.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  // u8g1.drawStr(0, 10, ADDR_1_STR);    // write something to the internal memory
-  // u8g1.drawStr(20, 20, "Offline");
-  // u8g1.sendBuffer(); // transfer internal memory to the display
-  // delay(1000);
-
-  // u8g2.clearBuffer();                 // clear the internal memory
-  // u8g2.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  // u8g2.drawStr(0, 10, ADDR_2_STR);    // write something to the internal memory
-  // u8g2.drawStr(20, 20, "Offline");
-  // u8g2.sendBuffer(); // transfer internal memory to the display
-  // delay(1000);
-
-  // u8g3.clearBuffer();                 // clear the internal memory
-  // u8g3.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  // u8g3.drawStr(0, 10, ADDR_3_STR);    // write something to the internal memory
-  // u8g3.drawStr(20, 20, "Offline");
-  // u8g3.sendBuffer(); // transfer internal memory to the display
-  // delay(1000);
-
-  // u8g4.clearBuffer();                 // clear the internal memory
-  // u8g4.setFont(u8g2_font_ncenB08_tr); // choose a suitable font
-  // u8g4.drawStr(0, 10, ADDR_4_STR);    // write something to the internal memory
-  // u8g4.drawStr(20, 20, "Offline");
-  // u8g4.sendBuffer(); // transfer internal memory to the display
-  // delay(1000);
 }
 
 // void autoTransmission() {
