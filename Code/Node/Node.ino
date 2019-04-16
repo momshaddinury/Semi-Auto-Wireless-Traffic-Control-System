@@ -4,13 +4,14 @@
 #include <ESP8266WiFi.h>
 
 //Child Parameter:
-//#define Child_1
-//#define Child_2
-//#define Child_3
+// #define Child_1
+// #define Child_2
+// #define Child_3
 #define Child_4
 
 //
 //Lora SX1278:
+#define LORA_SS_Pin 15
 #define LORA_MODE 4 //mode: mode number to set the required BW, SF and CR of LoRa modem.
 #define LORA_CHANNEL CH_6_BW_125
 uint8_t ControllerAddress = 5; //Parent Address
@@ -96,25 +97,25 @@ void setup()
 #ifdef Child_1
   //delay(delay_time);
   String("K01").toCharArray(syncData, 50);
-  sendData(syncData);
+  sendDataSync(syncData);
 #endif
 
 #ifdef Child_2
   //    delay(delay_time);
   String("K02").toCharArray(syncData, 50);
-  sendData(syncData);
+  sendDataSync(syncData);
 #endif
 
 #ifdef Child_3
   //    delay(delay_time);
   String("K03").toCharArray(syncData, 50);
-  sendData(syncData);
+  sendDataSync(syncData);
 #endif
 
 #ifdef Child_4
   //     delay(delay_time);
   String("K04").toCharArray(syncData, 50);
-  sendData(syncData);
+  sendDataSync(syncData);
 #endif
 
   ledOff();
@@ -484,7 +485,7 @@ void loraSetup()
   //Sets Lora Modes & returns 'true' if successful Else 'false'
   Serial.println("");
   // Power ON the module:
-  (sx1278.ON(15) == 0) ? Serial.println(F("Setting power ON: SUCCESS ")) : Serial.println(F("Setting power ON: ERROR "));
+  (sx1278.ON(LORA_SS_Pin) == 0) ? Serial.println(F("Setting power ON: SUCCESS ")) : Serial.println(F("Setting power ON: ERROR "));
   // Set transmission mode and print the result:
   (sx1278.setMode(LORA_MODE) == 0) ? Serial.println(F("Setting Mode: SUCCESS ")) : Serial.println(F("Setting power ON: ERROR "));
   // Set header:

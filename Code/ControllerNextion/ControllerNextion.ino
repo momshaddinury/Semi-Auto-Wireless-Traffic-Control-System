@@ -26,8 +26,8 @@
 // #include <U8g2lib.h>
 #include <WiFi.h>
 
-#define DEBUG_ALL
-#define DEBUG_DISPLAY
+// #define DEBUG_ALL
+// #define DEBUG_DISPLAY
 #define DEBUG_TRANSMISSION
 #define DEBUG_FUNCTION_CALL
 #define DEBUG_INTERRUPT
@@ -50,6 +50,7 @@
  *****************************************************************************/
 
 //Lora SX1278:
+#define LORA_SS_Pin 5
 #define LORA_MODE 4
 #define LORA_CHANNEL CH_6_BW_125
 #define LORA_ADDRESS 5
@@ -319,7 +320,7 @@ void sync()
       {
         address = ADDR_1_INT;
         sendData2(ADDR_1_INT, testData);
-        delay(700);
+        delay(300);
       }
       receiveSync();
 
@@ -327,7 +328,7 @@ void sync()
       {
         address = ADDR_2_INT;
         sendData2(ADDR_2_INT, testData);
-        delay(700);
+        delay(300);
       }
       receiveSync();
 
@@ -335,7 +336,7 @@ void sync()
       {
         address = ADDR_3_INT;
         sendData2(ADDR_3_INT, testData);
-        delay(700);
+        delay(300);
       }
       receiveSync();
 
@@ -343,7 +344,7 @@ void sync()
       {
         address = ADDR_4_INT;
         sendData2(ADDR_4_INT, testData);
-        delay(700);
+        delay(300);
       }
       receiveSync();
       syncCounter++;
@@ -1325,7 +1326,7 @@ void loraSetup()
   Serial.println("");
 #endif
   // Power ON the module:
-  if (sx1278.ON(5) == 0)
+  if (sx1278.ON(LORA_SS_Pin) == 0)
   {
 #ifdef DEBUG_TRANSMISSION
     Serial.println(F("Setting power ON: SUCCESS "));
