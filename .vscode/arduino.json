@@ -1,3 +1,7 @@
 {
-    "programmer": "AVRISP mkII"
+    "programmer": "USBasp",
+    "board": "esp32:esp32:firebeetle32",
+    "configuration": "FlashFreq=80,UploadSpeed=921600",
+    "port": "COM8",
+    "sketch": "Code\\ControllerNextion\\ControllerNextion.ino"
 }

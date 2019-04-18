@@ -23,7 +23,7 @@
 //Library for Ticker
 #include <Ticker.h>
 //Library for Display
-// #include <U8g2lib.h>
+#include <U8g2lib.h>
 #include <WiFi.h>
 
 // #define DEBUG_ALL
@@ -285,12 +285,12 @@ void loop()
 
   //Power:
   // int power = sx1278.getPower();
-  sx1278.getPower();
-#ifdef DEBUG_TRANSMISSION
-  Serial.print("Power");
-  Serial.print(" ");
-  Serial.println(sx1278._power);
-#endif
+//   sx1278.getPower();
+// #ifdef DEBUG_TRANSMISSION
+//   Serial.print("Power");
+//   Serial.print(" ");
+//   Serial.println(sx1278._power);
+// #endif
   /////////////////////////////////////////////////////////////////////
   InterruptAction();
 
@@ -375,9 +375,9 @@ void nextionWriter(String id, String command, String value, boolean isColor)
 void receiveSync()
 {
   firstTime = millis();
-#ifdef DEBUG_FUNCTION_CALL
-  Serial.println(" ReceiveSync .... ");
-#endif
+// #ifdef DEBUG_FUNCTION_CALL
+//   Serial.println(" ReceiveSync .... ");
+// #endif
   R_packet_state = sx1278.receivePacketTimeoutACK();
   if (R_packet_state == 0)
   {
@@ -479,10 +479,10 @@ void receiveSync()
     }
   }
   secondTime = millis();
-#ifdef DEBUG_FUNCTION_CALL
-  Serial.print("Total Time in ReceiveSync : ");
-  Serial.println(secondTime - firstTime);
-#endif
+// #ifdef DEBUG_FUNCTION_CALL
+//   Serial.print("Total Time in ReceiveSync : ");
+//   Serial.println(secondTime - firstTime);
+// #endif
 }
 
 //Experimental esp32 ISRs
