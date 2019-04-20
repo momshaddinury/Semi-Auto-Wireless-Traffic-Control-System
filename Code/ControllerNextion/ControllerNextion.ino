@@ -21,11 +21,12 @@
 //Lora SX1278:
 #include <SX1278.h>
 //Library for Ticker
-#include <Ticker.h>
+#include <Ticker.h> 
 //Library for Display
 #include <U8g2lib.h>
 #include <WiFi.h>
 
+//DEBUG FLAGS:
 // #define DEBUG_ALL
 // #define DEBUG_DISPLAY
 #define DEBUG_TRANSMISSION
@@ -50,7 +51,7 @@
  *****************************************************************************/
 
 //Lora SX1278:
-#define LORA_SS_Pin 5
+#define LORA_SS_Pin 5 //ESP32
 #define LORA_MODE 4
 #define LORA_CHANNEL CH_6_BW_125
 #define LORA_ADDRESS 5
@@ -111,7 +112,6 @@ int T_packet_state;
 int R_packet_state;
 
 //Pin def of Switch:
-
 #define digitalButton_1 25
 #define digitalButton_2 26
 #define digitalButton_3 32
@@ -237,8 +237,8 @@ void setup()
   pinMode(digitalButton_7, INPUT_PULLUP);
   pinMode(digitalButton_8, INPUT_PULLUP);
 
-  pinMode(27, OUTPUT);
-  digitalWrite(27, LOW); // To Light Up The Display.
+  // pinMode(27, OUTPUT);
+  // digitalWrite(27, LOW); // To Light Up The Display.
 
   //Initialization of timers
   DB_1_Signal_Runtime = millis();
