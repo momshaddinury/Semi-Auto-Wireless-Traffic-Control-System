@@ -21,7 +21,7 @@
 //Lora SX1278:
 #include <SX1278.h>
 //Library for Ticker
-#include <Ticker.h> 
+#include <Ticker.h>
 //Library for Display
 #include <U8g2lib.h>
 #include <WiFi.h>
@@ -121,14 +121,11 @@ int R_packet_state;
 #define digitalButton_7 21
 #define digitalButton_8 22
 
-// #define digitalButton_3 5
-//Experimental
-
 //Signal Time Var:
 unsigned long DB_1_Signal_Runtime, DB_2_Signal_Runtime, DB_3_Signal_Runtime, DB_4_Signal_Runtime;
 unsigned long currentMil;
 
-//Experimental variables, Color Flags
+//Color Flags
 int colorRG1 = 1, colorRG2 = 1, colorRG3 = 1, colorRG4 = 1;
 const int R = 1;
 const int G = 2;
@@ -136,10 +133,6 @@ const int X = 0;
 
 int attemptDebug = 0;
 
-Ticker location1Sec;
-
-//Sync:
-boolean resetCondition = true;
 
 //Timer used to stop debounce @Interrupt Button Press:
 long interval = 3000;
@@ -147,7 +140,8 @@ volatile unsigned long DB_priv_time_1;
 volatile unsigned long DB_priv_time_2;
 volatile unsigned long DB_priv_time_3;
 volatile unsigned long DB_priv_time_4;
-//Interrupt Flag @ISRs Function:
+
+//Interrupt Flag @ISRs Function Flags:
 volatile boolean DB_ISR_F_1 = false;
 volatile boolean DB_ISR_F_2 = false;
 volatile boolean DB_ISR_F_3 = false;
@@ -159,11 +153,16 @@ boolean button2State = true;
 boolean button3State = true;
 boolean button4State = true;
 
+// First Button Press Flag
 boolean is1First = true;
 boolean is2First = true;
 boolean is3First = true;
 boolean is4First = true;
 
+// Node States
+
+//Sync:
+boolean resetCondition = true;
 boolean isSyncDone = false;
 boolean is1Active = false;
 boolean is2Active = false;
@@ -285,24 +284,24 @@ void loop()
 
   //Power:
   // int power = sx1278.getPower();
-//   sx1278.getPower();
-// #ifdef DEBUG_TRANSMISSION
-//   Serial.print("Power");
-//   Serial.print(" ");
-//   Serial.println(sx1278._power);
-// #endif
+  //   sx1278.getPower();
+  // #ifdef DEBUG_TRANSMISSION
+  //   Serial.print("Power");
+  //   Serial.print(" ");
+  //   Serial.println(sx1278._power);
+  // #endif
   /////////////////////////////////////////////////////////////////////
   InterruptAction();
 
   //This function checks for data to receive
   //  if (!isSyncDone)
   //  {
-  receiveSync();
+  receiverMode();
   //  }
   //  else recieveData();
 
   //Show time on display:
-  showTime();
+  setTimeColor();
   //  delay(500);
 }
 
@@ -318,35 +317,31 @@ void sync()
     {
       if (!is1Active)
       {
-        address = ADDR_1_INT;
-        sendData2(ADDR_1_INT, testData);
+        syncDataTransmission(ADDR_1_INT, testData);
         delay(300);
       }
-      receiveSync();
+      receiverMode();
 
       if (!is2Active)
       {
-        address = ADDR_2_INT;
-        sendData2(ADDR_2_INT, testData);
+        syncDataTransmission(ADDR_2_INT, testData);
         delay(300);
       }
-      receiveSync();
+      receiverMode();
 
       if (!is3Active)
       {
-        address = ADDR_3_INT;
-        sendData2(ADDR_3_INT, testData);
+        syncDataTransmission(ADDR_3_INT, testData);
         delay(300);
       }
-      receiveSync();
+      receiverMode();
 
       if (!is4Active)
       {
-        address = ADDR_4_INT;
-        sendData2(ADDR_4_INT, testData);
+        syncDataTransmission(ADDR_4_INT, testData);
         delay(300);
       }
-      receiveSync();
+      receiverMode();
       syncCounter++;
     }
 
@@ -372,12 +367,12 @@ void nextionWriter(String id, String command, String value, boolean isColor)
   Serial2.write(0xff);
 }
 
-void receiveSync()
+void receiverMode()
 {
   firstTime = millis();
-// #ifdef DEBUG_FUNCTION_CALL
-//   Serial.println(" ReceiveSync .... ");
-// #endif
+  // #ifdef DEBUG_FUNCTION_CALL
+  //   Serial.println(" ReceiveSync .... ");
+  // #endif
   R_packet_state = sx1278.receivePacketTimeoutACK();
   if (R_packet_state == 0)
   {
@@ -471,7 +466,7 @@ void receiveSync()
     }
     else
     {
-      Setting_Block_State_Color();
+      acknowledgeNodeState();
     }
     if (is1Active && is2Active && is3Active && is4Active)
     {
@@ -479,10 +474,10 @@ void receiveSync()
     }
   }
   secondTime = millis();
-// #ifdef DEBUG_FUNCTION_CALL
-//   Serial.print("Total Time in ReceiveSync : ");
-//   Serial.println(secondTime - firstTime);
-// #endif
+  // #ifdef DEBUG_FUNCTION_CALL
+  //   Serial.print("Total Time in ReceiveSync : ");
+  //   Serial.println(secondTime - firstTime);
+  // #endif
 }
 
 //Experimental esp32 ISRs
@@ -1004,7 +999,7 @@ void sendData(uint8_t NodeAddress, char message[])
       Serial.println(F("Packet not sent...."));
 #endif
     }
-    showTime();
+    setTimeColor();
   }
 
   switch (NodeAddress)
@@ -1048,7 +1043,7 @@ void sendData(uint8_t NodeAddress, char message[])
   isTransmissionInProgress = false;
 }
 
-void sendData2(uint8_t NodeAddress, char message[])
+void syncDataTransmission(uint8_t NodeAddress, char message[])
 {
 #ifdef DEBUG_TRANSMISSION
   Serial.print("Node Address : ");
@@ -1089,7 +1084,7 @@ void sendData2(uint8_t NodeAddress, char message[])
       Serial.println(F("Packet not sent...."));
 #endif
     }
-    showTime();
+    setTimeColor();
   }
 
   isTransmissionInProgress = false;
@@ -1114,17 +1109,14 @@ void recieveData()
     Serial.println(my_packet);
 #endif
     receivedMsg = String(my_packet);
-    Setting_Block_State_Color();
+    acknowledgeNodeState();
   }
 }
 
 // //Experimental show signal time in seconds
-void showTime()
+void setTimeColor()
 {
-#ifdef DEBUG_DISPLAY
-  String yx = String(colorRG1) + String(colorRG2) + String(colorRG3) + String(colorRG4) + "";
-  Serial.println(yx);
-#endif
+
   currentMil = millis();
   int time1 = (currentMil - DB_1_Signal_Runtime) / 1000;
   int time2 = (currentMil - DB_2_Signal_Runtime) / 1000;
@@ -1155,6 +1147,13 @@ void showTime()
   String printt2 = String(printm2) + ":" + String(printx2);
   String printt3 = String(printm3) + ":" + String(printx3);
   String printt4 = String(printm4) + ":" + String(printx4);
+
+#ifdef DEBUG_DISPLAY
+  String yx = String(colorRG1) + String(colorRG2) + String(colorRG3) + String(colorRG4) + "";
+  Serial.println(yx);
+  String timesDebug = "Times: " + printt1 + " " + printt2 + " " + printt3 + " " + printt4;
+  Serial.println(timesDebug);
+#endif
 
   switch (colorRG1)
   {
@@ -1227,7 +1226,7 @@ void showTime()
 }
 
 //FINAL  BLOCK STATE
-void Setting_Block_State_Color()
+void acknowledgeNodeState()
 {
   //Sets the block state for FIRST Location
   if (receivedMsg.equals("KL1"))
