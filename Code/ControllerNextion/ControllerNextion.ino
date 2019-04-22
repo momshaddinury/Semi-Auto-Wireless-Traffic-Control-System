@@ -41,10 +41,8 @@
 #endif
 
 #define CONTROLLER
-
-//TESTCASE:
-//#define TEST
-//#define TESTDEBUG
+int attemptDebug = 0;
+int countDebug = 1;
 
 /*****************************************************************************
    Definitions & Declarations
@@ -57,6 +55,13 @@
 #define LORA_ADDRESS 5
 uint8_t NodeAddress; //Child Address
 int address;
+
+//Packets var:
+char my_packet[50];
+char testData[50];
+String receivedMsg;
+int T_packet_state;
+int R_packet_state;
 
 //NEXTION Color values
 #define NEXTION_RED "63488"
@@ -104,12 +109,22 @@ int address;
 #define ADDR_4_INT 7
 #define ADDR_4_STR "LANE 4"
 
-//Packets var:
-char my_packet[50];
-char testData[50];
-String receivedMsg;
-int T_packet_state;
-int R_packet_state;
+//Signal Time Var:
+unsigned long DB_1_Signal_Runtime, DB_2_Signal_Runtime, DB_3_Signal_Runtime, DB_4_Signal_Runtime;
+unsigned long currentMil;
+
+//Color Flags:
+int colorRG1 = 1, colorRG2 = 1, colorRG3 = 1, colorRG4 = 1;
+const int R = 1;
+const int G = 2;
+const int X = 0;
+//Checking Transmission State:
+boolean isTransmissionInProgress = false;
+boolean isTransmissionInProgress_1 = false;
+boolean isTransmissionInProgress_2 = false;
+boolean isTransmissionInProgress_3 = false;
+boolean isTransmissionInProgress_4 = false;
+
 
 //Pin def of Switch:
 #define digitalButton_1 25
@@ -120,19 +135,6 @@ int R_packet_state;
 #define digitalButton_6 19
 #define digitalButton_7 21
 #define digitalButton_8 22
-
-//Signal Time Var:
-unsigned long DB_1_Signal_Runtime, DB_2_Signal_Runtime, DB_3_Signal_Runtime, DB_4_Signal_Runtime;
-unsigned long currentMil;
-
-//Color Flags
-int colorRG1 = 1, colorRG2 = 1, colorRG3 = 1, colorRG4 = 1;
-const int R = 1;
-const int G = 2;
-const int X = 0;
-
-int attemptDebug = 0;
-
 
 //Timer used to stop debounce @Interrupt Button Press:
 long interval = 3000;
@@ -158,8 +160,6 @@ boolean is1First = true;
 boolean is2First = true;
 boolean is3First = true;
 boolean is4First = true;
-
-// Node States
 
 //Sync:
 boolean resetCondition = true;
@@ -187,7 +187,6 @@ unsigned long secondTime;
 long int autoTime1 = 0;
 long int autoTime2 = 0;
 
-//*****
 int signalTimeCount = 0;
 
 float t_time;
@@ -195,29 +194,27 @@ float t_time;
 boolean blockStateColor;
 int count = 0;
 
-boolean isTransmissionInProgress = false;
-boolean isTransmissionInProgress_1 = false;
-boolean isTransmissionInProgress_2 = false;
-boolean isTransmissionInProgress_3 = false;
-boolean isTransmissionInProgress_4 = false;
-int countDebug = 1;
-
 int syncCounter = 0;
 
 //MAIN SETUP FUNCTION
 void setup()
 {
-  // #ifdef DEBUG
   Serial.begin(9600);
   Serial2.begin(57600);
 
-  // #endif
   WiFi.mode(WIFI_OFF);
   btStop();
   delay(2000);
 
   //Display Setup:
   displaySetup();
+
+  //Initialization of display timers
+  DB_1_Signal_Runtime = millis();
+  DB_2_Signal_Runtime = millis();
+  DB_3_Signal_Runtime = millis();
+  DB_4_Signal_Runtime = millis();
+  colorRG1 = colorRG2 = colorRG3 = colorRG4 = X;
 
   // Lora Initialization
   loraSetup();
@@ -235,20 +232,6 @@ void setup()
   // 4 Button:
   pinMode(digitalButton_7, INPUT_PULLUP);
   pinMode(digitalButton_8, INPUT_PULLUP);
-
-  // pinMode(27, OUTPUT);
-  // digitalWrite(27, LOW); // To Light Up The Display.
-
-  //Initialization of timers
-  DB_1_Signal_Runtime = millis();
-  DB_2_Signal_Runtime = millis();
-  DB_3_Signal_Runtime = millis();
-  DB_4_Signal_Runtime = millis();
-
-  colorRG1 = X;
-  colorRG2 = X;
-  colorRG3 = X;
-  colorRG4 = X;
 
   //Interrupt Experimental
   attachInterrupt(digitalPinToInterrupt(digitalButton_1), ISR_DB_1_G_32, FALLING);
@@ -1090,28 +1073,6 @@ void syncDataTransmission(uint8_t NodeAddress, char message[])
   isTransmissionInProgress = false;
 }
 
-//Global receive data function
-void recieveData()
-{
-  R_packet_state = sx1278.receivePacketTimeoutACK();
-  if (R_packet_state == 0)
-  {
-#ifdef DEBUG_TRANSMISSION
-    Serial.println(F("Package received!"));
-#endif
-    for (unsigned int i = 0; i < sx1278.packet_received.length; i++)
-    {
-      my_packet[i] = (char)sx1278.packet_received.data[i];
-      yield();
-    }
-#ifdef DEBUG_TRANSMISSION
-    Serial.print(F("Message:  "));
-    Serial.println(my_packet);
-#endif
-    receivedMsg = String(my_packet);
-    acknowledgeNodeState();
-  }
-}
 
 // //Experimental show signal time in seconds
 void setTimeColor()

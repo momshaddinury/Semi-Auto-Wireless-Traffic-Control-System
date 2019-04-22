@@ -2,12 +2,14 @@
 //#include <Ticker.h>
 #include <SX1278.h>
 #include <ESP8266WiFi.h>
+#include <Ticker.h>
+
 
 //Child Parameter:
 // #define Child_1
-// #define Child_2
+#define Child_2
 // #define Child_3
-#define Child_4
+// #define Child_4
 
 //
 //Lora SX1278:
@@ -40,6 +42,7 @@ uint8_t ControllerAddress = 5; //Parent Address
 char my_packet[50]; //Used to store Incoming message in char array from Parent Node
 char testData[50];  //Used to store message which will be sent to Parent Node
 char syncData[50];
+char stateData[50];
 String receivedMsg; //to store the converted my_packet string from char array
 
 //Pin Def:
@@ -54,6 +57,7 @@ int R_packet_state;
 boolean FunctionBlockingFlag = true;
 boolean previousState = true;
 boolean blinking;
+boolean signalState = false;
 
 //Debouncing timer
 long debouncing_time = 3000;
@@ -135,6 +139,7 @@ void loop()
 #endif
 
   Process();
+  manualControl();
 
   if (!FunctionBlockingFlag)
   {
@@ -169,9 +174,69 @@ void loop()
   }
 }
 
+void manualControl() {
+  if(T_ISR_F) {
+    if(signalState) { //Turns on green led
+      digitalWrite(GreenLED, HIGH); //To turn on Green LED
+      digitalWrite(RedLED, LOW);    //To turn off RED LED
+
+      #ifdef Child_1
+        String("KL1G").toCharArray(stateData, 50);
+        sendData(stateData);
+      #endif
+
+      #ifdef Child_2
+        String("KL2G").toCharArray(stateData, 50);
+        sendData(stateData);
+      #endif
+
+      #ifdef Child_3
+        String("KL3G").toCharArray(stateData, 50);
+        sendData(stateData);
+      #endif
+
+      #ifdef Child_4
+        String("KL4G").toCharArray(stateData, 50);
+        sendData(stateData);
+      #endif
+
+     // T_ISR_F = !T_ISR_F;
+    } 
+    else {
+        digitalWrite(GreenLED, LOW); //To turn on Green LED
+        digitalWrite(RedLED, HIGH);    //To turn off RED LED
+
+        #ifdef Child_1
+          String("KL1R").toCharArray(stateData, 50);
+          sendData(stateData);
+        #endif
+
+        #ifdef Child_2
+          String("KL2R").toCharArray(stateData, 50);
+          sendData(stateData);
+        #endif
+
+        #ifdef Child_3
+          String("KL3R").toCharArray(stateData, 50);
+          sendData(stateData);
+        #endif
+
+        #ifdef Child_4
+          String("KL4R").toCharArray(stateData, 50);
+          sendData(stateData);
+        #endif
+
+       // T_ISR_F = !T_ISR_F;
+
+    }
+          T_ISR_F = !T_ISR_F;
+
+  }
+}
+
 void childTask()
 {
-#ifdef DEBUG
+  #ifdef DEBUG
   Serial.println("*****Child Task****");
 #endif
   //Sends ACK after changing LED
@@ -210,7 +275,7 @@ void childTask()
 
 void Process()
 { //Controls LED per received message
-  //For Child 1
+  //Blinking:
   presentActivatedTime = millis();
 
   if (presentActivatedTime - lastActivatedTime <= ledBlinkingInterval)
@@ -381,14 +446,15 @@ void Trigger_ISR()
 { //ISR Trigger Function
   if ((long)(micros() - last_micros) >= debouncing_time * 1000)
   {
+    signalState = !signalState;
     T_ISR_F = true;
     last_micros = micros();
   }
   else
   {
-#ifdef DEBUG
+  #ifdef DEBUG
     Serial.println("Bounce");
-#endif
+  #endif
   }
 }
 
@@ -412,13 +478,15 @@ void sendData(char message[])
   //delay(1000);
   T_packet_state = sx1278.sendPacketTimeoutACKRetries(ControllerAddress, message);
   Serial.print("Send Packet State:");
+  Serial.println("Sending : ");
+  Serial.println(message);
   Serial.println(T_packet_state);
   if (T_packet_state == 0)
   {
-#ifdef DEBUG
+    #ifdef DEBUG
     //Serial.println(F("State = 0 --> Command Executed w no errors!"));
     Serial.println(F("Confirmation Packet sent....."));
-#endif
+    #endif
     T_ISR_F = false;
     FunctionBlockingFlag = true;
   }
@@ -437,10 +505,10 @@ void sendDataSync(char message[])
   Serial.println(T_packet_state);
   if (T_packet_state == 0)
   {
-#ifdef DEBUG
+    #ifdef DEBUG
     //Serial.println(F("State = 0 --> Command Executed w no errors!"));
     Serial.println(F("Confirmation Packet sent....."));
-#endif
+    #endif
     T_ISR_F = false;
     FunctionBlockingFlag = true;
     isSyncSent = true;
@@ -459,19 +527,19 @@ void recieveData()
   R_packet_state = sx1278.receivePacketTimeoutACK(350);
   if (R_packet_state == 0)
   {
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println(F("Package received!"));
-#endif
+    #endif
 
     for (unsigned int i = 0; i < sx1278.packet_received.length; i++)
     {
       my_packet[i] = (char)sx1278.packet_received.data[i];
       yield();
     }
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.print(F("Message:  "));
     Serial.println(my_packet);
-#endif
+    #endif
     receivedMsg = String(my_packet); //Converts CharArray to String
     //Process();
     FunctionBlockingFlag = false;
@@ -481,7 +549,6 @@ void recieveData()
 
 void loraSetup()
 {
-
   //Sets Lora Modes & returns 'true' if successful Else 'false'
   Serial.println("");
   // Power ON the module:
@@ -513,6 +580,7 @@ void pinConfiguration()
   digitalWrite(0, LOW);
   pinMode(ButtonPIN, INPUT);
 }
+
 void ledOff()
 { //To keep LED turned off during boot
   digitalWrite(RedLED, LOW);
