@@ -78,9 +78,9 @@ void setup()
 {
   //Serial communication begin:
   WiFi.mode(WIFI_OFF);
-#ifdef DEBUG
+  #ifdef DEBUG
   Serial.begin(9600);
-#endif
+  #endif
 
   //Lora init:
   loraSetup();
@@ -91,36 +91,36 @@ void setup()
   //Interrupt:
   attachInterrupt(digitalPinToInterrupt(ButtonPIN), Trigger_ISR, FALLING);
 
-#ifdef DEBUG
+  #ifdef DEBUG
   Serial.print("Lora Address :");
   Serial.println(LORA_ADDRESS);
-#endif
+  #endif
 
   delay(500);
 
-#ifdef Child_1
+  #ifdef Child_1
   //delay(delay_time);
   String("K01").toCharArray(syncData, 50);
   sendDataSync(syncData);
-#endif
+  #endif
 
-#ifdef Child_2
+  #ifdef Child_2
   //    delay(delay_time);
   String("K02").toCharArray(syncData, 50);
   sendDataSync(syncData);
-#endif
+  #endif
 
-#ifdef Child_3
+  #ifdef Child_3
   //    delay(delay_time);
   String("K03").toCharArray(syncData, 50);
   sendDataSync(syncData);
-#endif
+  #endif
 
-#ifdef Child_4
+  #ifdef Child_4
   //     delay(delay_time);
   String("K04").toCharArray(syncData, 50);
   sendDataSync(syncData);
-#endif
+  #endif
 
   ledOff();
   lastActivatedTime = millis();
@@ -133,10 +133,10 @@ void loop()
   unsigned long startTime = millis();
   recieveData();
   unsigned long endtime = millis();
-#ifdef DEBUG
+  #ifdef DEBUG
   Serial.print("Receive Data Processing Time : ");
   Serial.println(endtime - startTime);
-#endif
+  #endif
 
   Process();
   manualControl();
@@ -147,29 +147,29 @@ void loop()
       childTask();
     else
     {
-#ifdef Child_1
+      #ifdef Child_1
       //delay(delay_time);
       String("K01").toCharArray(syncData, 50);
       sendData(syncData);
-#endif
+      #endif
 
-#ifdef Child_2
+      #ifdef Child_2
       //    delay(delay_time);
       String("K02").toCharArray(syncData, 50);
       sendData(syncData);
-#endif
+      #endif
 
-#ifdef Child_3
+      #ifdef Child_3
       //    delay(delay_time);
       String("K03").toCharArray(syncData, 50);
       sendData(syncData);
-#endif
+      #endif
 
-#ifdef Child_4
+      #ifdef Child_4
       //     delay(delay_time);
       String("K04").toCharArray(syncData, 50);
       sendData(syncData);
-#endif
+      #endif
     }
   }
 }
@@ -181,55 +181,54 @@ void manualControl() {
       digitalWrite(RedLED, LOW);    //To turn off RED LED
 
       #ifdef Child_1
-        String("KL1G").toCharArray(stateData, 50);
-        sendData(stateData);
+      String("KL1G").toCharArray(stateData, 50);
+      sendData(stateData);
       #endif
 
       #ifdef Child_2
-        String("KL2G").toCharArray(stateData, 50);
-        sendData(stateData);
+      String("KL2G").toCharArray(stateData, 50);
+      sendData(stateData);
       #endif
 
       #ifdef Child_3
-        String("KL3G").toCharArray(stateData, 50);
-        sendData(stateData);
+      String("KL3G").toCharArray(stateData, 50);
+      sendData(stateData);
       #endif
 
       #ifdef Child_4
-        String("KL4G").toCharArray(stateData, 50);
-        sendData(stateData);
+      String("KL4G").toCharArray(stateData, 50);
+      sendData(stateData);
       #endif
 
-     // T_ISR_F = !T_ISR_F;
+      // T_ISR_F = !T_ISR_F;
     } 
     else {
         digitalWrite(GreenLED, LOW); //To turn on Green LED
         digitalWrite(RedLED, HIGH);    //To turn off RED LED
 
         #ifdef Child_1
-          String("KL1R").toCharArray(stateData, 50);
-          sendData(stateData);
+        String("KL1R").toCharArray(stateData, 50);
+        sendData(stateData);
         #endif
 
         #ifdef Child_2
-          String("KL2R").toCharArray(stateData, 50);
-          sendData(stateData);
+        String("KL2R").toCharArray(stateData, 50);
+        sendData(stateData);
         #endif
 
         #ifdef Child_3
-          String("KL3R").toCharArray(stateData, 50);
-          sendData(stateData);
+        String("KL3R").toCharArray(stateData, 50);
+        sendData(stateData);
         #endif
 
         #ifdef Child_4
-          String("KL4R").toCharArray(stateData, 50);
-          sendData(stateData);
+        String("KL4R").toCharArray(stateData, 50);
+        sendData(stateData);
         #endif
 
-       // T_ISR_F = !T_ISR_F;
-
+        // T_ISR_F = !T_ISR_F;
     }
-          T_ISR_F = !T_ISR_F;
+  T_ISR_F = !T_ISR_F;
 
   }
 }
@@ -238,39 +237,39 @@ void childTask()
 {
   #ifdef DEBUG
   Serial.println("*****Child Task****");
-#endif
+  #endif
   //Sends ACK after changing LED
-#ifdef Child_1
+  #ifdef Child_1
   if ((receivedMsg.equals("GL1") || receivedMsg.equals("RL1")) /*&& T_ISR_F*/ && !FunctionBlockingFlag)
   {
     String("KL1").toCharArray(testData, 50);
     sendData(testData);
   }
-#endif
+  #endif
 
-#ifdef Child_2
+  #ifdef Child_2
   if ((receivedMsg.equals("GL2") || receivedMsg.equals("RL2")) /*&& T_ISR_F*/ && !FunctionBlockingFlag)
   {
     String("KL2").toCharArray(testData, 50);
     sendData(testData);
   }
-#endif
+  #endif
 
-#ifdef Child_3
+  #ifdef Child_3
   if ((receivedMsg.equals("GL3") || receivedMsg.equals("RL3")) /*&& T_ISR_F*/ && !FunctionBlockingFlag)
   {
     String("KL3").toCharArray(testData, 50);
     sendData(testData);
   }
-#endif
+  #endif
 
-#ifdef Child_4
+  #ifdef Child_4
   if ((receivedMsg.equals("GL4") || receivedMsg.equals("RL4")) /*&& T_ISR_F*/ && !FunctionBlockingFlag)
   {
     String("KL4").toCharArray(testData, 50);
     sendData(testData);
   }
-#endif
+  #endif
 }
 
 void Process()
@@ -289,152 +288,152 @@ void Process()
   }
 
   //For Child 21
-#ifdef Child_1
+  #ifdef Child_1
   if (receivedMsg.equals("GL1") && blinking)
   {
     digitalWrite(RedLED, LOW);    //To turn off RED LED
     digitalWrite(GreenLED, HIGH); //To turn on Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("Green Is On");
-#endif
+    #endif
   }
   else if (receivedMsg.equals("GL1") && !blinking)
   {
     digitalWrite(RedLED, LOW);   //To turn off RED LED
     digitalWrite(GreenLED, LOW); //To turn Off Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("Green Is OFF");
-#endif
+    #endif
   }
 
   if (receivedMsg.equals("RL1") && blinking)
   {
     digitalWrite(RedLED, HIGH);  //Turns on RED LED
     digitalWrite(GreenLED, LOW); //Turns off Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("RED Is On");
-#endif
+    #endif
   }
   else if (receivedMsg.equals("RL1") && !blinking)
   {
     digitalWrite(RedLED, LOW);   //Turns on RED LED
     digitalWrite(GreenLED, LOW); //Turns off Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("RED Is OFF");
-#endif
+    #endif
   }
-#endif
+  #endif
 
   //For Child 2
-#ifdef Child_2
+  #ifdef Child_2
   if (receivedMsg.equals("GL2") && blinking)
   {
     digitalWrite(RedLED, LOW);    //To turn off RED LED
     digitalWrite(GreenLED, HIGH); //To turn on Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("Green Is On");
-#endif
+    #endif
   }
   else if (receivedMsg.equals("GL2") && !blinking)
   {
     digitalWrite(RedLED, LOW);   //To turn off RED LED
     digitalWrite(GreenLED, LOW); //To turn Off Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("Green Is OFF");
-#endif
+    #endif
   }
 
   if (receivedMsg.equals("RL2") && blinking)
   {
     digitalWrite(RedLED, HIGH);  //Turns on RED LED
     digitalWrite(GreenLED, LOW); //Turns off Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("RED Is On");
-#endif
+    #endif
   }
   else if (receivedMsg.equals("RL2") && !blinking)
   {
     digitalWrite(RedLED, LOW);   //Turns on RED LED
     digitalWrite(GreenLED, LOW); //Turns off Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("RED Is OFF");
-#endif
+    #endif
   }
-#endif
+  #endif
 
   //For Child 3
-#ifdef Child_3
+  #ifdef Child_3
   if (receivedMsg.equals("GL3") && blinking)
   {
     digitalWrite(RedLED, LOW);    //To turn off RED LED
     digitalWrite(GreenLED, HIGH); //To turn on Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("Green Is On");
-#endif
+    #endif
   }
   else if (receivedMsg.equals("GL3") && !blinking)
   {
     digitalWrite(RedLED, LOW);   //To turn off RED LED
     digitalWrite(GreenLED, LOW); //To turn Off Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("Green Is OFF");
-#endif
+    #endif
   }
 
   if (receivedMsg.equals("RL3") && blinking)
   {
     digitalWrite(RedLED, HIGH);  //Turns on RED LED
     digitalWrite(GreenLED, LOW); //Turns off Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("RED Is On");
-#endif
+    #endif
   }
   else if (receivedMsg.equals("RL3") && !blinking)
   {
     digitalWrite(RedLED, LOW);   //Turns on RED LED
     digitalWrite(GreenLED, LOW); //Turns off Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("RED Is OFF");
-#endif
+    #endif
   }
-#endif
+  #endif
 
   //For Child 4
-#ifdef Child_4
+  #ifdef Child_4
   if (receivedMsg.equals("GL4") && blinking)
   {
     digitalWrite(RedLED, LOW);    //To turn off RED LED
     digitalWrite(GreenLED, HIGH); //To turn on Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("Green Is On");
-#endif
+    #endif
   }
   else if (receivedMsg.equals("GL4") && !blinking)
   {
     digitalWrite(RedLED, LOW);   //To turn off RED LED
     digitalWrite(GreenLED, LOW); //To turn Off Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("Green Is OFF");
-#endif
+    #endif
   }
 
   if (receivedMsg.equals("RL4") && blinking)
   {
     digitalWrite(RedLED, HIGH);  //Turns on RED LED
     digitalWrite(GreenLED, LOW); //Turns off Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("RED Is On");
-#endif
+    #endif
   }
   else if (receivedMsg.equals("RL4") && !blinking)
   {
     digitalWrite(RedLED, LOW);   //Turns on RED LED
     digitalWrite(GreenLED, LOW); //Turns off Green LED
-#ifdef DEBUG
+    #ifdef DEBUG
     Serial.println("RED Is OFF");
-#endif
+    #endif
   }
-#endif
+    #endif
 
   //This one should be broadcasted
   if (receivedMsg.equals("S"))
@@ -522,7 +521,6 @@ void sendDataSync(char message[])
 
 void recieveData()
 {
-
   //Global Receive Data Function
   R_packet_state = sx1278.receivePacketTimeoutACK(350);
   if (R_packet_state == 0)
