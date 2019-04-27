@@ -125,7 +125,6 @@ boolean isTransmissionInProgress_2 = false;
 boolean isTransmissionInProgress_3 = false;
 boolean isTransmissionInProgress_4 = false;
 
-
 //Pin def of Switch:
 #define digitalButton_1 25
 #define digitalButton_2 26
@@ -1073,7 +1072,6 @@ void syncDataTransmission(uint8_t NodeAddress, char message[])
   isTransmissionInProgress = false;
 }
 
-
 // //Experimental show signal time in seconds
 void setTimeColor()
 {
@@ -1190,9 +1188,142 @@ void setTimeColor()
 void acknowledgeNodeState()
 {
   //Sets the block state for FIRST Location
-  if (receivedMsg.equals("KL1"))
+  if (receivedMsg.equals("KL1R"))
   {
+    colorRG1 = R;
+    DB_1_Signal_Runtime = millis();
+    blockStateColor = false;
+    DB_1_Process_End_Time = millis();
+    nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "From Lane", false);
+    t_time = ((DB_1_Process_End_Time - DB_1_Process_Start_Time) / 1000.0);
+#ifdef DEBUG_TRANSMISSION
+    Serial.print("Required time (L1): ");
+    Serial.println(t_time, 3);
+#endif
 
+    is1First = false;
+  }
+
+  //Sets the block state for SECOND location
+  else if (receivedMsg.equals("KL2R"))
+  {
+    colorRG2 = R;
+    DB_2_Signal_Runtime = millis();
+    blockStateColor = false;
+    DB_2_Process_End_Time = millis();
+
+    nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "From Lane", false);
+
+#ifdef DEBUG_TRANSMISSION
+    Serial.print("Required time (L2): ");
+    Serial.println(((DB_2_Process_End_Time - DB_2_Process_Start_Time) / 1000.0), 3);
+#endif
+    is2First = false;
+  }
+
+  // Sets the block state for THIRD location
+  else if (receivedMsg.equals("KL3R"))
+  {
+    colorRG3 = R;
+    DB_3_Signal_Runtime = millis();
+    blockStateColor = false;
+    DB_3_Process_End_Time = millis();
+    nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "From Lane", false);
+#ifdef DEBUG_TRANSMISSION
+    Serial.print("Required time (L3): ");
+    Serial.print(" ");
+    Serial.println(((DB_3_Process_End_Time - DB_3_Process_Start_Time) / 1000.0), 3);
+#endif
+    is3First = false;
+  }
+
+  //Sets the block state for FOURTH location
+  else if (receivedMsg.equals("KL4R"))
+  {
+    blockStateColor = false;
+    colorRG4 = R;
+    DB_4_Signal_Runtime = millis();
+    DB_4_Process_End_Time = millis();
+    nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "From Lane", false);
+#ifdef DEBUG_TRANSMISSION
+    Serial.print("Required time (L4): ");
+    Serial.println(((DB_4_Process_End_Time - DB_4_Process_Start_Time) / 1000.0), 3);
+#endif
+    is4First = false;
+  }
+
+  else if (receivedMsg.equals("KL1G"))
+  {
+    colorRG1 = G;
+    DB_1_Signal_Runtime = millis();
+    DB_1_Process_End_Time = millis();
+    blockStateColor = true;
+    nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "From Lane", false);
+    t_time = ((DB_1_Process_End_Time - DB_1_Process_Start_Time) / 1000.0);
+#ifdef DEBUG_TRANSMISSION
+    Serial.print("Required time (L1): ");
+    Serial.println(t_time, 3);
+#endif
+
+    is1First = false;
+  }
+
+  //Sets the block state for SECOND location
+  else if (receivedMsg.equals("KL2G"))
+  {
+    colorRG2 = G;
+    DB_2_Signal_Runtime = millis();
+    DB_2_Process_End_Time = millis();
+    blockStateColor = true;
+    nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "From Lane", false);
+#ifdef DEBUG_TRANSMISSION
+    Serial.print("Required time (L2): ");
+    Serial.println(((DB_2_Process_End_Time - DB_2_Process_Start_Time) / 1000.0), 3);
+#endif
+    is2First = false;
+  }
+
+  // Sets the block state for THIRD location
+  else if (receivedMsg.equals("KL3G"))
+  {
+    colorRG3 = G;
+    DB_3_Signal_Runtime = millis();
+    blockStateColor = true;
+    nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "From Lane", false);
+    DB_3_Process_End_Time = millis();
+#ifdef DEBUG_TRANSMISSION
+    Serial.print("Required time (L3): ");
+    Serial.print(" ");
+    Serial.println(((DB_3_Process_End_Time - DB_3_Process_Start_Time) / 1000.0), 3);
+#endif
+    is3First = false;
+  }
+
+  //Sets the block state for FOURTH location
+  else if (receivedMsg.equals("KL4G"))
+  {
+    colorRG4 = G;
+    DB_4_Signal_Runtime = millis();
+    blockStateColor = true;
+    nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
+    nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "From Lane", false);
+    DB_4_Process_End_Time = millis();
+#ifdef DEBUG_TRANSMISSION
+    Serial.print("Required time (L4): ");
+    Serial.println(((DB_4_Process_End_Time - DB_4_Process_Start_Time) / 1000.0), 3);
+#endif
+    is4First = false;
+  }
+
+  else if (receivedMsg.equals("KL1"))
+  {
     if (blockStateColor)
     {
       colorRG1 = G;
@@ -1214,7 +1345,7 @@ void acknowledgeNodeState()
   }
 
   //Sets the block state for SECOND location
-  if (receivedMsg.equals("KL2"))
+  else if (receivedMsg.equals("KL2"))
   {
     if (blockStateColor)
     {
@@ -1235,7 +1366,7 @@ void acknowledgeNodeState()
   }
 
   // Sets the block state for THIRD location
-  if (receivedMsg.equals("KL3"))
+  else if (receivedMsg.equals("KL3"))
   {
     if (blockStateColor)
     {
@@ -1258,7 +1389,7 @@ void acknowledgeNodeState()
   }
 
   //Sets the block state for FOURTH location
-  if (receivedMsg.equals("KL4"))
+  else if (receivedMsg.equals("KL4"))
   {
     if (blockStateColor)
     {
