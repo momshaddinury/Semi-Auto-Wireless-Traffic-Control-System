@@ -1193,6 +1193,7 @@ void acknowledgeNodeState()
     colorRG1 = R;
     DB_1_Signal_Runtime = millis();
     blockStateColor = false;
+    button1State = true;
     DB_1_Process_End_Time = millis();
     nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "From Lane", false);
@@ -1211,6 +1212,7 @@ void acknowledgeNodeState()
     colorRG2 = R;
     DB_2_Signal_Runtime = millis();
     blockStateColor = false;
+    button2State = true;
     DB_2_Process_End_Time = millis();
 
     nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
@@ -1230,6 +1232,7 @@ void acknowledgeNodeState()
     DB_3_Signal_Runtime = millis();
     blockStateColor = false;
     DB_3_Process_End_Time = millis();
+    button3State = true;
     nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "From Lane", false);
 #ifdef DEBUG_TRANSMISSION
@@ -1247,6 +1250,7 @@ void acknowledgeNodeState()
     colorRG4 = R;
     DB_4_Signal_Runtime = millis();
     DB_4_Process_End_Time = millis();
+    button4State = true;
     nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "From Lane", false);
 #ifdef DEBUG_TRANSMISSION
@@ -1262,6 +1266,7 @@ void acknowledgeNodeState()
     DB_1_Signal_Runtime = millis();
     DB_1_Process_End_Time = millis();
     blockStateColor = true;
+    button1State = false;
     nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     nextionWriter(NEXTION_TRANSMISSION_1, NEXTION_COMMAND_TEXT, "From Lane", false);
     t_time = ((DB_1_Process_End_Time - DB_1_Process_Start_Time) / 1000.0);
@@ -1280,6 +1285,7 @@ void acknowledgeNodeState()
     DB_2_Signal_Runtime = millis();
     DB_2_Process_End_Time = millis();
     blockStateColor = true;
+    button2State = false;
     nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     nextionWriter(NEXTION_TRANSMISSION_2, NEXTION_COMMAND_TEXT, "From Lane", false);
 #ifdef DEBUG_TRANSMISSION
@@ -1295,6 +1301,7 @@ void acknowledgeNodeState()
     colorRG3 = G;
     DB_3_Signal_Runtime = millis();
     blockStateColor = true;
+    button3State = false;
     nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     nextionWriter(NEXTION_TRANSMISSION_3, NEXTION_COMMAND_TEXT, "From Lane", false);
     DB_3_Process_End_Time = millis();
@@ -1312,6 +1319,7 @@ void acknowledgeNodeState()
     colorRG4 = G;
     DB_4_Signal_Runtime = millis();
     blockStateColor = true;
+    button4State = false;
     nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_FOREGROUND_TEXT_COLOR, NEXTION_WHITE, true);
     nextionWriter(NEXTION_TRANSMISSION_4, NEXTION_COMMAND_TEXT, "From Lane", false);
     DB_4_Process_End_Time = millis();
