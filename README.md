@@ -48,7 +48,7 @@ void showTime();
 * Communication - Unchanged
 
 ### Controller Algorithm Overview
-![Controller Algorithm](Algorithm/Traffic Control.jpg)
+![Controller Algorithm](/Algorithm/Traffic Control.jpg)
 
 ### Node Algorithm Overview
-![Node Algorithm](Algorithm/Traffic Control Node.jpg)    
+![Node Algorithm](/Algorithm/Traffic Control Node.jpg)    
